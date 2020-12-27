@@ -1,5 +1,7 @@
 package xyz.scootaloo.console.app.support.config;
 
+import lombok.Getter;
+import lombok.ToString;
 import xyz.scootaloo.console.app.support.component.AppType;
 import xyz.scootaloo.console.app.support.utils.ClassUtils;
 
@@ -7,6 +9,8 @@ import xyz.scootaloo.console.app.support.utils.ClassUtils;
  * @author flutterdash@qq.com
  * @since 2020/12/27 15:37
  */
+@Getter
+@ToString
 public class ConsoleConfig {
     // 应用类型
     private AppType appType;
@@ -17,36 +21,10 @@ public class ConsoleConfig {
     private String exitCmd; // 退出时使用的命令
 
     // 扫描的基础包路径
+    private String basePack;
 
-
-    public ConsoleConfig(ApplicationConfig.DefaultValueConfigBuilder builder) {
+    public ConsoleConfig(ConfigProvider.DefaultValueConfigBuilder builder) {
         ClassUtils.copyProperties(builder, this);
-    }
-
-    @Override
-    public String toString() {
-        return "ConsoleConfig{" +
-                "appType=" + appType +
-                ", appName='" + appName + '\'' +
-                ", prompt='" + prompt + '\'' +
-                ", exitCmd='" + exitCmd + '\'' +
-                '}';
-    }
-
-    public AppType getAppType() {
-        return appType;
-    }
-
-    public String getAppName() {
-        return appName;
-    }
-
-    public String getPrompt() {
-        return prompt;
-    }
-
-    public String getExitCmd() {
-        return exitCmd;
     }
 
 }

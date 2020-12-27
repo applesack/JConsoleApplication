@@ -8,7 +8,7 @@ import xyz.scootaloo.console.app.support.utils.ClassUtils;
  * @author flutterdash@qq.com
  * @since 2020/12/27 15:33
  */
-public abstract class ApplicationConfig extends Colorful {
+public abstract class ConfigProvider extends Colorful {
 
     private static Class<?> BOOT_CLAZZ;
 
@@ -16,15 +16,15 @@ public abstract class ApplicationConfig extends Colorful {
      * 获取调用此方法的调用者，并实创建调用者的实例
      * @return 调用者的实例
      */
-    public static ApplicationConfig instance() {
+    public static ConfigProvider instance() {
         StackTraceElement[] callStack = Thread.currentThread().getStackTrace();
         String invoker = callStack[2].getClassName();
         try {
             BOOT_CLAZZ = Class.forName(invoker);
             Object bootObj = BOOT_CLAZZ.newInstance();
-            if (!ClassUtils.isExtendForm(bootObj, ApplicationConfig.class))
-                exit0("启动类没有继承自配置类，无法加载配置");
-            return (ApplicationConfig) bootObj;
+            if (!ClassUtils.isExtendForm(bootObj, ConfigProvider.class))
+                exit0("启动类没有继承自配置提供者类，无法加载配置");
+            return (ConfigProvider) bootObj;
         } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
             exit0(grey("解析异常，无法实例化类: ") + red(invoker));
             return null;
@@ -38,17 +38,21 @@ public abstract class ApplicationConfig extends Colorful {
         return rsl != null ? rsl : DefaultValueConfigBuilder.defaultConfig(BOOT_CLAZZ);
     }
 
-    public abstract ConsoleConfig register(DefaultValueConfigBuilder configBuilder);
+    public abstract ConsoleConfig register(DefaultValueConfigBuilder builder);
 
     public static class DefaultValueConfigBuilder {
+        private final Class<?> bootClazz;
 
         private AppType appType = AppType.Standard;
-        private String  appName;
-        private String  prompt  = "console> ";
-        private String  exitCmd = "exit";
+        private String appName;
+        private String prompt  = "console> ";
+        private String[] exitCmd = {"exit"};
+        private String basePack;
 
         public DefaultValueConfigBuilder(Class<?> bootClazz) {
+            this.bootClazz = bootClazz;
             appName = getAppName(bootClazz);
+            basePack = getBasePack(bootClazz);
         }
 
         public DefaultValueConfigBuilder appName(String name) {
@@ -73,13 +77,34 @@ public abstract class ApplicationConfig extends Colorful {
 
         public DefaultValueConfigBuilder exitCmd(String cmd) {
             if (cmd != null) {
+                this.exitCmd = new String[] {cmd};
+            }
+            return this;
+        }
+
+        public DefaultValueConfigBuilder exitCmd(String[] cmd) {
+            if (cmd != null) {
                 this.exitCmd = cmd;
+            }
+            return this;
+        }
+
+        public DefaultValueConfigBuilder basePack(String pack) {
+            if (pack != null) {
+                if (pack.indexOf('.') == -1) {
+                    this.basePack = getBasePack(bootClazz) + "." + pack;
+                }
+                this.basePack = pack;
             }
             return this;
         }
 
         public ConsoleConfig build() {
             return new ConsoleConfig(this);
+        }
+
+        private static String getBasePack(Class<?> bootClazz) {
+            return bootClazz.getPackage().getName();
         }
 
         private static String getAppName(Class<?> bootClazz) {
