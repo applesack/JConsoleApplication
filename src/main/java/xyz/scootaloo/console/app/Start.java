@@ -3,6 +3,7 @@ package xyz.scootaloo.console.app;
 import xyz.scootaloo.console.app.support.ConsoleApplication;
 import xyz.scootaloo.console.app.support.component.Boot;
 import xyz.scootaloo.console.app.support.config.ApplicationConfig;
+import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 
 /**
  * @author flutterdash@qq.com
@@ -15,4 +16,8 @@ public class Start extends ApplicationConfig {
         ConsoleApplication.run(instance());
     }
 
+    @Override
+    public ConsoleConfig register(DefaultValueConfigBuilder configBuilder) {
+        return null;
+    }
 }

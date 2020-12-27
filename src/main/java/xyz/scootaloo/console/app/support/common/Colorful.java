@@ -6,7 +6,7 @@ import xyz.scootaloo.console.app.support.component.ConsoleColor;
  * @author flutterdash@qq.com
  * @since 2020/12/27 16:25
  */
-public class Colorful extends InputCommons {
+public class Colorful extends OutputCommons {
 
     protected static String green(Object line) {
         return ConsoleColor.GREEN + line;
