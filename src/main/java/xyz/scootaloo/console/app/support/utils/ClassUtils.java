@@ -8,8 +8,9 @@ import java.lang.reflect.Field;
  * @author flutterdash@qq.com
  * @since 2020/12/27 17:08
  */
-public class ClassUtils extends Colorful {
-
+public class ClassUtils {   
+    private static final Colorful cPrint = Colorful.instance;
+    
     /**
      * 判断一个类是否是另一个类的子类
      * @param son 子类
@@ -36,9 +37,9 @@ public class ClassUtils extends Colorful {
                     throw new IllegalArgumentException("属性不一致");
                 targetField.set(target, field.get(source));
             } catch (NoSuchFieldException e) {
-                println(red("拷贝属性时发生异常, 目标实例不具有此属性名: " + field.getName()));
+                cPrint.println(cPrint.red("拷贝属性时发生异常, 目标实例不具有此属性名: " + field.getName()));
             } catch (Exception e) {
-                println("拷贝属性时发生异常，已跳过，属性名:" + field.getName() + ". msg:" + e.getMessage());
+                cPrint.println("拷贝属性时发生异常，已跳过，属性名:" + field.getName() + ". msg:" + e.getMessage());
             }
         }
     }

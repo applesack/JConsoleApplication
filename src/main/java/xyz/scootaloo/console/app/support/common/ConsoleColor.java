@@ -1,4 +1,4 @@
-package xyz.scootaloo.console.app.support.component;
+package xyz.scootaloo.console.app.support.common;
 
 /**
  * @author flutterdash@qq.com

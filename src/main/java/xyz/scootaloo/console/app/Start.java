@@ -1,6 +1,6 @@
 package xyz.scootaloo.console.app;
 
-import xyz.scootaloo.console.app.support.application.ConsoleApplication;
+import xyz.scootaloo.console.app.support.application.ApplicationRunner;
 import xyz.scootaloo.console.app.support.component.AppType;
 import xyz.scootaloo.console.app.support.component.Boot;
 import xyz.scootaloo.console.app.support.config.ConfigProvider;
@@ -14,7 +14,7 @@ import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 public class Start extends ConfigProvider {
 
     public static void main(String[] args) {
-        ConsoleApplication.run(instance());
+        ApplicationRunner.run(instance());
     }
 
     @Override

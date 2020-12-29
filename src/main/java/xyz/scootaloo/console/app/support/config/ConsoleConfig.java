@@ -12,19 +12,33 @@ import xyz.scootaloo.console.app.support.utils.ClassUtils;
 @Getter
 @ToString
 public class ConsoleConfig {
+    // 单例
+    private static ConsoleConfig instance = null;
+
     // 应用类型
     private AppType appType;
 
     // 应用信息
     private String appName; // 应用名称
     private String prompt;  // 控制台提示
-    private String exitCmd; // 退出时使用的命令
+    private String[] exitCmd; // 退出时使用的命令
+    private Class<?> bootClazz;
 
     // 扫描的基础包路径
     private String basePack;
 
+    // 作者信息
+    private String author;
+    private String email;
+    private String date;
+
     public ConsoleConfig(ConfigProvider.DefaultValueConfigBuilder builder) {
         ClassUtils.copyProperties(builder, this);
+        instance = this;
+    }
+
+    public static ConsoleConfig getInstance() {
+        return instance;
     }
 
 }

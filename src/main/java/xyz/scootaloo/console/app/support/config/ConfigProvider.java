@@ -8,8 +8,8 @@ import xyz.scootaloo.console.app.support.utils.ClassUtils;
  * @author flutterdash@qq.com
  * @since 2020/12/27 15:33
  */
-public abstract class ConfigProvider extends Colorful {
-
+public abstract class ConfigProvider {
+    private static final Colorful cPrint = Colorful.instance;
     private static Class<?> BOOT_CLAZZ;
 
     /**
@@ -23,17 +23,17 @@ public abstract class ConfigProvider extends Colorful {
             BOOT_CLAZZ = Class.forName(invoker);
             Object bootObj = BOOT_CLAZZ.newInstance();
             if (!ClassUtils.isExtendForm(bootObj, ConfigProvider.class))
-                exit0("启动类没有继承自配置提供者类，无法加载配置");
+                cPrint.exit0("启动类没有继承自配置提供者类，无法加载配置");
             return (ConfigProvider) bootObj;
         } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
-            exit0(grey("解析异常，无法实例化类: ") + red(invoker));
+            cPrint.exit0("解析异常，无法实例化类: " + invoker);
             return null;
         }
     }
 
     public ConsoleConfig getConfig() {
         if (BOOT_CLAZZ == null)
-            exit0("请使用 instance() 方法做为ConsoleApplication.run()的参数");
+            cPrint.exit0("请使用 instance() 方法做为ConsoleApplication.run()的参数");
         ConsoleConfig rsl = register(new DefaultValueConfigBuilder(BOOT_CLAZZ));
         return rsl != null ? rsl : DefaultValueConfigBuilder.defaultConfig(BOOT_CLAZZ);
     }
@@ -43,11 +43,17 @@ public abstract class ConfigProvider extends Colorful {
     public static class DefaultValueConfigBuilder {
         private final Class<?> bootClazz;
 
+        // 应用信息
         private AppType appType = AppType.Standard;
         private String appName;
         private String prompt  = "console> ";
         private String[] exitCmd = {"exit"};
         private String basePack;
+
+        // 作者信息
+        private String author = "";
+        private String email = "";
+        private String date = "";
 
         public DefaultValueConfigBuilder(Class<?> bootClazz) {
             this.bootClazz = bootClazz;
@@ -93,8 +99,30 @@ public abstract class ConfigProvider extends Colorful {
             if (pack != null) {
                 if (pack.indexOf('.') == -1) {
                     this.basePack = getBasePack(bootClazz) + "." + pack;
+                } else {
+                    this.basePack = pack;
                 }
-                this.basePack = pack;
+            }
+            return this;
+        }
+
+        public DefaultValueConfigBuilder author(String author) {
+            if (author != null) {
+                this.author = author;
+            }
+            return this;
+        }
+
+        public DefaultValueConfigBuilder email(String email) {
+            if (email != null) {
+                this.email = email;
+            }
+            return this;
+        }
+
+        public DefaultValueConfigBuilder date(String date) {
+            if (date != null) {
+                this.date = date;
             }
             return this;
         }
