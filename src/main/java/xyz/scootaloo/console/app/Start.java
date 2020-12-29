@@ -23,7 +23,7 @@ public class Start extends ConfigProvider {
                 .appName("控制台应用示例")
                 .appType(AppType.Standard)
                 .exitCmd(new String[] {"x", "q", "exit", "e."})
-                .prompt("root> ")
+                .prompt("demo> ")
                 .basePack("workspace")
                 .build();
     }

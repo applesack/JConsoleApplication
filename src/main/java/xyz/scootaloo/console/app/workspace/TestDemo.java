@@ -19,12 +19,12 @@ public class TestDemo implements Colorful {
 
     @Cmd(type = CmdType.Pre)
     private boolean flag() {
-        return false;
+        return true;
     }
 
     @Cmd
-    private void test(int a, int b) {
-
+    private void add(int a, int b) {
+        println(a + b);
     }
 
 }

@@ -3,6 +3,7 @@ package xyz.scootaloo.console.app.support.utils;
 import xyz.scootaloo.console.app.support.common.Colorful;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
 /**
  * @author flutterdash@qq.com
@@ -18,7 +19,7 @@ public class ClassUtils {
      * @return 结果
      */
     public static boolean isExtendForm(Object son, Class<?> father) {
-        return father.isAssignableFrom(son.getClass()) || son.getClass().isInstance(father);
+        return father.isAssignableFrom(son.getClass());
     }
 
     public static void copyProperties(Object source, Object target) {
@@ -46,6 +47,10 @@ public class ClassUtils {
 
     public static boolean sameType(Field f1, Field f2) {
         return f1.getGenericType().getTypeName().equals(f2.getGenericType().getTypeName());
+    }
+
+    public static void main(String[] args) {
+        System.out.println(isExtendForm(int.class, List.class));
     }
 
 }

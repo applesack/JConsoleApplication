@@ -3,6 +3,7 @@ package xyz.scootaloo.console.app.support.application;
 import xyz.scootaloo.console.app.support.parser.Actuator;
 
 import java.util.List;
+import java.util.Locale;
 
 /**
  * @author flutterdash@qq.com
@@ -47,7 +48,7 @@ public abstract class AbstractApplication {
     public String getCmdName(List<String> items) {
         String cmdName = items.get(0);
         items.remove(0);
-        return cmdName;
+        return cmdName.toLowerCase(Locale.ROOT);
     }
 
 }

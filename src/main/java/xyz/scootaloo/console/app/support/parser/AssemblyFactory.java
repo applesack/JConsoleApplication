@@ -6,6 +6,7 @@ import xyz.scootaloo.console.app.support.component.Cmd;
 import xyz.scootaloo.console.app.support.component.CmdType;
 import xyz.scootaloo.console.app.support.component.StrategyFactory;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
+import xyz.scootaloo.console.app.support.parser.TransformFactory.ResultWrapper;
 import xyz.scootaloo.console.app.support.utils.PackScanner;
 
 import java.lang.reflect.InvocationTargetException;
@@ -67,10 +68,9 @@ public class AssemblyFactory {
         strategyMap.put("help", help());
         sortActuatorLists();
 
-        List<String> emptyList = new ArrayList<>(0);
         try {
             for (ActuatorImpl actuator : initActuators) {
-                actuator.invoke0(emptyList);
+                actuator.invoke0(null);
             }
         } catch (Exception e) {
             cPrint.exit0("初始化失败, msg:" + e.getMessage());
@@ -83,7 +83,7 @@ public class AssemblyFactory {
             return;
         switch (cmdAnno.type()) {
             case Cmd: {
-                strategyMap.put(method.getName(), actuator);
+                strategyMap.put(method.getName().toLowerCase(Locale.ROOT), actuator);
             } break;
             case Pre: {
                 preActuators.add(actuator);
@@ -128,7 +128,6 @@ public class AssemblyFactory {
      * @since 2020/12/29 11:00
      */
     public static class ActuatorImpl implements Actuator {
-        private static final List<String> EMPTY_ARGS = new ArrayList<>(0);
 
         private final Method method;
         private final Cmd cmd;
@@ -178,18 +177,24 @@ public class AssemblyFactory {
 
         private boolean doInvokePreProcess() throws InvocationTargetException, IllegalAccessException {
             for (ActuatorImpl actuator : preActuators) {
-                Boolean result = (Boolean) actuator.invoke0(EMPTY_ARGS);
+                Boolean result = (Boolean) actuator.invoke0(null);
                 if (!result) {
                     cPrint.println("错误信息: " + actuator.cmd.onError());
+                    return false;
                 }
             }
             return true;
         }
 
         private Object invoke0(List<String> items) throws InvocationTargetException, IllegalAccessException {
-            Object[] args = TransformFactory.transform(method, items);
-            method.setAccessible(true);
-            return method.invoke(obj, args);
+            ResultWrapper wrapper = TransformFactory.transform(method, items);
+            if (wrapper.success) {
+                method.setAccessible(true);
+                return method.invoke(obj, wrapper.args);
+            } else {
+                cPrint.println("调用失败: " + wrapper.msg);
+                return null;
+            }
         }
 
         public int getOrder() {

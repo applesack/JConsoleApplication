@@ -12,9 +12,6 @@ import xyz.scootaloo.console.app.support.utils.ClassUtils;
 @Getter
 @ToString
 public class ConsoleConfig {
-    // 单例
-    private static ConsoleConfig instance = null;
-
     // 应用类型
     private AppType appType;
 
@@ -34,11 +31,6 @@ public class ConsoleConfig {
 
     public ConsoleConfig(ConfigProvider.DefaultValueConfigBuilder builder) {
         ClassUtils.copyProperties(builder, this);
-        instance = this;
-    }
-
-    public static ConsoleConfig getInstance() {
-        return instance;
     }
 
 }
