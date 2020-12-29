@@ -19,10 +19,10 @@ import java.util.*;
  */
 public class AssemblyFactory {
     private static final Colorful cPrint = Colorful.instance;
-    private static Map<String, Actuator> strategyMap = null;
-    private static final List<ActuatorImpl> initActuators = new ArrayList<>();
-    private static final List<ActuatorImpl> preActuators = new ArrayList<>();
-    private static final List<ActuatorImpl> destroyActuators = new ArrayList<>();
+    protected static final Map<String, Actuator> strategyMap = new HashMap<>();
+    protected static final List<ActuatorImpl> initActuators = new ArrayList<>();
+    protected static final List<ActuatorImpl> preActuators = new ArrayList<>();
+    protected static final List<ActuatorImpl> destroyActuators = new ArrayList<>();
 
     private static ConsoleConfig config;
 
@@ -36,7 +36,8 @@ public class AssemblyFactory {
         Actuator actuator = strategyMap.get(cmdName);
         if (actuator != null)
             return actuator;
-        cPrint.println(cPrint.blue("没有这个命令`" + cmdName + "`"));
+        if (!cmdName.equals(""))
+            cPrint.println(cPrint.blue("没有这个命令`" + cmdName + "`"));
         return cmd -> {
             // do nothing ...
             return null;
@@ -44,12 +45,12 @@ public class AssemblyFactory {
     }
 
     private static void doGetStrategyFactories() {
-        strategyMap = new HashMap<>();
         if (config == null) {
             cPrint.exit0("未加载到配置");
             return;
         }
         Set<Class<?>> factories = PackScanner.getClasses(config.getBasePack());
+        factories.add(SystemDefaultCmd.class);
         for (Class<?> factory : factories) {
             StrategyFactory factoryAnno = factory.getAnnotation(StrategyFactory.class);
             if (factoryAnno == null || !factoryAnno.enable())
@@ -65,7 +66,6 @@ public class AssemblyFactory {
             }
         }
 
-        strategyMap.put("help", help());
         sortActuatorLists();
 
         try {
@@ -84,6 +84,10 @@ public class AssemblyFactory {
         switch (cmdAnno.type()) {
             case Cmd: {
                 strategyMap.put(method.getName().toLowerCase(Locale.ROOT), actuator);
+                Cmd cmd = method.getAnnotation(Cmd.class);
+                if (!cmd.name().equals("")) {
+                    strategyMap.put(cmd.name().toLowerCase(Locale.ROOT), actuator);
+                }
             } break;
             case Pre: {
                 preActuators.add(actuator);
@@ -94,26 +98,6 @@ public class AssemblyFactory {
             case Destroy: {
                 destroyActuators.add(actuator);
             } break;
-        }
-    }
-
-    private static Actuator help() {
-        return items -> {
-            if (items.isEmpty()) {
-                for (Actuator actuator : strategyMap.values()) {
-                    printInfo(actuator);
-                }
-            } else {
-                Actuator actuator = findInvoker(items.get(0));
-                printInfo(actuator);
-            }
-            return null;
-        };
-    }
-
-    private static void printInfo(Actuator actuator) {
-        if (actuator instanceof ActuatorImpl) {
-            ((ActuatorImpl) actuator).printInfo();
         }
     }
 

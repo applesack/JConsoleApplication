@@ -1,9 +1,7 @@
 package xyz.scootaloo.console.app.workspace;
 
 import xyz.scootaloo.console.app.support.common.Colorful;
-import xyz.scootaloo.console.app.support.component.Cmd;
-import xyz.scootaloo.console.app.support.component.CmdType;
-import xyz.scootaloo.console.app.support.component.StrategyFactory;
+import xyz.scootaloo.console.app.support.component.*;
 
 /**
  * @author flutterdash@qq.com
@@ -17,13 +15,13 @@ public class TestDemo implements Colorful {
         println("启动");
     }
 
-    @Cmd(type = CmdType.Pre)
-    private boolean flag() {
-        return true;
-    }
+//    @Cmd(type = CmdType.Pre)
+//    private boolean flag() {
+//        return true;
+//    }
 
     @Cmd
-    private void add(int a, int b) {
+    private void add( boolean c, @Req("q") int a, @Opt('c') int b) {
         println(a + b);
     }
 

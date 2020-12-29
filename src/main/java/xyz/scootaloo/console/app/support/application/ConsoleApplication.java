@@ -40,7 +40,7 @@ public class ConsoleApplication extends AbstractApplication implements Colorful 
 
     @Override
     protected void printPrompt() {
-        print(this.config.getPrompt());
+        print(grey(this.config.getPrompt()));
     }
 
     @Override
