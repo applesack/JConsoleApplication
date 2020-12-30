@@ -4,9 +4,13 @@ import xyz.scootaloo.console.app.support.common.Colorful;
 import xyz.scootaloo.console.app.support.common.ProxyInvoke;
 import xyz.scootaloo.console.app.support.component.Cmd;
 import xyz.scootaloo.console.app.support.component.CmdType;
-import xyz.scootaloo.console.app.support.component.StrategyFactory;
+import xyz.scootaloo.console.app.support.component.CommandFactory;
+import xyz.scootaloo.console.app.support.component.Plugin;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 import xyz.scootaloo.console.app.support.parser.TransformFactory.ResultWrapper;
+import xyz.scootaloo.console.app.support.plugin.ConsolePlugin;
+import xyz.scootaloo.console.app.support.plugin.EventPublisher;
+import xyz.scootaloo.console.app.support.utils.ClassUtils;
 import xyz.scootaloo.console.app.support.utils.PackScanner;
 
 import java.lang.reflect.InvocationTargetException;
@@ -50,12 +54,15 @@ public class AssemblyFactory {
             return;
         }
         Set<Class<?>> factories = PackScanner.getClasses(config.getBasePack());
-        factories.add(SystemDefaultCmd.class);
+        factories.add(SystemPresetCmd.class);
         for (Class<?> factory : factories) {
-            StrategyFactory factoryAnno = factory.getAnnotation(StrategyFactory.class);
+            CommandFactory factoryAnno = factory.getAnnotation(CommandFactory.class);
+            Plugin plugin = factory.getAnnotation(Plugin.class);
+            Object instance = ProxyInvoke.invoke(factory);
+            if (plugin != null && plugin.enable())
+                doGetPlugin(instance);
             if (factoryAnno == null || !factoryAnno.enable())
                 continue;
-            Object instance = ProxyInvoke.invoke(factory);
             Method[] methods = factory.getDeclaredMethods();
             for (Method method : methods) {
                 method.setAccessible(true);
@@ -66,6 +73,7 @@ public class AssemblyFactory {
             }
         }
 
+        EventPublisher.onAppStarted(config);
         sortActuatorLists();
 
         try {
@@ -105,6 +113,14 @@ public class AssemblyFactory {
         initActuators.sort(Comparator.comparingInt(ActuatorImpl::getOrder));
         preActuators.sort(Comparator.comparingInt(ActuatorImpl::getOrder));
         destroyActuators.sort(Comparator.comparingInt(ActuatorImpl::getOrder));
+    }
+
+    private static void doGetPlugin(Object pluginObj) {
+        if (ClassUtils.isExtendForm(pluginObj, ConsolePlugin.class)) {
+            EventPublisher.loadPlugin((ConsolePlugin) pluginObj);
+        } else {
+            cPrint.println("插件类使用了@Plugin注解，但是没有继承自ConsolePlugin接口，自定义插件无法装配");
+        }
     }
 
     /**
@@ -171,10 +187,13 @@ public class AssemblyFactory {
         }
 
         private Object invoke0(List<String> items) throws InvocationTargetException, IllegalAccessException {
+            EventPublisher.onResolveInput(items);
             ResultWrapper wrapper = TransformFactory.transform(method, items);
             if (wrapper.success) {
                 method.setAccessible(true);
-                return method.invoke(obj, wrapper.args);
+                Object rtnVal = method.invoke(obj, wrapper.args);
+                EventPublisher.onInputResolved(method.getName().toLowerCase(Locale.ROOT), rtnVal);
+                return rtnVal;
             } else {
                 cPrint.println("调用失败: " + wrapper.msg);
                 return null;

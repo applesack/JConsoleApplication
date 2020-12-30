@@ -3,6 +3,7 @@ package xyz.scootaloo.console.app.support.application;
 import xyz.scootaloo.console.app.support.common.Colorful;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 import xyz.scootaloo.console.app.support.parser.Actuator;
+import xyz.scootaloo.console.app.support.plugin.EventPublisher;
 
 import java.util.Arrays;
 import java.util.List;
@@ -33,7 +34,9 @@ public class ConsoleApplication extends AbstractApplication implements Colorful 
 
     @Override
     protected List<String> getInput() {
-        return Stream.of(scanner.nextLine())
+        String cmdline = scanner.nextLine();
+        cmdline = EventPublisher.onInput(cmdline);
+        return Stream.of(cmdline)
                 .flatMap(line -> Arrays.stream(line.split(" ")))
                 .collect(Collectors.toList());
     }

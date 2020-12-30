@@ -7,13 +7,12 @@ import java.lang.annotation.Target;
 
 /**
  * @author flutterdash@qq.com
- * @since 2020/12/29 19:12
+ * @since 2020/12/30 9:57
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PARAMETER)
-public @interface Opt {
+@Target(ElementType.TYPE)
+public @interface Plugin {
 
-    char value();
-    String defVal() default "";
+    boolean enable() default true;
 
 }

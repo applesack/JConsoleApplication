@@ -2,7 +2,6 @@ package xyz.scootaloo.console.app.support.parser;
 
 import xyz.scootaloo.console.app.support.component.Opt;
 import xyz.scootaloo.console.app.support.component.Req;
-import xyz.scootaloo.console.app.support.utils.ClassUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -16,16 +15,6 @@ import java.util.Map;
  * @since 2020/12/29 11:21
  */
 public class TransformFactory {
-
-    private static final Class<?>[] RESOLVABLE_TYPES =  {
-            int.class, Integer.class,
-            boolean.class, Boolean.class,
-            float.class, Float.class,
-            double.class, Double.class,
-            short.class, Short.class,
-            byte.class, Boolean.class,
-            String.class
-    };
 
     public static ResultWrapper transform(Method method, List<String> cmdline) {
         if (method.getParameterCount() == 0)
@@ -52,12 +41,17 @@ public class TransformFactory {
             anno = findAnnoFromArray(curAnnoArr, Opt.class);
             if (anno != null) {
                 Opt option = (Opt) anno;
-                getAndRemove(args, option.value(), curArgType, optMap);
+                if (getAndRemove(args, option.value(), curArgType, optMap)) {
+                    if (!option.defVal().equals("")) {
+                        args.set(args.size() - 1, ResolveFactory
+                                .simpleTrans(option.defVal(), curArgType, false));
+                    }
+                }
             }
             anno = findAnnoFromArray(curAnnoArr, Req.class);
             if (anno != null) {
                 Req required = (Req) anno;
-                if (!getAndRemove(args, required.value(), curArgType, reqMap)) {
+                if (getAndRemove(args, required.value(), curArgType, reqMap)) {
                     return ResultWrapper.fail("缺少必选参数[" + required.value() + "]");
                 }
             }
@@ -83,7 +77,10 @@ public class TransformFactory {
                 isAnnoArg = true;
                 Node node = getValueForKVPair(segment, 1);
                 if (node != null) {
-                    optMap.put(node.key, node.val);
+                    if (node.val.equals("*"))
+                        optMap.put(node.key, null);
+                    else
+                        optMap.put(node.key, node.val);
                 } else {
                     segment = segment.substring(1);
                     if (segment.length() > 0) {
@@ -121,43 +118,7 @@ public class TransformFactory {
     }
 
     private static Object resolveArgument(Object value, Class<?> type) {
-        if (type.isArray() || ClassUtils.isExtendForm(type, List.class)) {
-            return resolveArray(value, type);
-        } else {
-            return simpleTrans(String.valueOf(value), type);
-        }
-    }
-
-    private static Object simpleTrans(String value, Class<?> type) {
-        if (matchAnyTypes(type, byte.class, Byte.class))
-            return Byte.parseByte(value);
-        if (matchAnyTypes(type, short.class, Short.class))
-            return Short.parseShort(value);
-        if (matchAnyTypes(type, int.class, Integer.class))
-            return Integer.parseInt(value);
-        if (matchAnyTypes(type, float.class, Float.class))
-            return Float.parseFloat(value);
-        if (matchAnyTypes(type, double.class, Double.class))
-            return Double.parseDouble(value);
-        if (matchAnyTypes(type, boolean.class, Boolean.class))
-            return Boolean.parseBoolean(value);
-        return value;
-    }
-
-    private static Object resolveArray(Object value, Class<?> type) {
-        return null;
-    }
-
-    private static boolean matchAnyType(Class<?> value) {
-        return matchAnyTypes(value, RESOLVABLE_TYPES);
-    }
-
-    private static boolean matchAnyTypes(Class<?> value, Class<?> ... types) {
-        for (Class<?> type : types) {
-            if (value == type)
-                return true;
-        }
-        return false;
+        return ResolveFactory.resolveArgument(value, type);
     }
 
     private static boolean getAndRemove(List<Object> arg, Object key,
@@ -166,10 +127,10 @@ public class TransformFactory {
         if (map.containsKey(String.valueOf(rKey))) {
             arg.add(resolveArgument(map.get(rKey), type));
             map.remove(key);
-            return true;
+            return false;
         } else {
             arg.add(ResolveFactory.getDefVal(type));
-            return false;
+            return true;
         }
     }
 
