@@ -26,8 +26,8 @@ public class EventPublisher {
     }
 
     public static void showAllPlugins() {
-        for (String name : PLUGIN_MAP.keySet()) {
-            cPrint.println("[" + name + "]");
+        for (Map.Entry<String, ConsolePlugin> pluginEntry : PLUGIN_MAP.entrySet()) {
+            cPrint.println("[" +pluginEntry.getKey() + "] " + pluginEntry.getValue().info());
         }
     }
 
@@ -72,10 +72,10 @@ public class EventPublisher {
         return cmdline;
     }
 
-    public static void onResolveInput(List<String> cmdItems) {
+    public static void onResolveInput(String cmdName, List<String> cmdItems) {
         PLUGIN_MAP.values().stream()
                 .filter(plugin -> plugin.accept(Moment.OnResolveInput))
-                .forEach(plugin -> plugin.onResolveInput(cmdItems));
+                .forEach(plugin -> plugin.onResolveInput(cmdName, cmdItems));
     }
 
     public static void onInputResolved(String cmdName, Object rtnVal) {

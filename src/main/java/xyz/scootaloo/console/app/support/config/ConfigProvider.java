@@ -49,6 +49,7 @@ public abstract class ConfigProvider {
         private String prompt  = "console> ";
         private String[] exitCmd = {"exit"};
         private String basePack;
+        private int maxHistory = 64;
 
         // 作者信息
         private String author = "";
@@ -84,6 +85,13 @@ public abstract class ConfigProvider {
         public DefaultValueConfigBuilder exitCmd(String cmd) {
             if (cmd != null) {
                 this.exitCmd = new String[] {cmd};
+            }
+            return this;
+        }
+
+        public DefaultValueConfigBuilder maxHistory(int count) {
+            if (count > 0) {
+                this.maxHistory = count;
             }
             return this;
         }

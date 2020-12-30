@@ -21,8 +21,10 @@ public interface ConsolePlugin {
 
     String onInput(String cmdline);
 
-    void onResolveInput(List<String> cmdItems);
+    void onResolveInput(String cmdName, List<String> cmdItems);
 
     void onInputResolved(String cmdName, Object rtnVal);
+
+    default String info() { return ""; }
 
 }

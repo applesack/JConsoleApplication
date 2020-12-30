@@ -46,6 +46,8 @@ public abstract class AbstractApplication {
     }
 
     public String getCmdName(List<String> items) {
+        if (items.isEmpty())
+            return "";
         String cmdName = items.get(0);
         items.remove(0);
         return cmdName.toLowerCase(Locale.ROOT);

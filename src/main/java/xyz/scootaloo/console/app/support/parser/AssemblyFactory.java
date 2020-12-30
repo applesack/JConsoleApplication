@@ -81,7 +81,8 @@ public class AssemblyFactory {
                 actuator.invoke0(null);
             }
         } catch (Exception e) {
-            cPrint.exit0("初始化失败, msg:" + e.getMessage());
+            cPrint.exit0("初始化失败, msg:" + e.getMessage() + "\n");
+            e.printStackTrace();
         }
     }
 
@@ -187,14 +188,16 @@ public class AssemblyFactory {
         }
 
         private Object invoke0(List<String> items) throws InvocationTargetException, IllegalAccessException {
-            EventPublisher.onResolveInput(items);
+            String methodName = method.getName().toLowerCase(Locale.ROOT);
+            EventPublisher.onResolveInput(methodName, items);
             ResultWrapper wrapper = TransformFactory.transform(method, items);
             if (wrapper.success) {
                 method.setAccessible(true);
                 Object rtnVal = method.invoke(obj, wrapper.args);
-                EventPublisher.onInputResolved(method.getName().toLowerCase(Locale.ROOT), rtnVal);
+                EventPublisher.onInputResolved(methodName, rtnVal);
                 return rtnVal;
             } else {
+                EventPublisher.onInputResolved(methodName, null);
                 cPrint.println("调用失败: " + wrapper.msg);
                 return null;
             }

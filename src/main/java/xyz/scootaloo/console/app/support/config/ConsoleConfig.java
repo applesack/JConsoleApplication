@@ -20,6 +20,7 @@ public class ConsoleConfig {
     private String prompt;  // 控制台提示
     private String[] exitCmd; // 退出时使用的命令
     private Class<?> bootClazz;
+    private int maxHistory;
 
     // 扫描的基础包路径
     private String basePack;

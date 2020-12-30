@@ -27,7 +27,7 @@ public interface ConsolePluginAdapter extends ConsolePlugin {
         return cmdline;
     }
 
-    default void onResolveInput(List<String> cmdItems) {
+    default void onResolveInput(String cmdName, List<String> cmdItems) {
 
     }
 

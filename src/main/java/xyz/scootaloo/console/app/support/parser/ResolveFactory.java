@@ -67,7 +67,8 @@ public class ResolveFactory {
         STR_RESOLVE_MAP.put(String.class, convertor);
     }
 
-    private static void putDefVal(Class<?> type1, Class<?> type2, Object value, Function<String, Object> convertor) {
+    private static void putDefVal(Class<?> type1, Class<?> type2, Object value,
+                                  Function<String, Object> convertor) {
         DEFAULT_VALUE_MAP.put(type1, value);
         DEFAULT_VALUE_MAP.put(type2, value);
 
