@@ -7,6 +7,12 @@ import xyz.scootaloo.console.app.support.config.ConfigProvider;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 
 /**
+ * 简易的控制台开发框架
+ *
+ *
+ * 快速学习使用请移步到:
+ * {@link xyz.scootaloo.console.app.workspace.QuicklyStart}
+ *
  * @author flutterdash@qq.com
  * @since 2020/12/27 14:58
  */

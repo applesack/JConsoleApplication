@@ -34,7 +34,7 @@ public class ConsoleApplication extends AbstractApplication implements Colorful 
 
     @Override
     protected List<String> getInput() {
-        String cmdline = scanner.nextLine();
+        String cmdline = scanner.nextLine().trim();
         cmdline = EventPublisher.onInput(cmdline);
         return Stream.of(cmdline)
                 .flatMap(line -> Arrays.stream(line.split(" ")))

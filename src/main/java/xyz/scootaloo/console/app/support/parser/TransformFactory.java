@@ -23,6 +23,7 @@ public class TransformFactory {
         Annotation[][] parameterAnnoArrays = method.getParameterAnnotations();
         List<Object> args = new ArrayList<>();
 
+        List<WildcardArgument> wildcardArguments = new ArrayList<>();
         Map<String, Object> optMap = new HashMap<>();
         Map<String, Object> reqMap = new HashMap<>();
         cmdline = loadArgumentFromCmdline(cmdline, optMap, reqMap);
@@ -42,6 +43,9 @@ public class TransformFactory {
             if (anno != null) {
                 Opt option = (Opt) anno;
                 if (getAndRemove(args, option.value(), curArgType, optMap)) {
+                    if (option.value() == '*') {
+                        wildcardArguments.add(new WildcardArgument(i, curArgType));
+                    }
                     if (!option.defVal().equals("")) {
                         args.set(args.size() - 1, ResolveFactory
                                 .simpleTrans(option.defVal(), curArgType, false));
@@ -53,6 +57,15 @@ public class TransformFactory {
                 Req required = (Req) anno;
                 if (getAndRemove(args, required.value(), curArgType, reqMap)) {
                     return ResultWrapper.fail("缺少必选参数[" + required.value() + "]");
+                }
+            }
+        }
+
+        if (!wildcardArguments.isEmpty()) {
+            for (WildcardArgument wildcardArgument : wildcardArguments) {
+                if (!cmdline.isEmpty()) {
+                    args.set(wildcardArgument.idx,
+                            resolveArgument(cmdline.remove(0), wildcardArgument.type));
                 }
             }
         }
@@ -167,6 +180,18 @@ public class TransformFactory {
         public Node(String key, String val) {
             this.key = key;
             this.val = val;
+        }
+
+    }
+
+    private static class WildcardArgument {
+
+        final int idx;
+        final Class<?> type;
+
+        public WildcardArgument(int idx, Class<?> type) {
+            this.idx = idx;
+            this.type = type;
         }
 
     }

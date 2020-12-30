@@ -5,6 +5,7 @@ import xyz.scootaloo.console.app.support.component.*;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 import xyz.scootaloo.console.app.support.plugin.ConsolePluginAdapter;
 import xyz.scootaloo.console.app.support.plugin.EventPublisher;
+import xyz.scootaloo.console.app.support.utils.StringUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -60,9 +61,9 @@ public class SystemPresetCmd implements Colorful, ConsolePluginAdapter {
         Thread.sleep(100);
     }
 
-//    @Cmd(name = "cls")
+    @Cmd(name = "cls")
     private void clear() {
-        // 清屏功能用java代码实现比较繁琐，目前暂时取消这个功能
+        println("清屏功能用java代码实现比较繁琐，目前暂时不考虑实现这个功能");
     }
 
     private void printInfo(Actuator actuator) {
@@ -132,8 +133,8 @@ public class SystemPresetCmd implements Colorful, ConsolePluginAdapter {
 
         public void printInfo() {
             StringBuilder sb = new StringBuilder();
-            sb.append("[").append(time).append(" ").append(interval).append("] [")
-                    .append(name).append(" ").append(args).append("]");
+            sb.append("[").append(time).append(" ").append(StringUtils.trimNumberSizeTo4(interval))
+                    .append("] [").append(name).append(" ").append(args).append("]");
             cPrint.println(sb);
         }
 

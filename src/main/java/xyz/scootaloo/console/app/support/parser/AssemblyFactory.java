@@ -84,6 +84,17 @@ public class AssemblyFactory {
             cPrint.exit0("初始化失败, msg:" + e.getMessage() + "\n");
             e.printStackTrace();
         }
+
+        // 将销毁方法注入到系统关闭钩子中
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                for (Actuator actuator : destroyActuators) {
+                    actuator.invoke(null);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }));
     }
 
     private static void doResolveCmd(Method method, Cmd cmdAnno, Object o) {
