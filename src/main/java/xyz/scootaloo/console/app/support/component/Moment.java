@@ -6,10 +6,13 @@ package xyz.scootaloo.console.app.support.component;
  */
 public enum Moment {
 
+    // 系统启动之初，完成命令装配，但是还未执行 Init 方法时被调用
     OnAppStarted,
 
+    // 系统接收到键盘输入的命令时被调用
     OnInput,
 
+    // 系统解析
     OnResolveInput,
 
     OnInputResolved

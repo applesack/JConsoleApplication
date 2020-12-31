@@ -136,6 +136,7 @@ public class AdvancedDemo {
      * 2020/12/30 补充一个新特性
      *      当 @Opt 的参数是通配符 '*' 的时候
      *      会将命令行中多余的参数映射到这个通配符上，这就是为什么第三个命令行的shell能够映射到interpreter参数上了。
+     *      标记为 '*' 的通配符参数，放在所有的参数末尾才能生效，有多个
      *
      * @param imageName -
      * @param d -

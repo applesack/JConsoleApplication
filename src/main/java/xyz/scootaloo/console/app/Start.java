@@ -7,8 +7,9 @@ import xyz.scootaloo.console.app.support.config.ConfigProvider;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 
 /**
- * 简易的控制台开发框架
- *
+ * 基础的控制台开发框架
+ * 简化开发过程，自动装配命令，解析命令参数
+ * 支持可选参数和必选参数
  *
  * 快速学习使用请移步到:
  * {@link xyz.scootaloo.console.app.workspace.QuicklyStart}
@@ -19,6 +20,14 @@ import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 @Boot
 public class Start extends ConfigProvider {
 
+    /**
+     * 使用过程：
+     * 1. 在此类的 {@link #register(DefaultValueConfigBuilder)} 方法中设置自己需要的配置。
+     * 2. 在workspace目录下进行开发。
+     * 3. 回到此类运行main方法，系统启动。
+     *
+     * @param args ignore
+     */
     public static void main(String[] args) {
         ApplicationRunner.run(instance());
     }

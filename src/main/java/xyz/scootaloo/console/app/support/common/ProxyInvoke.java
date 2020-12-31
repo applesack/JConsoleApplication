@@ -1,5 +1,7 @@
 package xyz.scootaloo.console.app.support.common;
 
+import xyz.scootaloo.console.app.support.utils.ClassUtils;
+
 import java.util.function.Supplier;
 
 /**
@@ -18,11 +20,11 @@ public class ProxyInvoke {
         }
     }
 
-    public static <T> T invoke(Class<T> supplier) {
+    public static Object invoke(Class<?> supplier) {
         try {
-            return supplier.newInstance();
+            return ClassUtils.newInstance(supplier);
         } catch (Exception e) {
-            cPrint.exit0("类未提供无参的public构造方法，无法通过反射实例化: " + supplier.getSimpleName());
+            cPrint.exit0(e.getMessage());
             return null;
         }
     }

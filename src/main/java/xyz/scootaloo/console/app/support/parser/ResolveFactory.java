@@ -42,17 +42,25 @@ public class ResolveFactory {
         if (type.isArray() || ClassUtils.isExtendForm(type, List.class)) {
             return resolveArray(value, type);
         } else {
-            return simpleTrans(String.valueOf(value), type, true);
+            return simpleTrans(String.valueOf(value), type);
         }
     }
 
-    public static Object simpleTrans(Object value, Class<?> type, boolean doContinue) {
+    public static Object simpleTrans(Object value, Class<?> type) {
         Function<String, Object> convertor = STR_RESOLVE_MAP.get(type);
         if (convertor != null) {
             return convertor.apply(String.valueOf(value));
         } else {
-            // todo 可能是表单
-            return DEFAULT_VALUE_MAP.getOrDefault(type, null);
+            // 处理表单
+            try {
+                FormHelper.ObjWrapper wrapper = FormHelper.checkAndGet(type);
+                if (wrapper.success)
+                    return wrapper.instance;
+                return DEFAULT_VALUE_MAP.getOrDefault(type, null);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return DEFAULT_VALUE_MAP.getOrDefault(type, null);
+            }
         }
     }
 

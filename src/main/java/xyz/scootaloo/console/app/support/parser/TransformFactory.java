@@ -48,7 +48,7 @@ public class TransformFactory {
                     }
                     if (!option.defVal().equals("")) {
                         args.set(args.size() - 1, ResolveFactory
-                                .simpleTrans(option.defVal(), curArgType, false));
+                                .simpleTrans(option.defVal(), curArgType));
                     }
                 }
             }

@@ -24,7 +24,7 @@ public class SystemPresetCmd implements Colorful, ConsolePluginAdapter {
     private static final Colorful cPrint = instance;
     private static ConsoleConfig config;
 
-    @Cmd(name = "find")
+    @Cmd(name = "hp")
     private void help(@Opt(value = '*', defVal = "all") String cmdName) {
         if (cmdName.equals("all")) {
             for (Actuator actuator : AssemblyFactory.strategyMap.values()) {

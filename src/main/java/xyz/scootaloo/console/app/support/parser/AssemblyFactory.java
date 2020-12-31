@@ -189,7 +189,7 @@ public class AssemblyFactory {
 
         private boolean doInvokePreProcess() throws InvocationTargetException, IllegalAccessException {
             for (ActuatorImpl actuator : preActuators) {
-                Boolean result = (Boolean) actuator.invoke0(null);
+                boolean result = (boolean) actuator.invoke0(null);
                 if (!result) {
                     cPrint.println("错误信息: " + actuator.cmd.onError());
                     return false;
@@ -208,7 +208,7 @@ public class AssemblyFactory {
                 EventPublisher.onInputResolved(methodName, rtnVal);
                 return rtnVal;
             } else {
-                EventPublisher.onInputResolved(methodName, null);
+                EventPublisher.onInputResolved(methodName,null);
                 cPrint.println("调用失败: " + wrapper.msg);
                 return null;
             }

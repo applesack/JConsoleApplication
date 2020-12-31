@@ -1,6 +1,7 @@
 package xyz.scootaloo.console.app.support.application;
 
 import xyz.scootaloo.console.app.support.common.Colorful;
+import xyz.scootaloo.console.app.support.component.ResourceManager;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 import xyz.scootaloo.console.app.support.parser.Actuator;
 import xyz.scootaloo.console.app.support.plugin.EventPublisher;
@@ -18,7 +19,7 @@ import java.util.stream.Stream;
  */
 public class ConsoleApplication extends AbstractApplication implements Colorful {
 
-    private final Scanner scanner = new Scanner(System.in);
+    private final Scanner scanner = ResourceManager.scanner;
     private final ConsoleConfig config;
     private final Function<String, Actuator> cmdFactory;
 
