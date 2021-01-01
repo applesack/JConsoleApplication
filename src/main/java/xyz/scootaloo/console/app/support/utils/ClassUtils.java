@@ -8,6 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
+ * 执行反射操作时的一些便捷方法
  * @author flutterdash@qq.com
  * @since 2020/12/27 17:08
  */
@@ -24,6 +25,12 @@ public class ClassUtils {
         return father.isAssignableFrom(son.getClass());
     }
 
+    /**
+     * 将一个源对象的类属性值 拷贝到 目标对象的属性上
+     * 只有属性名和类型一致才执行拷贝操作，否则跳过
+     * @param source 原对象，提供属性
+     * @param target 目标对象
+     */
     public static void copyProperties(Object source, Object target) {
         if (source == null || target == null)
             throw new IllegalArgumentException("either null." + "source:" + source + ", target:" + target);
@@ -47,6 +54,15 @@ public class ClassUtils {
         }
     }
 
+    /**
+     * 找到此类中的无参构造方法，并使用此构造方法实例化出对象，
+     * 假如这个类没有提供无参构造方法，则抛出异常。
+     * @param clazz -
+     * @return 此clazz类型的实例
+     * @throws IllegalAccessException -
+     * @throws InvocationTargetException -
+     * @throws InstantiationException -
+     */
     public static Object newInstance(Class<?> clazz) throws IllegalAccessException,
                                                             InvocationTargetException,
                                                             InstantiationException {
@@ -59,6 +75,12 @@ public class ClassUtils {
         throw new RuntimeException("类 `" + clazz.getSimpleName() + "` 没有提供无参构造方法，无法实例化");
     }
 
+    /**
+     * 判断两个类的属性是否一致
+     * @param f1 -
+     * @param f2 -
+     * @return -
+     */
     public static boolean sameType(Field f1, Field f2) {
         return f1.getGenericType().getTypeName().equals(f2.getGenericType().getTypeName());
     }

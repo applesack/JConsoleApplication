@@ -2,11 +2,11 @@ package xyz.scootaloo.console.app.workspace;
 
 import xyz.scootaloo.console.app.support.common.Colorful;
 import xyz.scootaloo.console.app.support.component.*;
-import xyz.scootaloo.console.app.support.parser.FormHelper;
 import xyz.scootaloo.console.app.support.plugin.ConsolePluginAdapter;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -16,14 +16,16 @@ import java.util.stream.Stream;
  * ######################################
  *
  * --------- 登陆功能的简易实现 ------------
- *
+ * login #
+ * reg #
+ * logout
  * -------------------------------------
  *
  * @author flutterdash@qq.com
  * @since 2020/12/30 23:06
  */
-@Plugin
-@CommandFactory
+@Plugin(enable = false) // 修改为true以启用功能
+@CommandFactory(enable = false) // 修改为true开启测试
 public class LoginDemo implements ConsolePluginAdapter,
         Colorful { // 本系统可以使用实现接口的方式，简洁的调用工具类的方法
 
@@ -49,9 +51,11 @@ public class LoginDemo implements ConsolePluginAdapter,
     private boolean checkLogin() {
         // 保存一个允许放行的集合
         Set<String> allowOptions = Stream.of("reg", "register", "login", "help").collect(Collectors.toSet());
+        // 当前用户未登陆，但是访问了需要登陆才能执行的操作时，拦截
         return this.hasLogin || allowOptions.contains(this.curCmd);
     }
 
+    // 简易的登陆判断
     @Cmd(name = "log")
     private void login(User user) {
         User userInfo = userMap.get(user.username);
@@ -67,6 +71,7 @@ public class LoginDemo implements ConsolePluginAdapter,
         }
     }
 
+    // 简易的注册功能
     @Cmd(name = "reg")
     private void register(User user) {
         User userInfo = userMap.get(user.username);
@@ -78,6 +83,7 @@ public class LoginDemo implements ConsolePluginAdapter,
         }
     }
 
+    // 退出登陆
     @Cmd
     private void logout() {
         hasLogin = false;
