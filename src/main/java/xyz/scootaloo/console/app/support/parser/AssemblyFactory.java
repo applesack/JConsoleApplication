@@ -2,10 +2,7 @@ package xyz.scootaloo.console.app.support.parser;
 
 import xyz.scootaloo.console.app.support.common.Colorful;
 import xyz.scootaloo.console.app.support.common.ProxyInvoke;
-import xyz.scootaloo.console.app.support.component.Cmd;
-import xyz.scootaloo.console.app.support.component.CmdType;
-import xyz.scootaloo.console.app.support.component.CommandFactory;
-import xyz.scootaloo.console.app.support.component.Plugin;
+import xyz.scootaloo.console.app.support.component.*;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 import xyz.scootaloo.console.app.support.parser.TransformFactory.ResultWrapper;
 import xyz.scootaloo.console.app.support.plugin.ConsolePlugin;
@@ -53,6 +50,7 @@ public class AssemblyFactory {
             cPrint.exit0("未加载到配置");
             return;
         }
+        welcome();
         Set<Class<?>> factories = PackScanner.getClasses(config.getBasePack());
         factories.add(SystemPresetCmd.class);
         for (Class<?> factory : factories) {
@@ -133,6 +131,19 @@ public class AssemblyFactory {
         } else {
             cPrint.println("插件类使用了@Plugin注解，但是没有继承自ConsolePlugin接口，自定义插件无法装配");
         }
+    }
+
+    private static void welcome() {
+        if (!config.isPrintWelcome())
+            return;
+        Author author = config.getAuthor();
+        cPrint.println(":: " + config.getAppName() + " ::");
+        cPrint.println("author: " + author.getName());
+        cPrint.println("email: " + author.getEmail());
+        cPrint.println("create since: " + author.getCreateDate());
+        cPrint.println("last update: " + author.getUpdateDate());
+        cPrint.println(author.getComment());
+        cPrint.println("欢迎使用");
     }
 
     /**

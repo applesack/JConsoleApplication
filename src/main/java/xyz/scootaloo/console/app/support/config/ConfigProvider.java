@@ -2,6 +2,7 @@ package xyz.scootaloo.console.app.support.config;
 
 import xyz.scootaloo.console.app.support.common.Colorful;
 import xyz.scootaloo.console.app.support.component.AppType;
+import xyz.scootaloo.console.app.support.component.Author;
 import xyz.scootaloo.console.app.support.utils.ClassUtils;
 
 /**
@@ -48,13 +49,15 @@ public abstract class ConfigProvider {
         private String appName;
         private String prompt  = "console> ";
         private String[] exitCmd = {"exit"};
+        private boolean printWelcome = true;
         private String basePack;
+
+        // 开发者配置
         private int maxHistory = 64;
+        private boolean printStackTraceOnException = false;
 
         // 作者信息
-        private String author = "";
-        private String email = "";
-        private String date = "";
+        private Author author;
 
         public DefaultValueConfigBuilder(Class<?> bootClazz) {
             this.bootClazz = bootClazz;
@@ -89,10 +92,20 @@ public abstract class ConfigProvider {
             return this;
         }
 
+        public DefaultValueConfigBuilder printWelcome(boolean flag) {
+            this.printWelcome = flag;
+            return this;
+        }
+
         public DefaultValueConfigBuilder maxHistory(int count) {
             if (count > 0) {
                 this.maxHistory = count;
             }
+            return this;
+        }
+
+        public DefaultValueConfigBuilder printStackTrace(boolean flag) {
+            this.printStackTraceOnException = flag;
             return this;
         }
 
@@ -114,25 +127,9 @@ public abstract class ConfigProvider {
             return this;
         }
 
-        public DefaultValueConfigBuilder author(String author) {
-            if (author != null) {
-                this.author = author;
-            }
-            return this;
-        }
-
-        public DefaultValueConfigBuilder email(String email) {
-            if (email != null) {
-                this.email = email;
-            }
-            return this;
-        }
-
-        public DefaultValueConfigBuilder date(String date) {
-            if (date != null) {
-                this.date = date;
-            }
-            return this;
+        public Author editAuthorInfo() {
+            this.author = new Author(this);
+            return this.author;
         }
 
         public ConsoleConfig build() {

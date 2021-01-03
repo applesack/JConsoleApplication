@@ -2,6 +2,8 @@ package xyz.scootaloo.console.app.workspace;
 
 import xyz.scootaloo.console.app.support.component.Cmd;
 import xyz.scootaloo.console.app.support.component.CommandFactory;
+import xyz.scootaloo.console.app.support.component.Form;
+import xyz.scootaloo.console.app.support.component.Prop;
 
 /**
  *   #####################################
@@ -17,7 +19,7 @@ import xyz.scootaloo.console.app.support.component.CommandFactory;
  * @author flutterdash@qq.com
  * @since 2020/12/30 20:32
  */
-@CommandFactory(enable = false) // 启用测试本类命令，请将注解中的false修改为true，系统会自动将本类中的命令注册到系统
+@CommandFactory(enable = true) // 启用测试本类命令，请将注解中的false修改为true，系统会自动将本类中的命令注册到系统
 public class QuicklyStart {
 
     /**
@@ -85,6 +87,40 @@ public class QuicklyStart {
         sum += c;
         sum /= 3;
         System.out.println(sum);
+    }
+
+    /**
+     * 表单功能
+     * 尝试输入
+     *              stuAdd #
+     * 提示: 命令参数中表单的位置用任意占位符代替
+     * @param student 由键盘输入生成的对象
+     */
+    @Cmd(name = "stuAdd")
+    private void addStudent(Student student) {
+        System.out.println(student.name);
+        System.out.println(student.age);
+    }
+
+    /**
+     * 表单类的使用，
+     * 需要在类上增加 @Form 注解，
+     * 另外需要由键盘输入值的属性上增加 @Prop 注解
+     * 然后这个类就可以做为 命令方法 的参数了
+     */
+    @Form(dftExtCmd = "-") // 这个注解参数表示，当输入了这个 "-" 符号，则执行退出继续输入，
+    private static class Student {
+        // prompt属性表示输入此项数据时的提示，isRequired表示此属性是必选项，未获得有效数据的时候无法退出
+        @Prop(prompt = "输入学生姓名", isRequired = true)
+        private String name;
+
+        // @Prop 注解默认 isRequired=false 可以跳过，或者输入退出标志退出输入
+        @Prop(prompt = "输入学生年龄")
+        private int age;
+
+        // 表单类需要提供一个无参构造方法，private 或者 public 无所谓
+        private Student() {
+        }
     }
 
 }

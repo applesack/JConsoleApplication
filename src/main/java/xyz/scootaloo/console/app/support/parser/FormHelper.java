@@ -17,10 +17,20 @@ import java.util.Scanner;
  * @since 2020/12/31 16:34
  */
 public class FormHelper {
-
+    // resources
     private static final Scanner scanner = ResourceManager.scanner;
     private static final Colorful cPrint = ResourceManager.cPrint;
 
+    /**
+     * 检查输入类型是否符合表单类条件
+     * @see ObjWrapper 包装类，假如结果可读则suceess属性为true
+     *
+     * @param formClazz 被检查的类
+     * @return 如果是表单类，此类上应该含有 @Form 注解，因为程序需要读取退出命令
+     * @throws IllegalAccessException -
+     * @throws InstantiationException -
+     * @throws InvocationTargetException -
+     */
     public static ObjWrapper checkAndGet(Class<?> formClazz) throws IllegalAccessException,
                                                                     InstantiationException,
                                                                     InvocationTargetException {
@@ -30,11 +40,16 @@ public class FormHelper {
         String exitCmd = form.dftExtCmd();
         Object instance = ClassUtils.newInstance(formClazz);
         Field[] fields = formClazz.getDeclaredFields();
-        for (Field field : fields) {
-            if (getAndSetProp(field, instance, exitCmd, null, false))
-                break;
+        for (int i = 0; i<fields.length; i++) {
+            if (getAndSetProp(fields[i], instance, exitCmd, null, false) == -1) {
+                // 跳转到下一个必选项
+                i = gotoNextItem(fields, i) - 1;
+                if (i < 0)
+                    break;
+            }
         }
 
+        // 检查是否需要修改
         while (showProperties(instance, formClazz)) {
             modifyMode(instance, formClazz, exitCmd);
         }
@@ -42,40 +57,89 @@ public class FormHelper {
         return ObjWrapper.success(instance);
     }
 
-
-    private static boolean getAndSetProp(Field field, Object instance, String exitCmd,
+    /**
+     * 将键盘输入的值设置入类属性
+     * @param field 类属性
+     * @param instance 此类属性对应的类实例
+     * @param exitCmd 退出命令，有 @Form 注解提供
+     * @param customPrompt 自定义的输入提示
+     * @param isModifyMode 是否是修改模式，处于修改模式可以用空行退出
+     * @return 退出循环时的状态
+     */
+    private static byte getAndSetProp(Field field, Object instance, String exitCmd,
                                       String customPrompt, boolean isModifyMode) {
         field.setAccessible(true);
         Prop prop = field.getAnnotation(Prop.class);
         if (prop == null)
-            return false;
+            return -1;
         boolean isRequired = prop.isRequired();
         String prompt = customPrompt == null ? field.getName() : customPrompt;
         if (customPrompt == null && !prop.prompt().equals("")) {
             prompt = prop.prompt();
         }
         prompt += isRequired ? "! " : "~ ";
-        boolean isBreak = false;
+
+        /*
+         * 非修改模式:
+         *      有效的输入 1
+         *      空行可以退出当前非必选参数输入 0
+         *      退出命令可以退出当前输入，如果接下来没有必须参数，则退出，如果有，则跳转到输入下一个必须参数 -1
+         * 修改模式：
+         *      有效的输入 1
+         *      空行可以跳过当前输入 0
+         *      退出命令可以退出其余输入 -1
+         */
         while (true) {
             cPrint.print(prompt);
             String input = scanner.nextLine().trim();
-            final boolean flag = input.isEmpty() || input.equals(exitCmd);
-            if (flag && (!isRequired || isModifyMode)) {
-                isBreak = true;
-                break;
+            if (input.equals(exitCmd)) { // break
+                if (isRequired && !isModifyMode)
+                    continue;
+                else
+                    return  -1;
             }
-            if (isRequired && flag)
+            if (input.isEmpty() && isRequired && !isModifyMode)
                 continue;
+            if (input.isEmpty())
+                return 0;
             try {
                 field.set(instance, ResolveFactory.resolveArgument(input, field.getType()));
-                break;
+                return 1;
             } catch (Exception e) {
-                cPrint.println("属性值无效, msg:" + e.getMessage());
+                cPrint.println("属性值无效, 信息: " + e.getMessage());
             }
         }
-        return isBreak;
     }
 
+    /**
+     * 跳转到下一个必选项的坐标，
+     * @param fields -
+     * @param curIdx -
+     * @return 坐标，假如不存在下一个必选项，则返回0
+     */
+    private static int gotoNextItem(Field[] fields, int curIdx) {
+        int nextIdx = curIdx + 1;
+        int len = fields.length;
+        if (nextIdx >= len)
+            return -1;
+        for (; nextIdx<len; nextIdx++) {
+            Field field = fields[nextIdx];
+            Prop prop = field.getAnnotation(Prop.class);
+            if (prop == null)
+                continue;
+            if (prop.isRequired())
+                return nextIdx;
+        }
+        return -1;
+    }
+
+    /**
+     * 进入修改模式，可以逐个检查输入，或则输入退出命令退出输入
+     * @param instance -
+     * @param form -
+     * @param extCmd -
+     * @throws IllegalAccessException -
+     */
     private static void modifyMode(Object instance, Class<?> form, String extCmd) throws IllegalAccessException {
         cPrint.println("进入编辑模式，无需改动则回车跳过，需要修改则输入新值覆盖旧值");
         StringBuilder sb = new StringBuilder();
@@ -85,11 +149,18 @@ public class FormHelper {
             Object value = field.get(instance);
             String prompt = sb.append("[").append(field.getName()).append("\t")
                     .append(value).append("\t").append("] ").toString();
-            if (getAndSetProp(field, instance, extCmd, prompt, true))
+            if (getAndSetProp(field, instance, extCmd, prompt, true) == -1)
                 break;
         }
     }
 
+    /**
+     * 展示一个表单类的全部带有 @Prop 注解的类属性 值信息
+     * @param instance 类的示例
+     * @param form 此实例的class对象
+     * @return 是否需要重新检查
+     * @throws IllegalAccessException -
+     */
     private static boolean showProperties(Object instance, Class<?> form) throws IllegalAccessException {
         cPrint.println("以下是当前表单中的内容:");
         StringBuilder sb = new StringBuilder();
@@ -108,6 +179,7 @@ public class FormHelper {
         return !input.startsWith("y");
     }
 
+    // 包装类
     public static class ObjWrapper {
 
         public final boolean success;
