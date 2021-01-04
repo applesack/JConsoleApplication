@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.ListIterator;
 
 /**
+ * 系统预设的命令
+ * help dis en his sleep 等
  * @author flutterdash@qq.com
  * @since 2020/12/29 19:43
  */
@@ -57,8 +59,8 @@ public class SystemPresetCmd implements Colorful, ConsolePluginAdapter {
     }
 
     @Cmd
-    private void te() throws InterruptedException {
-        Thread.sleep(100);
+    private void sleep(int millis) throws InterruptedException {
+        Thread.sleep(millis);
     }
 
     @Cmd(name = "cls")
@@ -113,7 +115,7 @@ public class SystemPresetCmd implements Colorful, ConsolePluginAdapter {
 
 
     // ---------------------------------------------------------------------------------
-
+    // 实现历史记录功能时使用，前提条件是必须启用本类的插件
     private static class CmdInfo {
         private static final LinkedList<CmdInfo> history = new LinkedList<>();
 

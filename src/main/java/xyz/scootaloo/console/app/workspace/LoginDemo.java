@@ -110,7 +110,7 @@ public class LoginDemo implements ConsolePluginAdapter,
         return cmdline;
     }
 
-    //------------------------------------------------------------------
+    //--------------------------------------------------------------
 
     @Form
     private static class User {

@@ -6,12 +6,8 @@ import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 import xyz.scootaloo.console.app.support.parser.Actuator;
 import xyz.scootaloo.console.app.support.plugin.EventPublisher;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Scanner;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author flutterdash@qq.com
@@ -23,9 +19,29 @@ public class ConsoleApplication extends AbstractApplication implements Colorful 
     private final ConsoleConfig config;
     private final Function<String, Actuator> cmdFactory;
 
-    public ConsoleApplication(ConsoleConfig config, Function<String, Actuator> cmdFactory) {
+    public ConsoleApplication(ConsoleConfig config, Function<String, Actuator> cmdFactory,
+                              String[] initCommands) {
         this.config = config;
         this.cmdFactory = cmdFactory;
+
+        doInit(initCommands);
+    }
+
+    private void doInit(String[] inits) {
+        if (inits == null || inits.length == 0)
+            return;
+        try {
+            for (String cmd : inits) {
+                simpleRunCommand(cmd);
+            }
+        } catch (Exception e) {
+            if (config.isPrintStackTraceOnException())
+                e.printStackTrace();
+            else
+                println(e.getMessage());
+                exit0("初始化时遇到异常");
+        }
+
     }
 
     @Override
@@ -34,12 +50,10 @@ public class ConsoleApplication extends AbstractApplication implements Colorful 
     }
 
     @Override
-    protected List<String> getInput() {
+    protected String getInput() {
         String cmdline = scanner.nextLine().trim();
         cmdline = EventPublisher.onInput(cmdline);
-        return Stream.of(cmdline)
-                .flatMap(line -> Arrays.stream(line.split(" ")))
-                .collect(Collectors.toList());
+        return cmdline;
     }
 
     @Override
@@ -56,4 +70,11 @@ public class ConsoleApplication extends AbstractApplication implements Colorful 
         return false;
     }
 
+    @Override
+    protected void exceptionHandle(Exception e) {
+        if (config.isPrintStackTraceOnException())
+            e.printStackTrace();
+        else
+            println(e.getMessage());
+    }
 }

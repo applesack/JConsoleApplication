@@ -13,13 +13,16 @@ import xyz.scootaloo.console.app.support.utils.PackScanner;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.function.Function;
 
 /**
+ * 装配工厂
+ * 系统启动后扫描指定的包下所有类文件，按照一定逻辑进行装配
  * @author flutterdash@qq.com
  * @since 2020/12/28 10:05
  */
 public class AssemblyFactory {
-    private static final Colorful cPrint = Colorful.instance;
+    private static final Colorful cPrint = ResourceManager.cPrint;
     protected static final Map<String, Actuator> strategyMap = new HashMap<>();
     protected static final List<ActuatorImpl> initActuators = new ArrayList<>();
     protected static final List<ActuatorImpl> preActuators = new ArrayList<>();
@@ -116,6 +119,9 @@ public class AssemblyFactory {
             case Destroy: {
                 destroyActuators.add(actuator);
             } break;
+            case Parser: {
+                doGetParser(method, cmdAnno, o);
+            }
         }
     }
 
@@ -131,6 +137,30 @@ public class AssemblyFactory {
         } else {
             cPrint.println("插件类使用了@Plugin注解，但是没有继承自ConsolePlugin接口，自定义插件无法装配");
         }
+    }
+
+    private static void doGetParser(Method method, Cmd cmdAnno, Object o) {
+        if (cmdAnno.targets().length == 0)
+            return;
+        Class<?>[] types = cmdAnno.targets();
+        Class<?>[] params = method.getParameterTypes();
+        if (params.length != 1 || params[0] != String.class)
+            return;
+        if (method.getReturnType() == void.class || method.getReturnType() == Void.class)
+            return;
+        Function<String, Object> parserFunc = (str) -> {
+            try {
+                method.setAccessible(true);
+                return method.invoke(o, str);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                if (config.isPrintStackTraceOnException())
+                    e.printStackTrace();
+                else
+                    cPrint.println(e.getMessage());
+                return null;
+            }
+        };
+        ResolveFactory.addParser(parserFunc, types);
     }
 
     private static void welcome() {

@@ -1,6 +1,7 @@
 package xyz.scootaloo.console.app.support.application;
 
 import xyz.scootaloo.console.app.support.parser.Actuator;
+import xyz.scootaloo.console.app.support.utils.StringUtils;
 
 import java.util.List;
 import java.util.Locale;
@@ -13,7 +14,7 @@ public abstract class AbstractApplication {
 
     protected abstract Actuator findInvoker(String cmdName);
 
-    protected abstract List<String> getInput();
+    protected abstract String getInput();
 
     protected abstract void printPrompt();
 
@@ -24,12 +25,8 @@ public abstract class AbstractApplication {
         while (true) {
             try {
                 printPrompt();
-                List<String> cmdItems = getInput();
-                String cmdName = getCmdName(cmdItems);
-                if (isExitCmd(cmdName))
+                if (simpleRunCommand(getInput()))
                     break;
-                Actuator invoker = findInvoker(cmdName);
-                invoker.invoke(cmdItems);
             } catch (Exception e) {
                 exceptionHandle(e);
             }
@@ -43,6 +40,16 @@ public abstract class AbstractApplication {
 
     protected void exceptionHandle(Exception e) {
         e.printStackTrace();
+    }
+
+    protected boolean simpleRunCommand(String command) throws Exception {
+        List<String> cmdItems = StringUtils.toList(command);
+        String cmdName = getCmdName(cmdItems);
+        if (isExitCmd(cmdName))
+            return true;
+        Actuator invoker = findInvoker(cmdName);
+        invoker.invoke(cmdItems);
+        return false;
     }
 
     public String getCmdName(List<String> items) {

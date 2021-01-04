@@ -19,7 +19,7 @@ public class ApplicationRunner {
         ConsoleConfig config = provider.getConfig();
         switch (config.getAppType()) {
             case Standard: {
-                standard(config, AssemblyFactory::findInvoker).run();
+                standard(config, provider.getInitCommands(), AssemblyFactory::findInvoker).run();
             } break;
             case Client:
             case Server: {
@@ -28,9 +28,10 @@ public class ApplicationRunner {
         }
     }
 
-    private static AbstractApplication standard(ConsoleConfig config, Function<String, Actuator> finder) {
+    private static AbstractApplication standard(ConsoleConfig config, String[] initCommands,
+                                                Function<String, Actuator> finder) {
         AssemblyFactory.init(config);
-        return new ConsoleApplication(config, finder);
+        return new ConsoleApplication(config, finder, initCommands);
     }
 
 }

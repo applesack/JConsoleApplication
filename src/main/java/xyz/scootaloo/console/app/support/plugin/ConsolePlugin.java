@@ -6,6 +6,7 @@ import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 import java.util.List;
 
 /**
+ * 插件接口
  * @author flutterdash@qq.com
  * @since 2020/12/30 9:30
  */

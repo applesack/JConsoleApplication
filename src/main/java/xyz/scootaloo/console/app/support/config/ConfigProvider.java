@@ -3,14 +3,17 @@ package xyz.scootaloo.console.app.support.config;
 import xyz.scootaloo.console.app.support.common.Colorful;
 import xyz.scootaloo.console.app.support.component.AppType;
 import xyz.scootaloo.console.app.support.component.Author;
+import xyz.scootaloo.console.app.support.component.ResourceManager;
 import xyz.scootaloo.console.app.support.utils.ClassUtils;
 
 /**
+ * 配置提供者
+ * 启动类必须继承此类，配置可以选择性提供
  * @author flutterdash@qq.com
  * @since 2020/12/27 15:33
  */
 public abstract class ConfigProvider {
-    private static final Colorful cPrint = Colorful.instance;
+    private static final Colorful cPrint = ResourceManager.cPrint;
     private static Class<?> BOOT_CLAZZ;
 
     /**
@@ -40,6 +43,10 @@ public abstract class ConfigProvider {
     }
 
     public abstract ConsoleConfig register(DefaultValueConfigBuilder builder);
+
+    public String[] getInitCommands() {
+        return null;
+    }
 
     public static class DefaultValueConfigBuilder {
         private final Class<?> bootClazz;

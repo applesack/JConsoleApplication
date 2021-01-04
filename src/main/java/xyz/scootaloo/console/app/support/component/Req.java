@@ -6,6 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 必选参数，作用于方法参数
  * @author flutterdash@qq.com
  * @since 2020/12/29 19:12
  */
@@ -13,6 +14,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.PARAMETER)
 public @interface Req {
 
+    // 参数的名称
     String value();
 
 }

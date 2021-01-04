@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
+ * 解析工厂
+ * 实现字符串到指定类型的转换
  * @author flutterdash@qq.com
  * @since 2020/12/29 21:47
  */
@@ -61,6 +63,16 @@ public class ResolveFactory {
                 e.printStackTrace();
                 return DEFAULT_VALUE_MAP.getOrDefault(type, null);
             }
+        }
+    }
+
+    public static void addParser(Function<String, Object> parser, Class<?> ... types) {
+        if (parser == null || types == null || types.length == 0)
+            return;
+        for (Class<?> type : types) {
+            if (type == null)
+                continue;
+            STR_RESOLVE_MAP.put(type, parser);
         }
     }
 

@@ -51,4 +51,15 @@ public class Start extends ConfigProvider {
                     .build()
                 .build();
     }
+
+    /**
+     * 可以重写这个方法让系统启动完成后执行一些命令
+     * @return 将在系统启动后开始执行
+     */
+    @Override
+    public String[] getInitCommands() {
+        return new String[] {
+//               "hp"
+        };
+    }
 }

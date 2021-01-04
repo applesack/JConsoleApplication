@@ -6,6 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 命令方法标记
  * @author flutterdash@qq.com
  * @since 2020/12/28 13:30
  */
@@ -16,10 +17,8 @@ public @interface Cmd {
     CmdType type() default CmdType.Cmd;
 
     String name() default "";
-    String info() default "";
-    String msg() default "";
+    Class<?>[] targets() default {};
     String onError() default "";
-    String[] example() default {};
 
     int order() default 5;
 

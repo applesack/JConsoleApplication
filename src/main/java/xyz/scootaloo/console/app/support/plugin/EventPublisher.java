@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * 系统事件发布器，在运行的不同节点发布事件
  * @author flutterdash@qq.com
  * @since 2020/12/30 9:44
  */
@@ -57,12 +58,16 @@ public class EventPublisher {
         }
     }
 
+    //----------------------------------事件发布------------------------------------------
+
+    // 系统起步时
     public static void onAppStarted(ConsoleConfig config) {
         PLUGIN_MAP.values().stream()
                 .filter(plugin -> plugin.accept(Moment.OnAppStarted))
                 .forEach(plugin -> plugin.onAppStarted(config));
     }
 
+    // 获取控制台输入时
     public static String onInput(String cmdline) {
         List<ConsolePlugin> pluginList = PLUGIN_MAP.values().stream()
                 .filter(plugin -> plugin.accept(Moment.OnInput)).collect(Collectors.toList());
@@ -72,12 +77,14 @@ public class EventPublisher {
         return cmdline;
     }
 
+    // 解析输入前
     public static void onResolveInput(String cmdName, List<String> cmdItems) {
         PLUGIN_MAP.values().stream()
                 .filter(plugin -> plugin.accept(Moment.OnResolveInput))
                 .forEach(plugin -> plugin.onResolveInput(cmdName, cmdItems));
     }
 
+    // 解析输入后
     public static void onInputResolved(String cmdName, Object rtnVal) {
         PLUGIN_MAP.values().stream()
                 .filter(plugin -> plugin.accept(Moment.OnInputResolved))

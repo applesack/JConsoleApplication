@@ -179,7 +179,7 @@ public class FormHelper {
         return !input.startsWith("y");
     }
 
-    // 包装类
+    // 包装结果
     public static class ObjWrapper {
 
         public final boolean success;

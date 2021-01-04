@@ -166,4 +166,27 @@ public class AdvancedDemo {
         System.out.println("解释器  => " + interpreter);
     }
 
+    /**
+     * 自定义某种类型的处理方式，这里示例对byte类型的自定义处理方式，将byte结果进行自增1
+     * 注意，方法参数是String，这个是不能变的
+     * @param bt String，且只能有这一个参数
+     * @return 最终类型，于targets一致，起码是能相互转换的
+     */
+    @Cmd(type = CmdType.Parser, targets = {byte.class, Byte.class})
+    public byte resolveByte(String bt) {
+        byte b = Byte.parseByte(bt);
+        return ++b;
+    }
+
+    /**
+     * 测试上面的功能，尝试输入
+     *      tb 127
+     *      tb 128
+     * @param b 键盘输入的一个byte值
+     */
+    @Cmd(name = "tb")
+    public void testByte(Byte b) {
+        System.out.println(b);
+    }
+
 }
