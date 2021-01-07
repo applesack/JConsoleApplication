@@ -34,7 +34,7 @@ public class TransformFactory {
             Class<?> curArgType = argTypes[i];
             if (curAnnoArr.length == 0) {
                 if (cmdline.isEmpty())
-                    return ResultWrapper.fail("命令不完整");
+                    return ResultWrapper.fail(new RuntimeException("命令不完整"));
                 args.add(resolveArgument(cmdline.remove(0), curArgType));
                 continue;
             }
@@ -56,7 +56,7 @@ public class TransformFactory {
             if (anno != null) {
                 Req required = (Req) anno;
                 if (getAndRemove(args, required.value(), curArgType, reqMap)) {
-                    return ResultWrapper.fail("缺少必选参数[" + required.value() + "]");
+                    return ResultWrapper.fail(new RuntimeException("缺少必选参数[" + required.value() + "]"));
                 }
             }
         }
@@ -151,18 +151,18 @@ public class TransformFactory {
 
         public final boolean success;
         public final Object[] args;
-        public final String msg;
+        public final Exception ex;
 
         public static ResultWrapper success(List<Object> argList) {
             return new ResultWrapper(true, argList, null);
         }
 
-        public static ResultWrapper fail(String msg) {
-            return new ResultWrapper(false, null, msg);
+        public static ResultWrapper fail(Exception e) {
+            return new ResultWrapper(false, null, e);
         }
 
-        private ResultWrapper(boolean success, List<Object> argList, String msg) {
-            this.msg = msg;
+        private ResultWrapper(boolean success, List<Object> argList, Exception ex) {
+            this.ex = ex;
             this.success = success;
             if (argList != null)
                 this.args = argList.toArray();

@@ -3,11 +3,13 @@ package xyz.scootaloo.console.app.support.application;
 import xyz.scootaloo.console.app.support.common.Colorful;
 import xyz.scootaloo.console.app.support.component.ResourceManager;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
-import xyz.scootaloo.console.app.support.parser.Actuator;
+import xyz.scootaloo.console.app.support.parser.Interpreter;
+import xyz.scootaloo.console.app.support.parser.InvokeInfo;
 import xyz.scootaloo.console.app.support.plugin.EventPublisher;
+import xyz.scootaloo.console.app.support.utils.StringUtils;
 
+import java.util.List;
 import java.util.Scanner;
-import java.util.function.Function;
 
 /**
  * @author flutterdash@qq.com
@@ -17,36 +19,30 @@ public class ConsoleApplication extends AbstractApplication implements Colorful 
 
     private final Scanner scanner = ResourceManager.scanner;
     private final ConsoleConfig config;
-    private final Function<String, Actuator> cmdFactory;
+    private final Interpreter interpreter;
 
-    public ConsoleApplication(ConsoleConfig config, Function<String, Actuator> cmdFactory,
-                              String[] initCommands) {
+    public ConsoleApplication(ConsoleConfig config, Interpreter interpreter) {
         this.config = config;
-        this.cmdFactory = cmdFactory;
-
-        doInit(initCommands);
+        this.interpreter = interpreter;
+        doInit(config.getInitCommands());
     }
 
-    private void doInit(String[] inits) {
-        if (inits == null || inits.length == 0)
+    private void doInit(List<String> inits) {
+        if (inits == null || inits.isEmpty())
             return;
+
         try {
             for (String cmd : inits) {
                 simpleRunCommand(cmd);
             }
         } catch (Exception e) {
-            if (config.isPrintStackTraceOnException())
+            if (config.isPrintStackTraceOnException()) {
                 e.printStackTrace();
-            else
+            } else {
                 println(e.getMessage());
                 exit0("初始化时遇到异常");
+            }
         }
-
-    }
-
-    @Override
-    protected Actuator findInvoker(String cmdName) {
-        return cmdFactory.apply(cmdName);
     }
 
     @Override
@@ -76,5 +72,22 @@ public class ConsoleApplication extends AbstractApplication implements Colorful 
             e.printStackTrace();
         else
             println(e.getMessage());
+    }
+
+    @Override
+    boolean simpleRunCommand(String command) throws Exception {
+        List<String> cmdItems = StringUtils.toList(command);
+        String cmdName = getCmdName(cmdItems);
+        if (isExitCmd(cmdName))
+            return true;
+        InvokeInfo info = interpreter.interpretation(command);
+        if (!info.isSuccess()) {
+            if (config.isPrintStackTraceOnException()) {
+                info.getException().printStackTrace();
+            } else {
+                println(info.getExMsg());
+            }
+        }
+        return false;
     }
 }

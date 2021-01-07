@@ -1,12 +1,8 @@
 package xyz.scootaloo.console.app.support.application;
 
-import xyz.scootaloo.console.app.support.config.ConfigProvider;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
-import xyz.scootaloo.console.app.support.parser.Actuator;
 import xyz.scootaloo.console.app.support.parser.AssemblyFactory;
-
-import java.util.Objects;
-import java.util.function.Function;
+import xyz.scootaloo.console.app.support.parser.Interpreter;
 
 /**
  * @author flutterdash@qq.com
@@ -14,24 +10,18 @@ import java.util.function.Function;
  */
 public class ApplicationRunner {
 
-    public static void run(ConfigProvider provider) {
-        Objects.requireNonNull(provider);
-        ConsoleConfig config = provider.getConfig();
-        switch (config.getAppType()) {
-            case Standard: {
-                standard(config, provider.getInitCommands(), AssemblyFactory::findInvoker).run();
-            } break;
-            case Client:
-            case Server: {
-                System.out.println("目前系统还不支持其他应用类型，请将AppType修改为[AppType.Standard]");
-            }
-        }
+    private static Interpreter INTERPRETER_SINGLETON;
+
+    public static void consoleApplication(ConsoleConfig config) {
+        AssemblyFactory.init(config);
+        new ConsoleApplication(config, getInstance(config)).run();
     }
 
-    private static AbstractApplication standard(ConsoleConfig config, String[] initCommands,
-                                                Function<String, Actuator> finder) {
-        AssemblyFactory.init(config);
-        return new ConsoleApplication(config, finder, initCommands);
+    private static Interpreter getInstance(ConsoleConfig config) {
+        if (INTERPRETER_SINGLETON == null) {
+            INTERPRETER_SINGLETON = new Interpreter(config);
+        }
+        return INTERPRETER_SINGLETON;
     }
 
 }

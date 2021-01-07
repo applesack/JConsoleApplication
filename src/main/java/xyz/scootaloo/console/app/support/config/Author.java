@@ -1,7 +1,7 @@
-package xyz.scootaloo.console.app.support.component;
+package xyz.scootaloo.console.app.support.config;
 
 import lombok.Getter;
-import xyz.scootaloo.console.app.support.config.ConfigProvider.DefaultValueConfigBuilder;
+import xyz.scootaloo.console.app.support.config.ConsoleConfigProvider.DefaultValueConfigBuilder;
 
 /**
  * 作者信息
@@ -12,11 +12,11 @@ import xyz.scootaloo.console.app.support.config.ConfigProvider.DefaultValueConfi
 public class Author {
 
     private final DefaultValueConfigBuilder dvBuilder;
-    private String name       = "";
-    private String email      = "";
-    private String createDate = "";
-    private String updateDate = "";
-    private String comment    = "";
+    protected String name       = "";
+    protected String email      = "";
+    protected String createDate = "";
+    protected String updateDate = "";
+    protected String comment    = "";
 
     public Author(DefaultValueConfigBuilder dvBuilder) {
         this.dvBuilder = dvBuilder;
@@ -57,7 +57,7 @@ public class Author {
         return this;
     }
 
-    public DefaultValueConfigBuilder build() {
+    public DefaultValueConfigBuilder ok() {
         return this.dvBuilder;
     }
 

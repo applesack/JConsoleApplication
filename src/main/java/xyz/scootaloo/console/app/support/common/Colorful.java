@@ -4,7 +4,7 @@ package xyz.scootaloo.console.app.support.common;
  * @author flutterdash@qq.com
  * @since 2020/12/27 16:25
  */
-public interface Colorful extends OutputCommons {
+public interface Colorful extends Commons {
 
     Colorful instance = new Colorful() {};
 

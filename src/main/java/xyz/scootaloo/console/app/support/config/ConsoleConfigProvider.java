@@ -1,10 +1,11 @@
 package xyz.scootaloo.console.app.support.config;
 
 import xyz.scootaloo.console.app.support.common.Colorful;
-import xyz.scootaloo.console.app.support.component.AppType;
-import xyz.scootaloo.console.app.support.component.Author;
 import xyz.scootaloo.console.app.support.component.ResourceManager;
 import xyz.scootaloo.console.app.support.utils.ClassUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 配置提供者
@@ -12,23 +13,25 @@ import xyz.scootaloo.console.app.support.utils.ClassUtils;
  * @author flutterdash@qq.com
  * @since 2020/12/27 15:33
  */
-public abstract class ConfigProvider {
+public abstract class ConsoleConfigProvider {
+
+    public static final ConsoleConfig DEFAULT_CONFIG = DefaultValueConfigBuilder.defaultConfig();
     private static final Colorful cPrint = ResourceManager.cPrint;
-    private static Class<?> BOOT_CLAZZ;
 
     /**
      * 获取调用此方法的调用者，并实创建调用者的实例
      * @return 调用者的实例
      */
-    public static ConfigProvider instance() {
+    @Deprecated
+    public static ConsoleConfigProvider instance() {
         StackTraceElement[] callStack = Thread.currentThread().getStackTrace();
         String invoker = callStack[2].getClassName();
         try {
-            BOOT_CLAZZ = Class.forName(invoker);
+            Class<?> BOOT_CLAZZ = Class.forName(invoker);
             Object bootObj = BOOT_CLAZZ.newInstance();
-            if (!ClassUtils.isExtendForm(bootObj, ConfigProvider.class))
+            if (!ClassUtils.isExtendForm(bootObj, ConsoleConfigProvider.class))
                 cPrint.exit0("启动类没有继承自配置提供者类，无法加载配置");
-            return (ConfigProvider) bootObj;
+            return (ConsoleConfigProvider) bootObj;
         } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
             cPrint.exit0("解析异常，无法实例化类: " + invoker);
             return null;
@@ -36,52 +39,35 @@ public abstract class ConfigProvider {
     }
 
     public ConsoleConfig getConfig() {
-        if (BOOT_CLAZZ == null)
-            cPrint.exit0("请使用 instance() 方法做为ConsoleApplication.run()的参数");
-        ConsoleConfig rsl = register(new DefaultValueConfigBuilder(BOOT_CLAZZ));
-        return rsl != null ? rsl : DefaultValueConfigBuilder.defaultConfig(BOOT_CLAZZ);
+        ConsoleConfig rsl = register(new DefaultValueConfigBuilder());
+        return rsl != null ? rsl : DefaultValueConfigBuilder.defaultConfig();
     }
 
     public abstract ConsoleConfig register(DefaultValueConfigBuilder builder);
 
-    public String[] getInitCommands() {
-        return null;
-    }
-
     public static class DefaultValueConfigBuilder {
-        private final Class<?> bootClazz;
 
         // 应用信息
-        private AppType appType = AppType.Standard;
-        private String appName;
+        private String appName = "console";
         private String prompt  = "console> ";
         private String[] exitCmd = {"exit"};
         private boolean printWelcome = true;
-        private String basePack;
 
         // 开发者配置
         private int maxHistory = 64;
         private boolean printStackTraceOnException = false;
+        private List<String> initCommands = new ArrayList<>();
+        private List<Class<?>> factories = new ArrayList<>();
 
         // 作者信息
         private Author author;
 
-        public DefaultValueConfigBuilder(Class<?> bootClazz) {
-            this.bootClazz = bootClazz;
-            appName = getAppName(bootClazz);
-            basePack = getBasePack(bootClazz);
+        public DefaultValueConfigBuilder() {
         }
 
         public DefaultValueConfigBuilder appName(String name) {
             if (appName != null)
                 this.appName = name;
-            return this;
-        }
-
-        public DefaultValueConfigBuilder appType(AppType type) {
-            if (type != null) {
-                this.appType = type;
-            }
             return this;
         }
 
@@ -123,15 +109,8 @@ public abstract class ConfigProvider {
             return this;
         }
 
-        public DefaultValueConfigBuilder basePack(String pack) {
-            if (pack != null) {
-                if (pack.indexOf('.') == -1) {
-                    this.basePack = getBasePack(bootClazz) + "." + pack;
-                } else {
-                    this.basePack = pack;
-                }
-            }
-            return this;
+        public StringCommands addInitCommands() {
+            return new StringCommands(this);
         }
 
         public Author editAuthorInfo() {
@@ -139,20 +118,28 @@ public abstract class ConfigProvider {
             return this.author;
         }
 
+        public CommandFactory addCommandFactories() {
+            return new CommandFactory(this);
+        }
+
+        protected void setInitCommands(StringCommands commands) {
+            if (!commands.commandList.isEmpty()) {
+                this.initCommands = commands.commandList;
+            }
+        }
+
+        protected void setCommandFactories(CommandFactory factories) {
+            if (!factories.commandFac.isEmpty()) {
+                this.factories = factories.commandFac;
+            }
+        }
+
         public ConsoleConfig build() {
             return new ConsoleConfig(this);
         }
 
-        private static String getBasePack(Class<?> bootClazz) {
-            return bootClazz.getPackage().getName();
-        }
-
-        private static String getAppName(Class<?> bootClazz) {
-            return bootClazz.getSimpleName();
-        }
-
-        private static ConsoleConfig defaultConfig(Class<?> bootClazz) {
-            return new DefaultValueConfigBuilder(bootClazz).build();
+        private static ConsoleConfig defaultConfig() {
+            return new DefaultValueConfigBuilder().build();
         }
     }
 

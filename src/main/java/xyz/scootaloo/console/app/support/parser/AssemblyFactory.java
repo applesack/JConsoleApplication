@@ -3,12 +3,12 @@ package xyz.scootaloo.console.app.support.parser;
 import xyz.scootaloo.console.app.support.common.Colorful;
 import xyz.scootaloo.console.app.support.common.ProxyInvoke;
 import xyz.scootaloo.console.app.support.component.*;
+import xyz.scootaloo.console.app.support.config.Author;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 import xyz.scootaloo.console.app.support.parser.TransformFactory.ResultWrapper;
 import xyz.scootaloo.console.app.support.plugin.ConsolePlugin;
 import xyz.scootaloo.console.app.support.plugin.EventPublisher;
 import xyz.scootaloo.console.app.support.utils.ClassUtils;
-import xyz.scootaloo.console.app.support.utils.PackScanner;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -29,6 +29,9 @@ public class AssemblyFactory {
     protected static final List<ActuatorImpl> destroyActuators = new ArrayList<>();
 
     private static ConsoleConfig config;
+    protected static boolean hasInit = false;
+
+    private static final List<String> EMPTY_CMD_ITEMS = new ArrayList<>();
 
     public static void init(ConsoleConfig conf) {
         config = conf;
@@ -44,7 +47,8 @@ public class AssemblyFactory {
             cPrint.println(cPrint.blue("没有这个命令`" + cmdName + "`"));
         return cmd -> {
             // do nothing ...
-            return null;
+            return InvokeInfo.failed(Void.class, EMPTY_CMD_ITEMS,
+                    new RuntimeException("当前这个命令是一个空命令"));
         };
     }
 
@@ -53,8 +57,9 @@ public class AssemblyFactory {
             cPrint.exit0("未加载到配置");
             return;
         }
+        hasInit = true;
         welcome();
-        Set<Class<?>> factories = PackScanner.getClasses(config.getBasePack());
+        Set<Class<?>> factories = new LinkedHashSet<>(config.getFactories());
         factories.add(SystemPresetCmd.class);
         for (Class<?> factory : factories) {
             CommandFactory factoryAnno = factory.getAnnotation(CommandFactory.class);
@@ -186,14 +191,20 @@ public class AssemblyFactory {
         private final Cmd cmd;
         private final Object obj;
 
+        private final Class<?> rtnType;
+        private final String cmdName;
+
         public ActuatorImpl(Method m, Cmd c, Object o) {
             this.cmd = c;
             this.method = m;
             this.obj = o;
+
+            this.cmdName = method.getName().toLowerCase(Locale.ROOT);
+            this.rtnType = method.getReturnType();
         }
 
         @Override
-        public Object invoke(List<String> items) throws InvocationTargetException, IllegalAccessException {
+        public InvokeInfo invoke(List<String> items) {
             switch (cmd.type()) {
                 case Destroy:
                 case Pre:
@@ -204,7 +215,8 @@ public class AssemblyFactory {
                     if (doInvokePreProcess()) {
                         return invoke0(items);
                     } else {
-                        return null;
+                        return InvokeInfo.failed(rtnType, items,
+                                new RuntimeException("前置方法执行未通过"));
                     }
                 }
             }
@@ -219,8 +231,8 @@ public class AssemblyFactory {
                     if (method.getParameterCount() != 0)
                         return false;
                     if (type == CmdType.Pre) {
-                        if (!(method.getReturnType().equals(boolean.class) ||
-                                method.getReturnType().equals(Boolean.class)))
+                        if (!(rtnType.equals(boolean.class) ||
+                                rtnType.equals(Boolean.class)))
                             return false;
                     }
                 } break;
@@ -228,31 +240,45 @@ public class AssemblyFactory {
             return true;
         }
 
-        private boolean doInvokePreProcess() throws InvocationTargetException, IllegalAccessException {
+        private boolean doInvokePreProcess() {
             for (ActuatorImpl actuator : preActuators) {
-                boolean result = (boolean) actuator.invoke0(null);
-                if (!result) {
-                    cPrint.println("错误信息: " + actuator.cmd.onError());
+                InvokeInfo info = actuator.invoke0(null);
+                if (!info.isSuccess()) {
+                    String msg = "错误信息: " + actuator.cmd.onError();
+                    if (info.getException() != null)
+                        msg = info.getExMsg();
+                    cPrint.println(msg);
+                    if (config.isPrintStackTraceOnException())
+                        info.getException().printStackTrace();
                     return false;
+                } else {
+                    boolean result = (boolean) info.get();
+                    if (!result)
+                        return false;
                 }
             }
             return true;
         }
 
-        private Object invoke0(List<String> items) throws InvocationTargetException, IllegalAccessException {
-            String methodName = method.getName().toLowerCase(Locale.ROOT);
-            EventPublisher.onResolveInput(methodName, items);
+        private InvokeInfo invoke0(List<String> items) {
+            InvokeInfo info = InvokeInfo.beforeInvoke(rtnType, items);
+            EventPublisher.onResolveInput(cmdName, items);
             ResultWrapper wrapper = TransformFactory.transform(method, items);
             if (wrapper.success) {
                 method.setAccessible(true);
-                Object rtnVal = method.invoke(obj, wrapper.args);
-                EventPublisher.onInputResolved(methodName, rtnVal);
-                return rtnVal;
+                Object rtnVal = null;
+                try {
+                    rtnVal = method.invoke(obj, wrapper.args);
+                    info.finishInvoke(rtnVal, wrapper.args);
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    info.onException(e, wrapper.args);
+                }
+                EventPublisher.onInputResolved(cmdName, rtnVal);
             } else {
-                EventPublisher.onInputResolved(methodName,null);
-                cPrint.println("调用失败: " + wrapper.msg);
-                return null;
+                EventPublisher.onInputResolved(cmdName,null);
+                info.onException(wrapper.ex, null);
             }
+            return info;
         }
 
         public int getOrder() {

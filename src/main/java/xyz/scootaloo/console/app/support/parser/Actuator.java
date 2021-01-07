@@ -10,6 +10,6 @@ import java.util.List;
 @FunctionalInterface
 public interface Actuator {
 
-    Object invoke(List<String> items) throws Exception;
+    InvokeInfo invoke(List<String> items) throws Exception;
 
 }

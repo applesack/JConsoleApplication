@@ -1,10 +1,17 @@
 package xyz.scootaloo.console.app.support.common;
 
+import xyz.scootaloo.console.app.support.config.ConsoleConfigProvider;
+import xyz.scootaloo.console.app.support.config.ConsoleConfigProvider.DefaultValueConfigBuilder;
+
 /**
  * @author flutterdash@qq.com
  * @since 2020/12/28 15:17
  */
-public interface OutputCommons {
+public interface Commons {
+
+    static DefaultValueConfigBuilder config() {
+        return new DefaultValueConfigBuilder();
+    }
 
     default void print(Object line) {
         System.out.print(line);
