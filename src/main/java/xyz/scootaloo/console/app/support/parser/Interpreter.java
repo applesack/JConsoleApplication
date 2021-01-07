@@ -4,7 +4,6 @@ import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 import xyz.scootaloo.console.app.support.utils.StringUtils;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author flutterdash@qq.com
@@ -15,9 +14,9 @@ public class Interpreter {
     private final ConsoleConfig config;
 
     public Interpreter(ConsoleConfig config) {
-        this.config = config;
         if (!AssemblyFactory.hasInit)
             throw new RuntimeException("装配工厂未初始化");
+        this.config = config;
     }
 
     public InvokeInfo interpretation(String cmd) throws Exception {
@@ -27,20 +26,15 @@ public class Interpreter {
         return actuator.invoke(allTheCmdItem);
     }
 
-    public boolean isExitCmd(String cmd) {
-        return false;
-    }
-
     public ConsoleConfig getConfig() {
         return this.config;
     }
 
     private String getCmdName(List<String> items) {
         if (items.isEmpty()) {
-            return null;
+            return "";
         } else {
-            String cmdName = items.remove(0).trim();
-            return cmdName.isEmpty() ? null : cmdName;
+            return items.remove(0).trim();
         }
     }
 

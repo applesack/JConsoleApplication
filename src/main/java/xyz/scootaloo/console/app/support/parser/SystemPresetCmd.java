@@ -19,8 +19,6 @@ import java.util.ListIterator;
  * @author flutterdash@qq.com
  * @since 2020/12/29 19:43
  */
-@Plugin
-@CommandFactory
 public class SystemPresetCmd implements Colorful, ConsolePluginAdapter {
 
     private static final Colorful cPrint = instance;

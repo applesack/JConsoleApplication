@@ -39,10 +39,11 @@ public abstract class AbstractApplication {
 
     abstract boolean simpleRunCommand(String command) throws Exception;
 
+    // 仅获取第一个被空格分隔的字符段，以小写形式返回
     public String getCmdName(List<String> items) {
         if (items.isEmpty())
             return "";
-        String cmdName = items.remove(0).trim();
+        String cmdName = items.get(0).trim();
         return cmdName.toLowerCase(Locale.ROOT);
     }
 

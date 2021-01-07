@@ -9,7 +9,7 @@ import xyz.scootaloo.console.app.workspace.PluginDemo;
 import xyz.scootaloo.console.app.workspace.QuicklyStart;
 
 /**
- * 基础的控制台开发框架
+ * 控制台开发框架
  * 简化开发过程，自动装配命令，解析命令参数
  * 支持可选参数和必选参数，自动解析表单类
  *
@@ -33,29 +33,34 @@ public class Start {
     public static void main(String[] args) {
         ApplicationRunner.consoleApplication(
                 Commons.config()
-                        .appName("测试应用示例")
-                        .printWelcome(true)
-                        .prompt("example> ")
-                        .printStackTrace(false)
-                        .exitCmd(new String[] {"exit", "e.", "q"})
-                        .maxHistory(128)
+                        // 应用信息
+                        .appName("测试应用示例") // 应用的名称
+                        .printWelcome(true)   // 是否打印欢迎信息
+                        .prompt("example> ")  // 控制台输入的提示符
+                        .printStackTrace(false) // 遇到异常时是否打印调用栈
+                        .exitCmd(new String[] {"exit", "e.", "q"}) // 使用这些命令可以退出应用
+                        .maxHistory(128) // 最多保存的历史记录，
+                        // 编辑作者信息，当printWelcome设置为false时，这些信息不会被输出
                         .editAuthorInfo()
                             .authorName("fd")
                             .email("~~")
                             .comment("备注")
-                            .createDate("2020/12.27")
+                            .createDate("2020/12/27")
                             .updateDate("2021/1/6")
                             .ok()
+                        // 设置系统启动时执行的命令
                         .addInitCommands()
-                            .getFromFile("conf.txt")
-                            .add("hp")
+                            .getFromFile("init.txt") // 从文件中读取
+                            .add("help") // 系统启动时执行 help 命令
                             .ok()
+                        // 增加命令工厂，在这里将
                         .addCommandFactories()
                             .add(QuicklyStart.class, true)
                             .add(AdvancedDemo.class, false)
                             .add(PluginDemo.class, false)
                             .add(LoginDemo.class, false)
                             .ok()
+                        // 设置完成
                         .build());
     }
 

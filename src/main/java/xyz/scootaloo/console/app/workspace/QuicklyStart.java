@@ -1,7 +1,6 @@
 package xyz.scootaloo.console.app.workspace;
 
 import xyz.scootaloo.console.app.support.component.Cmd;
-import xyz.scootaloo.console.app.support.component.CommandFactory;
 import xyz.scootaloo.console.app.support.component.Form;
 import xyz.scootaloo.console.app.support.component.Prop;
 
@@ -19,7 +18,6 @@ import xyz.scootaloo.console.app.support.component.Prop;
  * @author flutterdash@qq.com
  * @since 2020/12/30 20:32
  */
-@CommandFactory(enable = true) // 启用测试本类命令，请将注解中的false修改为true，系统会自动将本类中的命令注册到系统
 public class QuicklyStart {
 
     /**

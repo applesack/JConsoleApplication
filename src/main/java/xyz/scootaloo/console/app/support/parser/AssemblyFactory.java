@@ -47,8 +47,7 @@ public class AssemblyFactory {
             cPrint.println(cPrint.blue("没有这个命令`" + cmdName + "`"));
         return cmd -> {
             // do nothing ...
-            return InvokeInfo.failed(Void.class, EMPTY_CMD_ITEMS,
-                    new RuntimeException("当前这个命令是一个空命令"));
+            return InvokeInfo.simpleSuccess();
         };
     }
 
@@ -62,13 +61,9 @@ public class AssemblyFactory {
         Set<Class<?>> factories = new LinkedHashSet<>(config.getFactories());
         factories.add(SystemPresetCmd.class);
         for (Class<?> factory : factories) {
-            CommandFactory factoryAnno = factory.getAnnotation(CommandFactory.class);
-            Plugin plugin = factory.getAnnotation(Plugin.class);
             Object instance = ProxyInvoke.invoke(factory);
-            if (plugin != null && plugin.enable())
+            if (instance instanceof ConsolePlugin)
                 doGetPlugin(instance);
-            if (factoryAnno == null || !factoryAnno.enable())
-                continue;
             Method[] methods = factory.getDeclaredMethods();
             for (Method method : methods) {
                 method.setAccessible(true);
@@ -212,11 +207,15 @@ public class AssemblyFactory {
                     return invoke0(items);
                 }
                 default: {
-                    if (doInvokePreProcess()) {
+                    InvokeInfo info = doInvokePreProcess();
+                    if (info.isSuccess()) {
                         return invoke0(items);
                     } else {
-                        return InvokeInfo.failed(rtnType, items,
-                                new RuntimeException("前置方法执行未通过"));
+                        if (config.isPrintStackTraceOnException())
+                            info.getException().printStackTrace();
+                        else
+                            cPrint.println(info.getExMsg());
+                        return InvokeInfo.simpleSuccess();
                     }
                 }
             }
@@ -240,24 +239,21 @@ public class AssemblyFactory {
             return true;
         }
 
-        private boolean doInvokePreProcess() {
+        private InvokeInfo doInvokePreProcess() {
             for (ActuatorImpl actuator : preActuators) {
+                // 方法执行结果
                 InvokeInfo info = actuator.invoke0(null);
+                // 方法执行错误
                 if (!info.isSuccess()) {
-                    String msg = "错误信息: " + actuator.cmd.onError();
-                    if (info.getException() != null)
-                        msg = info.getExMsg();
-                    cPrint.println(msg);
-                    if (config.isPrintStackTraceOnException())
-                        info.getException().printStackTrace();
-                    return false;
+                    return info;
                 } else {
                     boolean result = (boolean) info.get();
                     if (!result)
-                        return false;
+                        return InvokeInfo.failed(rtnType, null,
+                                new RuntimeException("错误信息: " + actuator.cmd.onError()));
                 }
             }
-            return true;
+            return InvokeInfo.simpleSuccess();
         }
 
         private InvokeInfo invoke0(List<String> items) {

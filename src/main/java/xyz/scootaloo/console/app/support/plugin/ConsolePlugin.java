@@ -12,6 +12,8 @@ import java.util.List;
  */
 public interface ConsolePlugin {
 
+    boolean enable();
+
     /**
      *
      * @return 返回插件的名字

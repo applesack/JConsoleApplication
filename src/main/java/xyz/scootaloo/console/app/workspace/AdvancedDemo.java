@@ -30,7 +30,6 @@ import java.util.List;
  * @author flutterdash@qq.com
  * @since 2020/12/28 12:57
  */
-@CommandFactory(enable = false) // 启用测试本类命令，请将注解中的false修改为true，系统会自动将本类中的命令注册到系统
 public class AdvancedDemo {
 
     /**

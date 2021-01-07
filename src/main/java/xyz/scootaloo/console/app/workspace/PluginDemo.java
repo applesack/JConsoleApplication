@@ -1,8 +1,6 @@
 package xyz.scootaloo.console.app.workspace;
 
-import xyz.scootaloo.console.app.support.component.CommandFactory;
 import xyz.scootaloo.console.app.support.component.Moment;
-import xyz.scootaloo.console.app.support.component.Plugin;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 import xyz.scootaloo.console.app.support.plugin.ConsolePluginAdapter;
 
@@ -25,8 +23,6 @@ import java.util.List;
  * @author flutterdash@qq.com
  * @since 2020/12/30 23:06
  */
-@Plugin(enable = false) // 修改为true启动本插件
-@CommandFactory(enable = false) // 修改为true启用命令工厂
 public class PluginDemo implements ConsolePluginAdapter {
 
     /**

@@ -24,8 +24,6 @@ import java.util.stream.Stream;
  * @author flutterdash@qq.com
  * @since 2020/12/30 23:06
  */
-@Plugin(enable = false) // 修改为true以启用功能
-@CommandFactory(enable = false) // 修改为true开启测试
 public class LoginDemo implements ConsolePluginAdapter,
         Colorful { // 本系统可以使用实现接口的方式，简洁的调用工具类的方法
 

@@ -13,6 +13,10 @@ import java.util.List;
  */
 public interface ConsolePluginAdapter extends ConsolePlugin {
 
+    default boolean enable() {
+        return true;
+    }
+
     default int getOrder() {
         return 0;
     }
