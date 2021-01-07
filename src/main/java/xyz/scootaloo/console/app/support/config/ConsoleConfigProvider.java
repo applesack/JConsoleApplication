@@ -5,7 +5,9 @@ import xyz.scootaloo.console.app.support.component.ResourceManager;
 import xyz.scootaloo.console.app.support.utils.ClassUtils;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 配置提供者
@@ -57,7 +59,7 @@ public abstract class ConsoleConfigProvider {
         private int maxHistory = 64;
         private boolean printStackTraceOnException = false;
         private List<String> initCommands = new ArrayList<>();
-        private List<Class<?>> factories = new ArrayList<>();
+        private Set<Class<?>> factories = new LinkedHashSet<>();
 
         // 作者信息
         private Author author;
@@ -141,6 +143,33 @@ public abstract class ConsoleConfigProvider {
         private static ConsoleConfig defaultConfig() {
             return new DefaultValueConfigBuilder().build();
         }
+
+    }
+
+    public static class SimpleConfig {
+
+        private final DefaultValueConfigBuilder dvBuilder;
+
+        public SimpleConfig() {
+            dvBuilder = new DefaultValueConfigBuilder();
+            dvBuilder.printWelcome(false);
+        }
+
+        public SimpleConfig addFactory(Class<?> factory, boolean enable) {
+            if (enable)
+                this.dvBuilder.factories.add(factory);
+            return this;
+        }
+
+        public SimpleConfig printStackTrace(boolean flag) {
+            this.dvBuilder.printStackTrace(false);
+            return this;
+        }
+
+        public ConsoleConfig build() {
+            return dvBuilder.build();
+        }
+
     }
 
 }

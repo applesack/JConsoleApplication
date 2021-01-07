@@ -45,8 +45,9 @@ public class QuicklyStart {
      * @param b -
      */
     @Cmd
-    private void add(int a, int b) {
+    private int add(int a, int b) {
         System.out.println(a + b);
+        return a + b;
     }
 
     /**

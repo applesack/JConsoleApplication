@@ -14,16 +14,23 @@ public class Interpreter {
     private final ConsoleConfig config;
 
     public Interpreter(ConsoleConfig config) {
-        if (!AssemblyFactory.hasInit)
-            throw new RuntimeException("装配工厂未初始化");
+        if (!AssemblyFactory.hasInit) {
+            AssemblyFactory.init(config);
+            AssemblyFactory.hasInit = true;
+        }
         this.config = config;
     }
 
-    public InvokeInfo interpretation(String cmd) throws Exception {
+    public InvokeInfo interpretation(String cmd) {
         List<String> allTheCmdItem = StringUtils.toList(cmd);
         String cmdName = getCmdName(allTheCmdItem);
         Actuator actuator = AssemblyFactory.findInvoker(cmdName);
         return actuator.invoke(allTheCmdItem);
+    }
+
+    public InvokeInfo interpretation(String name, Object ... args) {
+        AssemblyFactory.ActuatorImpl actuator = (AssemblyFactory.ActuatorImpl) AssemblyFactory.findInvoker(name);
+        return actuator.invokeByArgs(args);
     }
 
     public ConsoleConfig getConfig() {

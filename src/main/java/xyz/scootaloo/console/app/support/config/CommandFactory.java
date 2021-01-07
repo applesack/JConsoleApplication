@@ -1,7 +1,9 @@
 package xyz.scootaloo.console.app.support.config;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import static xyz.scootaloo.console.app.support.config.ConsoleConfigProvider.*;
 
@@ -11,11 +13,11 @@ import static xyz.scootaloo.console.app.support.config.ConsoleConfigProvider.*;
  */
 public class CommandFactory {
 
-    protected final List<Class<?>> commandFac;
+    protected final Set<Class<?>> commandFac;
     private final DefaultValueConfigBuilder builder;
 
     public CommandFactory(DefaultValueConfigBuilder builder) {
-        this.commandFac = new ArrayList<>();
+        this.commandFac = new LinkedHashSet<>();
         this.builder = builder;
     }
 

@@ -7,6 +7,7 @@ import xyz.scootaloo.console.app.support.component.AppType;
 import xyz.scootaloo.console.app.support.utils.ClassUtils;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author flutterdash@qq.com
@@ -28,7 +29,7 @@ public class ConsoleConfig {
     // 开发者配置
     private int maxHistory;     // 最大保存历史记录的长度
     private boolean printStackTraceOnException; // 遇到异常时是否打印调用栈
-    private List<Class<?>> factories;
+    private Set<Class<?>> factories;
     private List<String> initCommands;
 
     // 扫描的基础包路径

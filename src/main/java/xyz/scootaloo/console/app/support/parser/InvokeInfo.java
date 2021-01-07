@@ -11,6 +11,7 @@ import java.util.List;
 @Getter
 public class InvokeInfo {
 
+    private String name;           // 被执行的方法名，或者命令名
     private boolean success;       // 是否执行成功
     private Object rtnVal;         // 方法返回值
     private Class<?> rtnType;      // 返回值类型
@@ -44,8 +45,9 @@ public class InvokeInfo {
     }
 
     // 填充属性
-    public static InvokeInfo beforeInvoke(Class<?> rtnType, List<String> cmdItems) {
+    public static InvokeInfo beforeInvoke(String name, Class<?> rtnType, List<String> cmdItems) {
         InvokeInfo info = new InvokeInfo();
+        info.name = name;
         info.rtnType = rtnType;
         info.cmdItems = cmdItems;
         info.invokeAt = System.currentTimeMillis();
@@ -62,6 +64,7 @@ public class InvokeInfo {
         this.interval = System.currentTimeMillis() - this.invokeAt;
     }
 
+    // 对应 beforeInvoke ，方法执行完成后
     protected void finishInvoke(Object rtnVal, Object[] methodArgs) {
         this.success = true;
         this.rtnVal = rtnVal;
@@ -71,6 +74,12 @@ public class InvokeInfo {
         this.interval = System.currentTimeMillis() - this.invokeAt;
     }
 
+    /**
+     * 获取返回值
+     * 建议在获取返回值之前检查 success 属性是否为 true，对方法执行失败的情况做一定处理。
+     * 否则方法执行失败时 get() 方法返回null，会与正常结果混淆。
+     * @return -
+     */
     public Object get() {
         return rtnVal;
     }

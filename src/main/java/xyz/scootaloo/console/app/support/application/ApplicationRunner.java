@@ -8,16 +8,16 @@ import xyz.scootaloo.console.app.support.parser.Interpreter;
  * @author flutterdash@qq.com
  * @since 2020/12/27 15:04
  */
-public class ApplicationRunner {
+public abstract class ApplicationRunner {
 
     private static Interpreter INTERPRETER_SINGLETON;
 
     public static void consoleApplication(ConsoleConfig config) {
         AssemblyFactory.init(config);
-        new ConsoleApplication(config, getInstance(config)).run();
+        new ConsoleApplication(config, getInterpreter(config)).run();
     }
 
-    private static Interpreter getInstance(ConsoleConfig config) {
+    public static Interpreter getInterpreter(ConsoleConfig config) {
         if (INTERPRETER_SINGLETON == null) {
             INTERPRETER_SINGLETON = new Interpreter(config);
         }

@@ -2,6 +2,7 @@ package xyz.scootaloo.console.app.support.common;
 
 import xyz.scootaloo.console.app.support.config.ConsoleConfigProvider;
 import xyz.scootaloo.console.app.support.config.ConsoleConfigProvider.DefaultValueConfigBuilder;
+import xyz.scootaloo.console.app.support.config.ConsoleConfigProvider.SimpleConfig;
 
 /**
  * @author flutterdash@qq.com
@@ -11,6 +12,10 @@ public interface Commons {
 
     static DefaultValueConfigBuilder config() {
         return new DefaultValueConfigBuilder();
+    }
+
+    static SimpleConfig simpleConf() {
+        return new SimpleConfig();
     }
 
     default void print(Object line) {

@@ -31,8 +31,6 @@ public class AssemblyFactory {
     private static ConsoleConfig config;
     protected static boolean hasInit = false;
 
-    private static final List<String> EMPTY_CMD_ITEMS = new ArrayList<>();
-
     public static void init(ConsoleConfig conf) {
         config = conf;
         doGetStrategyFactories();
@@ -257,7 +255,7 @@ public class AssemblyFactory {
         }
 
         private InvokeInfo invoke0(List<String> items) {
-            InvokeInfo info = InvokeInfo.beforeInvoke(rtnType, items);
+            InvokeInfo info = InvokeInfo.beforeInvoke(cmdName, rtnType, items);
             EventPublisher.onResolveInput(cmdName, items);
             ResultWrapper wrapper = TransformFactory.transform(method, items);
             if (wrapper.success) {
@@ -275,6 +273,19 @@ public class AssemblyFactory {
                 info.onException(wrapper.ex, null);
             }
             return info;
+        }
+
+        public InvokeInfo invokeByArgs(Object ... args) {
+            method.setAccessible(true);
+            InvokeInfo info = InvokeInfo.beforeInvoke(cmdName, rtnType, null);
+            try {
+                Object rtnVal = method.invoke(obj, args);
+                info.finishInvoke(rtnVal, args);
+                return info;
+            } catch (Exception e) {
+                info.onException(e, args);
+                return info;
+            }
         }
 
         public int getOrder() {
