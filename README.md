@@ -1,0 +1,2 @@
+# JConsoleApplication
+基础的Java控制台应用开发框架
