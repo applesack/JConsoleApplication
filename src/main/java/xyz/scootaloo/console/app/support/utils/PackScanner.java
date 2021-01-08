@@ -13,10 +13,13 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
- * 包扫描
+ * 包扫描器
+ * 扫描某包路径下的所有Class文件，加载入虚拟机
+ * 修改装配方式后，这个类貌似用不到了
  * @author flutterdash@qq.com
  * @since 2020/12/28 12:33
  */
+@Deprecated
 public class PackScanner {
 
     public static Set<Class<?>> getClasses(String pack) {

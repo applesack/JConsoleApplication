@@ -9,8 +9,8 @@ import xyz.scootaloo.console.app.support.parser.InvokeInfo;
 import xyz.scootaloo.console.app.workspace.AdvancedDemo;
 import xyz.scootaloo.console.app.workspace.LoginDemo;
 import xyz.scootaloo.console.app.workspace.ListenerDemo;
-import xyz.scootaloo.console.app.workspace.QuicklyStart;
-import xyz.scootaloo.console.app.workspace.QuicklyStart.Student;
+import xyz.scootaloo.console.app.workspace.QuickStart;
+import xyz.scootaloo.console.app.workspace.QuickStart.Student;
 
 /**
  * 控制台开发框架
@@ -18,7 +18,7 @@ import xyz.scootaloo.console.app.workspace.QuicklyStart.Student;
  * 支持可选参数和必选参数，自动解析表单类
  *
  * 快速学习如何使用请移步到:
- * {@link xyz.scootaloo.console.app.workspace.QuicklyStart}
+ * {@link QuickStart}
  *
  * @author flutterdash@qq.com
  * @since 2020/12/27 14:58
@@ -30,10 +30,9 @@ public class Start {
      * 启动一个控制台应用
      * 1. 使用Commons.config()进行配置
      * 2. 在workspace目录下进行开发。
-     * 3. 回到此类运行此方法，系统启动。
+     * 3. 回到此类运行 main 方法，系统启动。
      */
-    @Test
-    public void testConsoleApplication() {
+    public static void main(String[] args) {
         ApplicationRunner.consoleApplication(
                 Commons.config()
                         // 应用信息
@@ -59,7 +58,7 @@ public class Start {
                         // 增加命令工厂，enable参数决定是否启用该命令工厂，将false修改为true可以开启对应命令工厂的测试，
                         // 但是为了方便功能演示，建议测试以下几个类的时候，每次只有一个工厂类enable为true
                         .addCommandFactories()
-                            .add(QuicklyStart.class, true)
+                            .add(QuickStart.class, true)
                             .add(AdvancedDemo.class, false)
                             .add(ListenerDemo.class, false)
                             .add(LoginDemo.class, false)
@@ -77,7 +76,7 @@ public class Start {
         // 使用 Commons.simpleConf() 获取更精简的配置类
         Interpreter interpreter = ApplicationRunner.getInterpreter(Commons.simpleConf()
                 .printStackTrace(false)
-                .addFactory(QuicklyStart.class, true)
+                .addFactory(QuickStart.class, true)
                 .addFactory(AdvancedDemo.class, false)
                 .addFactory(ListenerDemo.class, false)
                 .addFactory(LoginDemo.class, false)
@@ -94,7 +93,7 @@ public class Start {
         // 解释器调用参数含有对象的方法时，字符串的占位符会触发等待键盘输入，如
 //        InvokeInfo result3 = interpreter.interpret("stuAdd #"); // 在 main 方法中调用可以观察到
 
-        // result3的方式调用参数中含有对象的方法，可能会引起线程阻塞，可以使用 invoke 方法传入对象调用
+        // result3的方式调用参数中含有对象的方法，某些场景下可能会引起线程阻塞，可以使用 invoke 方法传入对象调用
         // 或者实现自定义的类型转换器，参考 AdvancedDemo.resolveByte(Str) 方法
         InvokeInfo result4 = interpreter.invoke("stuAdd", new Student());
     }

@@ -6,10 +6,9 @@ import xyz.scootaloo.console.app.support.common.ResourceManager;
 import xyz.scootaloo.console.app.support.component.*;
 import xyz.scootaloo.console.app.support.config.Author;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
-import xyz.scootaloo.console.app.support.parser.TransformFactory.ResultWrapper;
+import xyz.scootaloo.console.app.support.parser.ResolveFactory.ResultWrapper;
 import xyz.scootaloo.console.app.support.listener.AppListener;
 import xyz.scootaloo.console.app.support.listener.EventPublisher;
-import xyz.scootaloo.console.app.support.utils.ClassUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -80,7 +79,7 @@ public class AssemblyFactory {
         for (Class<?> factory : factories) {
             Object instance = ProxyInvoke.invoke(factory);
             if (instance instanceof AppListener)
-                doGetPlugin(instance);
+                doGetListener((AppListener) instance);
             Method[] methods = factory.getDeclaredMethods();
             for (Method method : methods) {
                 method.setAccessible(true);
@@ -154,14 +153,23 @@ public class AssemblyFactory {
         destroyActuators.sort(Comparator.comparingInt(ActuatorImpl::getOrder));
     }
 
-    private static void doGetPlugin(Object pluginObj) {
-        if (ClassUtils.isExtendForm(pluginObj, AppListener.class)) {
-            EventPublisher.loadListener((AppListener) pluginObj);
-        } else {
-            cPrint.println("插件类使用了@Plugin注解，但是没有继承自ConsolePlugin接口，自定义插件无法装配");
-        }
+    // 假如 enable() 返回true，则装配至事件发布器
+    private static void doGetListener(AppListener listenerObj) {
+        if (listenerObj.enable())
+            EventPublisher.loadListener(listenerObj);
     }
 
+    /**
+     * 假如 @Cmd 注解的 type 属性为 Parser 则装配至转换工厂
+     * 检查 parser 方法的方法参数和返回值是否符合要求
+     * 即
+     *      方法参数只有一个，String 类型
+     *      范围值不为空
+     *      返回值和 @Cmd 注解的target()属性可以进行相互转换(不强制要求，如果不能则有可能在运行时抛出异常)
+     * @param method -
+     * @param cmdAnno -
+     * @param o -
+     */
     private static void doGetParser(Method method, Cmd cmdAnno, Object o) {
         if (cmdAnno.targets().length == 0)
             return;
@@ -183,9 +191,10 @@ public class AssemblyFactory {
                 return null;
             }
         };
-        ResolveFactory.addParser(parserFunc, types);
+        TransformFactory.addParser(parserFunc, types);
     }
 
+    // 打印欢迎信息，随便写的 ...
     private static void welcome() {
         if (!config.isPrintWelcome())
             return;
@@ -196,22 +205,25 @@ public class AssemblyFactory {
         cPrint.println("create since: " + author.getCreateDate());
         cPrint.println("last update: " + author.getUpdateDate());
         cPrint.println(author.getComment());
-        cPrint.println("欢迎使用");
     }
 
     /**
+     * 对 Actuator 进行包装
+     * 对于同包下的类提供一些便捷方法
      * @author flutterdash@qq.com
      * @since 2020/12/29 11:00
      */
     public static class ActuatorImpl implements Actuator {
-
+        // 元信息，方法对象，注解，方法所在的类的实例
         private final Method method;
         private final Cmd cmd;
         private final Object obj;
 
+        // 返回值类型，方法名
         private final Class<?> rtnType;
         private final String cmdName;
 
+        // construct
         public ActuatorImpl(Method m, Cmd c, Object o) {
             this.cmd = c;
             this.method = m;
@@ -224,11 +236,13 @@ public class AssemblyFactory {
         @Override
         public InvokeInfo invoke(List<String> items) {
             switch (cmd.type()) {
+                // 假如是销毁、前置、初始化方法，可以直接执行
                 case Destroy:
                 case Pre:
                 case Init: {
                     return invoke0(items);
                 }
+                // 普通方法，需要由前置方法执行完成后才能执行(前置方法不抛异常且不返回false)
                 default: {
                     InvokeInfo info = doInvokePreProcess();
                     if (info.isSuccess()) {
@@ -244,7 +258,12 @@ public class AssemblyFactory {
             }
         }
 
-        public boolean checkMethod() {
+        /**
+         * 初始化方法、销毁方法、前置方法，不能有参数
+         * 前置方法返回值必须是bool类型
+         * @return -
+         */
+        protected boolean checkMethod() {
             CmdType type = cmd.type();
             switch (type) {
                 case Destroy:
@@ -262,7 +281,8 @@ public class AssemblyFactory {
             return true;
         }
 
-        private InvokeInfo doInvokePreProcess() {
+        // 执行过滤链
+        protected InvokeInfo doInvokePreProcess() {
             for (ActuatorImpl actuator : preActuators) {
                 // 方法执行结果
                 InvokeInfo info = actuator.invoke0(null);
@@ -279,28 +299,51 @@ public class AssemblyFactory {
             return InvokeInfo.simpleSuccess();
         }
 
-        private InvokeInfo invoke0(List<String> items) {
+        /**
+         * *字符串命令调用的核心实现入口*
+         * @param items 执行命令时使用的参数，以按照空格分割成列表
+         * @return 执行结果信息
+         */
+        protected InvokeInfo invoke0(List<String> items) {
+            // 在方法执行之前先获取此方法的一些信息
             InvokeInfo info = InvokeInfo.beforeInvoke(cmdName, rtnType, items);
+            // 发布命令解析事件
             EventPublisher.onResolveInput(cmdName, items);
-            ResultWrapper wrapper = TransformFactory.transform(method, items);
+            // 由解析工厂将字符串命令解析成Object数组供method对象调用，结果被wrapper包装
+            ResultWrapper wrapper = ResolveFactory.transform(method, items);
+            // 如果解析成功
             if (wrapper.success) {
                 method.setAccessible(true);
                 Object rtnVal = null;
                 try {
+                    // 解析后的参数进行执行
                     rtnVal = method.invoke(obj, wrapper.args);
+                    // 得到结果填充给info对象
                     info.finishInvoke(rtnVal, wrapper.args);
                 } catch (IllegalAccessException | InvocationTargetException e) {
+                    // 执行方法时方法内部发生错误，或者参数不匹配，错误信息填充给info对象
                     info.onException(e, wrapper.args);
                 }
+                // 发布输入解析完成事件
                 EventPublisher.onInputResolved(cmdName, rtnVal);
-            } else {
+            }
+            // 解析失败
+            else {
+                // 仍然发布输入解析完成事件，此时返回值无效
                 EventPublisher.onInputResolved(cmdName,null);
+                // 将错误信息填充至info
                 info.onException(wrapper.ex, null);
             }
+            // 执行信息
             return info;
         }
 
-        public InvokeInfo invokeByArgs(Object ... args) {
+        /**
+         * 使用传入参数的方式执行
+         * @param args 调用方法用的参数
+         * @return 调用信息
+         */
+        protected InvokeInfo invokeByArgs(Object ... args) {
             method.setAccessible(true);
             InvokeInfo info = InvokeInfo.beforeInvoke(cmdName, rtnType, null);
             try {
@@ -313,13 +356,17 @@ public class AssemblyFactory {
             }
         }
 
+        // 获取执行方法的优先级
         public int getOrder() {
             return cmd.order();
         }
 
+        // 打印此 方法/命令 的帮助信息， 即将被弃用
+        @Deprecated
         public void printInfo() {
 
         }
 
     }
+
 }

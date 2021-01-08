@@ -92,10 +92,9 @@ public class ConsoleApplication extends AbstractApplication implements Colorful 
      *
      * @param command 字符串命令
      * @return 是否是退出命令
-     * @throws Exception -
      */
     @Override
-    boolean simpleRunCommand(String command) throws Exception {
+    boolean simpleRunCommand(String command) {
         List<String> cmdItems = StringUtils.toList(command);
         String cmdName = getCmdName(cmdItems);
         if (isExitCmd(cmdName))

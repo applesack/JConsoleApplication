@@ -18,7 +18,7 @@ import xyz.scootaloo.console.app.support.component.Prop;
  * @author flutterdash@qq.com
  * @since 2020/12/30 20:32
  */
-public class QuicklyStart {
+public class QuickStart {
 
     /**
      * 尝试在控制台输入 hello world
@@ -32,11 +32,6 @@ public class QuicklyStart {
     @Cmd // 含有 @Cmd 注解的方法会被系统处理，并做为命令注册到系统中
     public void hello(String name) {
         System.out.println("hello " + name);
-    }
-
-    @Cmd
-    public int get() {
-        return 1;
     }
 
     /**

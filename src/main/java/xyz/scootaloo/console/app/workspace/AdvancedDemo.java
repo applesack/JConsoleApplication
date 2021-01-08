@@ -12,7 +12,7 @@ import java.util.List;
  *
  * +++++++++++++++++++++++++++++++
  * + 回顾基础功能的使用，请跳转至:     +
- * + {@link QuicklyStart}        +
+ * + {@link QuickStart}        +
  * +                             +
  * + 系统中的监听器开发，请跳转至:    +
  * + {@link ListenerDemo}         +

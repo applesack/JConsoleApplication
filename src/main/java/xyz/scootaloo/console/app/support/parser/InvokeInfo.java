@@ -5,6 +5,7 @@ import lombok.Getter;
 import java.util.List;
 
 /**
+ * 包含 命令/方法 执行结果的信息
  * @author flutterdash@qq.com
  * @since 2021/1/7 9:32
  */
