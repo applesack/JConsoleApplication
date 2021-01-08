@@ -2,7 +2,7 @@ package xyz.scootaloo.console.app.workspace;
 
 import xyz.scootaloo.console.app.support.common.Colorful;
 import xyz.scootaloo.console.app.support.component.*;
-import xyz.scootaloo.console.app.support.plugin.ConsolePluginAdapter;
+import xyz.scootaloo.console.app.support.listener.AppListenerAdapter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +24,7 @@ import java.util.stream.Stream;
  * @author flutterdash@qq.com
  * @since 2020/12/30 23:06
  */
-public class LoginDemo implements ConsolePluginAdapter,
+public class LoginDemo implements AppListenerAdapter,
         Colorful { // 本系统可以使用实现接口的方式，简洁的调用工具类的方法
 
     private final Map<String, User> userMap;
@@ -108,7 +108,7 @@ public class LoginDemo implements ConsolePluginAdapter,
         return cmdline;
     }
 
-    //--------------------------------------------------------------
+    //---------------------------表单---------------------------------
 
     @Form
     private static class User {

@@ -2,7 +2,8 @@ package xyz.scootaloo.console.app.workspace;
 
 import xyz.scootaloo.console.app.support.component.Moment;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
-import xyz.scootaloo.console.app.support.plugin.ConsolePluginAdapter;
+import xyz.scootaloo.console.app.support.listener.AppListener;
+import xyz.scootaloo.console.app.support.listener.AppListenerAdapter;
 
 import java.util.List;
 
@@ -18,12 +19,12 @@ import java.util.List;
  * ConsolePlugin 有一个适配器接口 ConsolePluginAdapter，可以通过实现这个适配器来完成插件的开发。
  * 系统中有一个默认的插件，实现历史记录功能和占位符替换功能 {@link xyz.scootaloo.console.app.support.parser.SystemPresetCmd}
  * -----------------
- * @see xyz.scootaloo.console.app.support.plugin.ConsolePlugin
+ * @see AppListener
  *
  * @author flutterdash@qq.com
  * @since 2020/12/30 23:06
  */
-public class PluginDemo implements ConsolePluginAdapter {
+public class ListenerDemo implements AppListenerAdapter {
 
     /**
      * 每个插件都需要有一个名字，
@@ -59,7 +60,7 @@ public class PluginDemo implements ConsolePluginAdapter {
     /**
      * 此方法被调用时，系统会传进来一个代表运行时机的枚举对象，
      * 枚举对象的含义请参考:
-     * @see xyz.scootaloo.console.app.support.plugin.ConsolePlugin
+     * @see AppListener
      * @param moment 系统调用插件方法的时机
      * @return 如果此时返回true，则此时的方法被调用
      */
@@ -71,7 +72,7 @@ public class PluginDemo implements ConsolePluginAdapter {
     }
 
     /**
-     * @see xyz.scootaloo.console.app.support.plugin.ConsolePlugin
+     * @see AppListener
      * @param config -
      */
     @Override

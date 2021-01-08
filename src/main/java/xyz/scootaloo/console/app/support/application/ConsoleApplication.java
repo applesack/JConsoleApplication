@@ -5,7 +5,7 @@ import xyz.scootaloo.console.app.support.common.ResourceManager;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 import xyz.scootaloo.console.app.support.parser.Interpreter;
 import xyz.scootaloo.console.app.support.parser.InvokeInfo;
-import xyz.scootaloo.console.app.support.plugin.EventPublisher;
+import xyz.scootaloo.console.app.support.listener.EventPublisher;
 import xyz.scootaloo.console.app.support.utils.StringUtils;
 
 import java.util.List;

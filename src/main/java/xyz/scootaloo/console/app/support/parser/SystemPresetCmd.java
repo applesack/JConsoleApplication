@@ -3,8 +3,8 @@ package xyz.scootaloo.console.app.support.parser;
 import xyz.scootaloo.console.app.support.common.Colorful;
 import xyz.scootaloo.console.app.support.component.*;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
-import xyz.scootaloo.console.app.support.plugin.ConsolePluginAdapter;
-import xyz.scootaloo.console.app.support.plugin.EventPublisher;
+import xyz.scootaloo.console.app.support.listener.AppListenerAdapter;
+import xyz.scootaloo.console.app.support.listener.EventPublisher;
 import xyz.scootaloo.console.app.support.utils.StringUtils;
 
 import java.text.SimpleDateFormat;
@@ -19,7 +19,7 @@ import java.util.ListIterator;
  * @author flutterdash@qq.com
  * @since 2020/12/29 19:43
  */
-public class SystemPresetCmd implements Colorful, ConsolePluginAdapter {
+public class SystemPresetCmd implements Colorful, AppListenerAdapter {
 
     private static final Colorful cPrint = instance;
     private static ConsoleConfig config;
@@ -38,17 +38,17 @@ public class SystemPresetCmd implements Colorful, ConsolePluginAdapter {
 
     @Cmd(name = "dis")
     private void disable(String plgName) {
-        EventPublisher.disablePlugin(plgName);
+        EventPublisher.disableListener(plgName);
     }
 
     @Cmd(name = "en")
     private void enable(String plgName) {
-        EventPublisher.enablePlugin(plgName);
+        EventPublisher.enableListener(plgName);
     }
 
-    @Cmd(name = "plgs")
-    private void plugins() {
-        EventPublisher.showAllPlugins();
+    @Cmd(name = "lis")
+    private void listeners() {
+        EventPublisher.showAllListeners();
     }
 
     @Cmd(name = "his")

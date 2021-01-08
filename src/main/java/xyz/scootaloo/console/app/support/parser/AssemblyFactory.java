@@ -7,8 +7,8 @@ import xyz.scootaloo.console.app.support.component.*;
 import xyz.scootaloo.console.app.support.config.Author;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 import xyz.scootaloo.console.app.support.parser.TransformFactory.ResultWrapper;
-import xyz.scootaloo.console.app.support.plugin.ConsolePlugin;
-import xyz.scootaloo.console.app.support.plugin.EventPublisher;
+import xyz.scootaloo.console.app.support.listener.AppListener;
+import xyz.scootaloo.console.app.support.listener.EventPublisher;
 import xyz.scootaloo.console.app.support.utils.ClassUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -79,7 +79,7 @@ public class AssemblyFactory {
         factories.add(SystemPresetCmd.class);
         for (Class<?> factory : factories) {
             Object instance = ProxyInvoke.invoke(factory);
-            if (instance instanceof ConsolePlugin)
+            if (instance instanceof AppListener)
                 doGetPlugin(instance);
             Method[] methods = factory.getDeclaredMethods();
             for (Method method : methods) {
@@ -155,8 +155,8 @@ public class AssemblyFactory {
     }
 
     private static void doGetPlugin(Object pluginObj) {
-        if (ClassUtils.isExtendForm(pluginObj, ConsolePlugin.class)) {
-            EventPublisher.loadPlugin((ConsolePlugin) pluginObj);
+        if (ClassUtils.isExtendForm(pluginObj, AppListener.class)) {
+            EventPublisher.loadListener((AppListener) pluginObj);
         } else {
             cPrint.println("插件类使用了@Plugin注解，但是没有继承自ConsolePlugin接口，自定义插件无法装配");
         }

@@ -15,7 +15,7 @@ import java.util.List;
  * + {@link QuicklyStart}        +
  * +                             +
  * + 系统中的监听器开发，请跳转至:    +
- * + {@link PluginDemo}         +
+ * + {@link ListenerDemo}         +
  * +                            +
  * + 简易的登陆系统实现示例，请跳转至: +
  * + {@link LoginDemo}          +

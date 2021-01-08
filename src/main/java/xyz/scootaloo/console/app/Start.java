@@ -8,7 +8,7 @@ import xyz.scootaloo.console.app.support.parser.Interpreter;
 import xyz.scootaloo.console.app.support.parser.InvokeInfo;
 import xyz.scootaloo.console.app.workspace.AdvancedDemo;
 import xyz.scootaloo.console.app.workspace.LoginDemo;
-import xyz.scootaloo.console.app.workspace.PluginDemo;
+import xyz.scootaloo.console.app.workspace.ListenerDemo;
 import xyz.scootaloo.console.app.workspace.QuicklyStart;
 import xyz.scootaloo.console.app.workspace.QuicklyStart.Student;
 
@@ -61,7 +61,7 @@ public class Start {
                         .addCommandFactories()
                             .add(QuicklyStart.class, true)
                             .add(AdvancedDemo.class, false)
-                            .add(PluginDemo.class, false)
+                            .add(ListenerDemo.class, false)
                             .add(LoginDemo.class, false)
                             .ok()
                         // 设置完成，应用启动
@@ -79,7 +79,7 @@ public class Start {
                 .printStackTrace(false)
                 .addFactory(QuicklyStart.class, true)
                 .addFactory(AdvancedDemo.class, false)
-                .addFactory(PluginDemo.class, false)
+                .addFactory(ListenerDemo.class, false)
                 .addFactory(LoginDemo.class, false)
                 .build());
 

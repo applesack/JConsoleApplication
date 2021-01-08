@@ -1,4 +1,4 @@
-package xyz.scootaloo.console.app.support.plugin;
+package xyz.scootaloo.console.app.support.listener;
 
 import xyz.scootaloo.console.app.support.component.Moment;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
@@ -7,11 +7,11 @@ import java.util.List;
 
 /**
  * 插件接口的适配器
- * @see xyz.scootaloo.console.app.support.plugin.ConsolePlugin
+ * @see AppListener
  * @author flutterdash@qq.com
  * @since 2020/12/30 10:26
  */
-public interface ConsolePluginAdapter extends ConsolePlugin {
+public interface AppListenerAdapter extends AppListener {
 
     default boolean enable() {
         return true;

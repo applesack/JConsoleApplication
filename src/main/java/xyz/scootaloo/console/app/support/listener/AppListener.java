@@ -1,4 +1,4 @@
-package xyz.scootaloo.console.app.support.plugin;
+package xyz.scootaloo.console.app.support.listener;
 
 import xyz.scootaloo.console.app.support.component.Moment;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
@@ -10,7 +10,7 @@ import java.util.List;
  * @author flutterdash@qq.com
  * @since 2020/12/30 9:30
  */
-public interface ConsolePlugin {
+public interface AppListener {
 
     /**
      *
