@@ -5,6 +5,7 @@ import xyz.scootaloo.console.app.support.utils.ClassUtils;
 import java.util.function.Supplier;
 
 /**
+ * 代理方法调用
  * @author flutterdash@qq.com
  * @since 2020/12/28 13:20
  */

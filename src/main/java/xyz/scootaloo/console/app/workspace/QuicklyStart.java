@@ -34,6 +34,11 @@ public class QuicklyStart {
         System.out.println("hello " + name);
     }
 
+    @Cmd
+    public int get() {
+        return 1;
+    }
+
     /**
      * 与上面的hello命令相似，这个命令将输入两个整型数值的和，尝试输入：
      *              add 1 2
@@ -97,8 +102,8 @@ public class QuicklyStart {
      */
     @Cmd(name = "stuAdd")
     private void addStudent(Student student) {
-        System.out.println(student.name);
-        System.out.println(student.age);
+        System.out.println("姓名： " + student.name);
+        System.out.println("年龄： " + student.age);
     }
 
     /**
@@ -108,7 +113,7 @@ public class QuicklyStart {
      * 然后这个类就可以做为 命令方法 的参数了
      */
     @Form(dftExtCmd = "-") // 这个注解参数表示，当输入了这个 "-" 符号，则执行退出继续输入，
-    private static class Student {
+    public static class Student {
         // prompt属性表示输入此项数据时的提示，isRequired表示此属性是必选项，未获得有效数据的时候无法退出
         @Prop(prompt = "输入学生姓名", isRequired = true)
         private String name;
@@ -118,7 +123,7 @@ public class QuicklyStart {
         private int age;
 
         // 表单类需要提供一个无参构造方法，private 或者 public 无所谓
-        private Student() {
+        public Student() {
         }
     }
 

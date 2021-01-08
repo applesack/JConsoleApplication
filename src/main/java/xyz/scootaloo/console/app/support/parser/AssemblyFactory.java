@@ -2,6 +2,7 @@ package xyz.scootaloo.console.app.support.parser;
 
 import xyz.scootaloo.console.app.support.common.Colorful;
 import xyz.scootaloo.console.app.support.common.ProxyInvoke;
+import xyz.scootaloo.console.app.support.common.ResourceManager;
 import xyz.scootaloo.console.app.support.component.*;
 import xyz.scootaloo.console.app.support.config.Author;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
@@ -17,25 +18,34 @@ import java.util.function.Function;
 
 /**
  * 装配工厂
- * 系统启动后扫描指定的包下所有类文件，按照一定逻辑进行装配
+ * 扫描配置中的命令工厂类，装配其中的接口实现，带有注解的方法等
  * @author flutterdash@qq.com
  * @since 2020/12/28 10:05
  */
 public class AssemblyFactory {
+    // resources
     private static final Colorful cPrint = ResourceManager.cPrint;
     protected static final Map<String, Actuator> strategyMap = new HashMap<>();
     protected static final List<ActuatorImpl> initActuators = new ArrayList<>();
     protected static final List<ActuatorImpl> preActuators = new ArrayList<>();
     protected static final List<ActuatorImpl> destroyActuators = new ArrayList<>();
 
+    // config
     private static ConsoleConfig config;
     protected static boolean hasInit = false;
 
+    // 进行初始化
     public static void init(ConsoleConfig conf) {
         config = conf;
         doGetStrategyFactories();
     }
 
+    /**
+     * 获取于此命令名对应的执行器对象
+     * 当命令是空的，返回的是执行成功但没有任何内容的结果
+     * @param cmdName 命令名，或者方法名
+     * @return 执行器对象
+     */
     public static Actuator findInvoker(String cmdName) {
         cmdName = cmdName.toLowerCase(Locale.ROOT);
         Actuator actuator = strategyMap.get(cmdName);
@@ -49,6 +59,15 @@ public class AssemblyFactory {
         };
     }
 
+    /**
+     * 执行装配工厂的初始化
+     * 1. 遍历所有的工厂类
+     * 2. 假如当前工厂类也实现的监听器的接口，那么当作监听器进行装配
+     * 3. 遍历当前类的所有方法，假如含有 @Cmd 注解则进行对应的处理
+     *
+     * 4. 装配完成，将所有的 init 方法排序后调用
+     * 5. 将 destroy 方法注册到关闭钩子上
+     */
     private static void doGetStrategyFactories() {
         if (config == null) {
             cPrint.exit0("未加载到配置");
@@ -72,6 +91,7 @@ public class AssemblyFactory {
             }
         }
 
+        // 发布应用启动事件
         EventPublisher.onAppStarted(config);
         sortActuatorLists();
 
@@ -96,10 +116,14 @@ public class AssemblyFactory {
         }));
     }
 
+    // 解析带有 @Cmd 注解的方法
     private static void doResolveCmd(Method method, Cmd cmdAnno, Object o) {
+        // 生成一个包装执行器类对象，这个类提供了一些便捷的方法
         ActuatorImpl actuator = new ActuatorImpl(method, cmdAnno, o);
+        // 假如这个执行器某些规范不通过，则不进行装配
         if (!actuator.checkMethod())
             return;
+        // 根据 type ，执行不同的装配方式
         switch (cmdAnno.type()) {
             case Cmd: {
                 strategyMap.put(method.getName().toLowerCase(Locale.ROOT), actuator);
@@ -123,6 +147,7 @@ public class AssemblyFactory {
         }
     }
 
+    // 对有顺序要求的集合进行排序
     private static void sortActuatorLists() {
         initActuators.sort(Comparator.comparingInt(ActuatorImpl::getOrder));
         preActuators.sort(Comparator.comparingInt(ActuatorImpl::getOrder));

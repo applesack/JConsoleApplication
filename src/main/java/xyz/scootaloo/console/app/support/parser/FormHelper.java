@@ -3,7 +3,7 @@ package xyz.scootaloo.console.app.support.parser;
 import xyz.scootaloo.console.app.support.common.Colorful;
 import xyz.scootaloo.console.app.support.component.Form;
 import xyz.scootaloo.console.app.support.component.Prop;
-import xyz.scootaloo.console.app.support.component.ResourceManager;
+import xyz.scootaloo.console.app.support.common.ResourceManager;
 import xyz.scootaloo.console.app.support.utils.ClassUtils;
 
 import java.lang.reflect.Field;

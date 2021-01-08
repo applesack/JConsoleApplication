@@ -38,6 +38,7 @@ public class InvokeInfo {
         return info;
     }
 
+    // 缺省的成功调用
     public static InvokeInfo simpleSuccess() {
         InvokeInfo info = new InvokeInfo();
         info.success = true;
@@ -82,6 +83,40 @@ public class InvokeInfo {
      */
     public Object get() {
         return rtnVal;
+    }
+
+    // 以基本类型的方式获取
+
+    public long longValue() {
+        return (long) rtnVal;
+    }
+
+    public double doubleValue() {
+        return (double) rtnVal;
+    }
+
+    public float floatValue() {
+        return (float) rtnVal;
+    }
+
+    public int intValue() {
+        return (int) rtnVal;
+    }
+
+    public short shortValue() {
+        return (short) rtnVal;
+    }
+
+    public byte byteValue() {
+        return (byte) rtnVal;
+    }
+
+    public boolean boolValue() {
+        return (boolean) rtnVal;
+    }
+
+    public String strValue() {
+        return (String) rtnVal;
     }
 
 }

@@ -21,16 +21,21 @@ public class Interpreter {
         this.config = config;
     }
 
-    public InvokeInfo interpretation(String cmd) {
+    public InvokeInfo interpret(String cmd) {
         List<String> allTheCmdItem = StringUtils.toList(cmd);
         String cmdName = getCmdName(allTheCmdItem);
         Actuator actuator = AssemblyFactory.findInvoker(cmdName);
         return actuator.invoke(allTheCmdItem);
     }
 
-    public InvokeInfo interpretation(String name, Object ... args) {
+    public InvokeInfo invoke(String name, Object ... args) {
         AssemblyFactory.ActuatorImpl actuator = (AssemblyFactory.ActuatorImpl) AssemblyFactory.findInvoker(name);
         return actuator.invokeByArgs(args);
+    }
+
+    public InvokeInfo invoke(String name) {
+        AssemblyFactory.ActuatorImpl actuator = (AssemblyFactory.ActuatorImpl) AssemblyFactory.findInvoker(name);
+        return actuator.invokeByArgs();
     }
 
     public ConsoleConfig getConfig() {

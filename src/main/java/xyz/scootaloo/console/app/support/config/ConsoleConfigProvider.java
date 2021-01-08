@@ -1,7 +1,7 @@
 package xyz.scootaloo.console.app.support.config;
 
 import xyz.scootaloo.console.app.support.common.Colorful;
-import xyz.scootaloo.console.app.support.component.ResourceManager;
+import xyz.scootaloo.console.app.support.common.ResourceManager;
 import xyz.scootaloo.console.app.support.utils.ClassUtils;
 
 import java.util.ArrayList;
@@ -11,13 +11,11 @@ import java.util.Set;
 
 /**
  * 配置提供者
- * 启动类必须继承此类，配置可以选择性提供
  * @author flutterdash@qq.com
  * @since 2020/12/27 15:33
  */
 public abstract class ConsoleConfigProvider {
 
-    public static final ConsoleConfig DEFAULT_CONFIG = DefaultValueConfigBuilder.defaultConfig();
     private static final Colorful cPrint = ResourceManager.cPrint;
 
     /**
@@ -40,13 +38,25 @@ public abstract class ConsoleConfigProvider {
         }
     }
 
+    /**
+     * 修改配置方式后，这个方法也要被弃用了
+     * @return conf
+     */
+    @Deprecated
     public ConsoleConfig getConfig() {
         ConsoleConfig rsl = register(new DefaultValueConfigBuilder());
         return rsl != null ? rsl : DefaultValueConfigBuilder.defaultConfig();
     }
 
+    /**
+     * 修改配置方式后，这个方法也要被弃用了
+     * @param builder -
+     * @return -
+     */
+    @Deprecated
     public abstract ConsoleConfig register(DefaultValueConfigBuilder builder);
 
+    // 所有域都有默认值的默认值构建者
     public static class DefaultValueConfigBuilder {
 
         // 应用信息
@@ -146,6 +156,7 @@ public abstract class ConsoleConfigProvider {
 
     }
 
+    // 简单配置的配置类
     public static class SimpleConfig {
 
         private final DefaultValueConfigBuilder dvBuilder;

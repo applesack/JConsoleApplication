@@ -10,6 +10,7 @@ import xyz.scootaloo.console.app.workspace.AdvancedDemo;
 import xyz.scootaloo.console.app.workspace.LoginDemo;
 import xyz.scootaloo.console.app.workspace.PluginDemo;
 import xyz.scootaloo.console.app.workspace.QuicklyStart;
+import xyz.scootaloo.console.app.workspace.QuicklyStart.Student;
 
 /**
  * 控制台开发框架
@@ -27,10 +28,9 @@ public class Start {
 
     /**
      * 启动一个控制台应用
-     * 使用过程：
      * 1. 使用Commons.config()进行配置
      * 2. 在workspace目录下进行开发。
-     * 3. 回到此类运行main方法，系统启动。
+     * 3. 回到此类运行此方法，系统启动。
      */
     @Test
     public void testConsoleApplication() {
@@ -57,7 +57,7 @@ public class Start {
                             .add("help") // 系统启动时执行 help 命令
                             .ok()
                         // 增加命令工厂，enable参数决定是否启用该命令工厂，将false修改为true可以开启对应命令工厂的测试，
-                        // 但是为了方便演示，建议测试以下几个类的时候
+                        // 但是为了方便功能演示，建议测试以下几个类的时候，每次只有一个工厂类enable为true
                         .addCommandFactories()
                             .add(QuicklyStart.class, true)
                             .add(AdvancedDemo.class, false)
@@ -84,12 +84,19 @@ public class Start {
                 .build());
 
         // 直接运行命令，得到结果的包装类
-        InvokeInfo result1 = interpreter.interpretation("add 11 12");
+        InvokeInfo result1 = interpreter.interpret("add 11 12");
         System.out.println("执行 'add 11 12' 的结果: " + result1.get());
 
         // 使用参数运行，这里的args等于方法参数，也就是说这里可以看成是调用 add(11, 12)
-        InvokeInfo result2 = interpreter.interpretation("add", 11, 12);
+        InvokeInfo result2 = interpreter.invoke("add", 11, 12);
         System.out.println("使用参数执行，结果: " + result2.get());
+
+        // 解释器调用参数含有对象的方法时，字符串的占位符会触发等待键盘输入，如
+//        InvokeInfo result3 = interpreter.interpret("stuAdd #"); // 在 main 方法中调用可以观察到
+
+        // result3的方式调用参数中含有对象的方法，可能会引起线程阻塞，可以使用 invoke 方法传入对象调用
+        // 或者实现自定义的类型转换器，参考 AdvancedDemo.resolveByte(Str) 方法
+        InvokeInfo result4 = interpreter.invoke("stuAdd", new Student());
     }
 
 }

@@ -1,6 +1,7 @@
 package xyz.scootaloo.console.app.support.common;
 
 /**
+ * 控制台的颜色代码，在某些平台可能不生效
  * @author flutterdash@qq.com
  * @since 2020/12/27 16:19
  */

@@ -1,6 +1,4 @@
-package xyz.scootaloo.console.app.support.component;
-
-import xyz.scootaloo.console.app.support.common.Colorful;
+package xyz.scootaloo.console.app.support.common;
 
 import java.util.Scanner;
 

@@ -1,7 +1,7 @@
 package xyz.scootaloo.console.app.support.utils;
 
 import xyz.scootaloo.console.app.support.common.Colorful;
-import xyz.scootaloo.console.app.support.component.ResourceManager;
+import xyz.scootaloo.console.app.support.common.ResourceManager;
 
 import java.io.*;
 import java.net.URL;

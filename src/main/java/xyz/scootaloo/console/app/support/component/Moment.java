@@ -12,9 +12,10 @@ public enum Moment {
     // 系统接收到键盘输入的命令时被调用
     OnInput,
 
-    // 系统解析
+    // 获取输入之后，解析之前
     OnResolveInput,
 
+    // 解析之后
     OnInputResolved
 
 }

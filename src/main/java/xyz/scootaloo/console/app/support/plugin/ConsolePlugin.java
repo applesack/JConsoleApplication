@@ -12,6 +12,10 @@ import java.util.List;
  */
 public interface ConsolePlugin {
 
+    /**
+     *
+     * @return 是否启用
+     */
     boolean enable();
 
     /**

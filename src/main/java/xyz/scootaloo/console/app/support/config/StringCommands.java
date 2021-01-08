@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * 增加初始化命令的构建者类
  * @author flutterdash@qq.com
  * @since 2021/1/6 22:08
  */

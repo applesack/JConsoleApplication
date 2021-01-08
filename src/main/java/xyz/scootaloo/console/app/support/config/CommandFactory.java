@@ -1,13 +1,12 @@
 package xyz.scootaloo.console.app.support.config;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
-import static xyz.scootaloo.console.app.support.config.ConsoleConfigProvider.*;
+import static xyz.scootaloo.console.app.support.config.ConsoleConfigProvider.DefaultValueConfigBuilder;
 
 /**
+ * 增加命令工厂时使用的构建者类
  * @author flutterdash@qq.com
  * @since 2021/1/6 22:17
  */
