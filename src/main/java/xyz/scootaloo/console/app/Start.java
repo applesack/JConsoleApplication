@@ -30,7 +30,7 @@ public class Start {
      * 启动一个控制台应用
      * 1. 使用Commons.config()进行配置
      * 2. 在workspace目录下进行开发。
-     * 3. 回到此类运行 main 方法，系统启动。
+     * 3. 回到此类运行此 main 方法，系统启动。
      */
     public static void main(String[] args) {
         ApplicationRunner.consoleApplication(
@@ -39,7 +39,7 @@ public class Start {
                         .appName("测试应用示例") // 应用的名称
                         .printWelcome(true)   // 是否打印欢迎信息
                         .prompt("example> ")  // 控制台输入的提示符
-                        .printStackTrace(false) // 遇到异常时是否打印调用栈
+                        .printStackTrace(true) // 遇到异常时是否打印调用栈
                         .exitCmd(new String[] {"exit", "e.", "q"}) // 使用这些命令可以退出应用
                         .maxHistory(128) // 最多保存的历史记录，
                         // 编辑作者信息，当printWelcome设置为false时，这些信息不会被输出
@@ -90,7 +90,7 @@ public class Start {
         InvokeInfo result2 = interpreter.invoke("add", 11, 12);
         System.out.println("使用参数执行，结果: " + result2.get());
 
-        // 解释器调用参数含有对象的方法时，字符串的占位符会触发等待键盘输入，如
+        // 解释器调用参数含有对象的方法时，字符串命令中的占位符会触发等待键盘输入，如
 //        InvokeInfo result3 = interpreter.interpret("stuAdd #"); // 在 main 方法中调用可以观察到
 
         // result3的方式调用参数中含有对象的方法，某些场景下可能会引起线程阻塞，可以使用 invoke 方法传入对象调用

@@ -2,10 +2,8 @@ package xyz.scootaloo.console.app.support.parser;
 
 import xyz.scootaloo.console.app.support.utils.ClassUtils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.lang.reflect.Type;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -42,11 +40,11 @@ public class TransformFactory {
     }
 
     // 将value转换为type的类型
-    public static Object resolveArgument(Object value, Class<?> type) {
-        if (type.isArray() || ClassUtils.isExtendForm(type, List.class)) {
-            return resolveArray(value, type);
+    public static Object resolveArgument(Object value, Class<?> classType, Type genericType) throws Exception {
+        if (classType.isArray() || ClassUtils.isExtendForm(classType, Collection.class)) {
+            return resolveArray(value, classType, genericType);
         } else {
-            return simpleTrans(String.valueOf(value), type);
+            return simpleTrans(String.valueOf(value), classType);
         }
     }
 
@@ -80,9 +78,18 @@ public class TransformFactory {
         }
     }
 
-    // todo 解析数组
-    private static Object resolveArray(Object value, Class<?> type) {
-        return value == type;
+    private static Object resolveArray(Object value, Class<?> type, Type genericType) throws ClassNotFoundException {
+        if (type.isArray()) {
+            return ClassUtils.genArray(type.getComponentType(), (String) value);
+        } else {
+            if (ClassUtils.isExtendForm(type, Set.class)) {
+                return ClassUtils.genSet(ClassUtils.getRawType(genericType), (String) value);
+            } else if (ClassUtils.isExtendForm(type, List.class)) {
+                return ClassUtils.genList(ClassUtils.getRawType(genericType), (String) value);
+            } else {
+                throw new RuntimeException("暂不支持的数据结构: " + type.getName());
+            }
+        }
     }
 
     private static void putDefVal(Function<String, Object> convertor) {

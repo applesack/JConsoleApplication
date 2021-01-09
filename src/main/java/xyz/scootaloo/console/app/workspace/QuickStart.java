@@ -4,6 +4,10 @@ import xyz.scootaloo.console.app.support.component.Cmd;
 import xyz.scootaloo.console.app.support.component.Form;
 import xyz.scootaloo.console.app.support.component.Prop;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
 /**
  *   #####################################
  *  # 提示: 此类可以删除或者修改，不影响系统功能 #
@@ -67,6 +71,26 @@ public class QuickStart {
     @Cmd(name = "multiply")
     private void mul(int a, Integer b) {
         System.out.println(a * b);
+    }
+
+    /**
+     * 方法参数中可以使用集合，对于数组，建议使用基本类型的包装类，否则会引发异常
+     * 尝试输入
+     *      g 1,2,4,3 1.1,1.2,1.3 11,12,11,13
+     * 所有数值都被正确处理了，这里参数之间还是使用空格隔开，用逗号分割集合参数的各个数据项
+     * 目前支持 数组array 列表List 集Set
+     * List 实现是 ArrayList
+     * Set  实现是 LinkedHashSet
+     * : 后续可能会增加对Queue和Map的支持
+     * @param arr -
+     * @param floats -
+     * @param set -
+     */
+    @Cmd
+    private void g(Integer[] arr, List<Float> floats, Set<String> set) {
+        System.out.println(Arrays.toString(arr));
+        System.out.println(floats);
+        System.out.println(set);
     }
 
     /**

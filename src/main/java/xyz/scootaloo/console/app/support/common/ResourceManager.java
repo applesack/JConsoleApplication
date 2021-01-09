@@ -11,5 +11,6 @@ public interface ResourceManager {
 
     Scanner scanner = new Scanner(System.in);
     Colorful cPrint = Colorful.instance;
+    ClassLoader loader = ResourceManager.class.getClassLoader();
 
 }

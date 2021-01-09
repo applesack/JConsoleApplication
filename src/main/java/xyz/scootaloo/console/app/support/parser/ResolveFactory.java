@@ -5,6 +5,7 @@ import xyz.scootaloo.console.app.support.component.Req;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +42,7 @@ public class ResolveFactory {
         if (method.getParameterCount() == 0)
             return ResultWrapper.success(null);
         Class<?>[] argTypes = method.getParameterTypes();
+        Type[] genericTypes = method.getGenericParameterTypes();
         Annotation[][] parameterAnnoArrays = method.getParameterAnnotations();
         List<Object> args = new ArrayList<>();
 
@@ -56,16 +58,16 @@ public class ResolveFactory {
             if (curAnnoArr.length == 0) {
                 if (cmdline.isEmpty())
                     return ResultWrapper.fail(new RuntimeException("命令不完整"));
-                args.add(resolveArgument(cmdline.remove(0), curArgType));
+                args.add(resolveArgument(cmdline.remove(0), argTypes[i], genericTypes[i]));
                 continue;
             }
 
             anno = findAnnoFromArray(curAnnoArr, Opt.class);
             if (anno != null) {
                 Opt option = (Opt) anno;
-                if (getAndRemove(args, option.value(), curArgType, optMap)) {
+                if (getAndRemove(args, option.value(), curArgType, genericTypes[i], optMap)) {
                     if (option.value() == '*') {
-                        wildcardArguments.add(new WildcardArgument(i, curArgType));
+                        wildcardArguments.add(new WildcardArgument(i, curArgType, genericTypes[i]));
                     }
                     if (!option.defVal().equals("")) {
                         args.set(args.size() - 1, TransformFactory
@@ -76,7 +78,7 @@ public class ResolveFactory {
             anno = findAnnoFromArray(curAnnoArr, Req.class);
             if (anno != null) {
                 Req required = (Req) anno;
-                if (getAndRemove(args, required.value(), curArgType, reqMap)) {
+                if (getAndRemove(args, required.value(), curArgType, genericTypes[i], reqMap)) {
                     return ResultWrapper.fail(new RuntimeException("缺少必选参数[" + required.value() + "]"));
                 }
             }
@@ -86,7 +88,8 @@ public class ResolveFactory {
             for (WildcardArgument wildcardArgument : wildcardArguments) {
                 if (!cmdline.isEmpty()) {
                     args.set(wildcardArgument.idx,
-                            resolveArgument(cmdline.remove(0), wildcardArgument.type));
+                            resolveArgument(cmdline.remove(0), wildcardArgument.type,
+                                    wildcardArgument.generic));
                 }
             }
         }
@@ -151,19 +154,24 @@ public class ResolveFactory {
         return new Node(segments[0], segments[1]);
     }
 
-    private static Object resolveArgument(Object value, Class<?> type) {
-        return TransformFactory.resolveArgument(value, type);
+    private static Object resolveArgument(Object value, Class<?> classType, Type genericType) {
+        try {
+            return TransformFactory.resolveArgument(value, classType, genericType);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("格式解析时异常: " + e.getMessage());
+        }
     }
 
     private static boolean getAndRemove(List<Object> arg, Object key,
-                                        Class<?> type, Map<?, Object> map) {
+                                        Class<?> classType, Type genericType, Map<?, Object> map) {
         String rKey = String.valueOf(key);
         if (map.containsKey(String.valueOf(rKey))) {
-            arg.add(resolveArgument(map.get(rKey), type));
+            arg.add(resolveArgument(map.get(rKey), classType, genericType));
             map.remove(key);
             return false;
         } else {
-            arg.add(TransformFactory.getDefVal(type));
+            arg.add(TransformFactory.getDefVal(classType));
             return true;
         }
     }
@@ -211,10 +219,12 @@ public class ResolveFactory {
 
         final int idx;
         final Class<?> type;
+        final Type generic;
 
-        public WildcardArgument(int idx, Class<?> type) {
+        public WildcardArgument(int idx, Class<?> type, Type generic) {
             this.idx = idx;
             this.type = type;
+            this.generic = generic;
         }
 
     }

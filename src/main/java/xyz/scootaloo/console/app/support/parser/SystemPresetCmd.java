@@ -72,7 +72,7 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
         }
     }
 
-    // ---------------------------------插件实现----------------------------------------
+    // ---------------------------------监听器----------------------------------------
 
     @Override
     public String getName() {
