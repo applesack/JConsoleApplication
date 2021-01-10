@@ -2,8 +2,10 @@ package xyz.scootaloo.console.app.workspace;
 
 import xyz.scootaloo.console.app.support.component.Cmd;
 import xyz.scootaloo.console.app.support.component.Form;
+import xyz.scootaloo.console.app.support.component.Opt;
 import xyz.scootaloo.console.app.support.component.Prop;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -110,6 +112,15 @@ public class QuickStart {
         sum += c;
         sum /= 3;
         System.out.println(sum);
+    }
+
+    @Cmd
+    public void set(@Opt('i') boolean i, @Opt(value = 'd', defVal = "true") boolean d, @Opt('t') boolean t) {
+        List<Character> options = new ArrayList<>();
+        if (d) options.add('d');
+        if (i) options.add('i');
+        if (t) options.add('t');
+        System.out.println("选中: " + options);
     }
 
     /**

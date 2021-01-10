@@ -5,8 +5,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import static java.lang.String.valueOf;
-
 /**
  * 标记于方法参数，可以通过 "-参数名 参数值" 来进行引用
  * @author flutterdash@qq.com
