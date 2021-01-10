@@ -20,6 +20,7 @@ public @interface Opt {
     // 命令的全称
     String fullName() default "";
 
+    // 是否是必须的
     boolean required() default false;
 
     // 当可选参数未选中时可以提供一个默认值

@@ -10,12 +10,12 @@ import java.util.List;
  *  # 提示: 此类可以删除或者修改，不影响系统功能 #
  * ######################################
  *
- * +++++++++++++++++++++++++++++++
- * + 回顾基础功能的使用，请跳转至:     +
- * + {@link QuickStart}        +
- * +                             +
+ * ++++++++++++++++++++++++++++++
+ * + 回顾基础功能的使用，请跳转至:    +
+ * + {@link QuickStart}         +
+ * +                            +
  * + 系统中的监听器开发，请跳转至:    +
- * + {@link ListenerDemo}         +
+ * + {@link ListenerDemo}       +
  * +                            +
  * + 简易的登陆系统实现示例，请跳转至: +
  * + {@link LoginDemo}          +
@@ -25,7 +25,7 @@ import java.util.List;
  * + 命令工厂的生命周期
  * + 命令的类型
  * + 自定义的过滤器
- * + 可选参数和必选参数
+ * + 可命名参数的使用
  * ----------------
  * @author flutterdash@qq.com
  * @since 2020/12/28 12:57
@@ -86,25 +86,23 @@ public class AdvancedDemo {
     }
 
     /**
-     * [可选参数 & 必选参数]
-     * - @Opt 可选参数，@Opt注解的参数是一个字符，这个字符代表参数的名称，这个字符与注解的参数没有关系，只是做一个标识，
-     *          有三种模式可以使用可选参数，
-     *          1. 例如 -abc 这种格式代表选中了a、b和c三个选项，-ab 则表示选中了a和b两个选项。
-     *              选中的选项对应的方法参数就是true，否则就是false，这种模式只针对boolean类型的参数的简化写法，对于其他类型不生效。
-     *          2. 例如 -a -b -c 分开写，效果等同于 -abc
-     *          3. 例如 -a=true -b=false -c=11，使用这种模式会把等于号后面的数值赋值给方法参数。
-     *          三种方式可以混合使用，并且位置不受影响，
-     *              -a -b  等于 -b -a
-     *              -ab    等于 -ba
-     *              -a=1 -b=2 等于 -b=2 -a=1
-     *          注意： 可选参数 @Opt 注解可以用 defVal 参数指定一个默认值，当该选项没有被选中时默认值生效
-     * - @Req 必选参数，@Req注解的参数是必选项的标记，以当前这个方法为例，--name=小明，则小明这个属性被注入到了name参数中
-     *          注意：当缺少必选参数，方法无法被调用
-     *
+     * [可命名参数]
+     * - @Opt 这个注解可以用于将某个方法参数以类似linux命令的方式调用，这种方式的参数以一个横杠紧接着一个参数名，然后在空格后是参数值
+     *          例如这样的 opt -name xiaoMing
+     *        然后这个注解有几个属性，
+     *        value 此参数的简称
+     *        fullName 用一个参数的全称来指向这个方法参数
+     *        required 表示这个方法是否是必须的，假如是，命令中没有这个参数则方法不会被调用。默认是false
+     *        defVal 在命令中没有参数时，提供一个默认值
+     * 注意: value 和 fullName 效果相同，只是习惯上单横杠接参数简称，双横杠接参数全称，比如 -n jack 等于 --name jack
+     * 注意: 在命名参数中，假如对应的方法参数是布尔值，则对应的命令值可以省略，例如 -a true 等于 -a
+     *      多个布尔类型的命令参数，可以写到一起，例如 -a -b -c 等于 -abc 等于 -ab -c
+     * 注意: 参数默认值的使用，@Opt的defVal属性虽然是字符串，但系统会自动将字符串转换成对应的基础类型，请放心使用
      * ----------------测试命令----------------
-     *       opt -ab -c=13 --name=xiaoMing
-     *       opt --name=xiaoMing -a
-     *       opt --name=xiaoMing
+     *       opt -ab -c --name jack
+     *       opt -n jack -a -d 15
+     *       opt --name jack
+     *       opt -n jack -abc -d 12 70
      * --------------------------------------
      * @param a -
      * @param b -
@@ -112,14 +110,17 @@ public class AdvancedDemo {
      * @param name -
      */
     @Cmd
-    public void opt(@Opt('a') boolean a, @Opt('b') boolean b, @Opt(value = 'c', defVal = "19") int c,
-                    @Req("name") String name) {
+    public void opt(@Opt('a') boolean a, @Opt('b') boolean b, @Opt('c') boolean c,
+                    @Opt(value = 'd', defVal = "19") int d,
+                    @Opt(value = 'n', fullName = "name", required = true) String name, @Opt('g') int age) {
 
         List<Character> options = new ArrayList<>();
         if (a) options.add('a');
         if (b) options.add('b');
+        if (c) options.add('c');
         System.out.println(options);
-        System.out.println("c: " + c);
+        System.out.println("d: " + d);
+        System.out.println("age: " + age);
         System.out.println("你好: " + name);
     }
 
@@ -127,9 +128,9 @@ public class AdvancedDemo {
      * 有了这两个功能以后，下面写一个方法来模拟Docker的run的命令
      *
      * ----------------测试命令----------------
-     * run bootshiro --name=bootshiro
-     * run --name=bootshiro -dit -v=/data:/home/usr -p=8080:80 bootshiro
-     * run --name=bootshiro -it -v=/data:/home/usr -p=8080:80 bootshiro shell
+     * run bootshiro --name bootshiro
+     * run --name bootshiro -dit -v /data:/home/usr -p 8080:80 bootshiro
+     * run --name bootshiro -it -v /data:/home/usr -p 8080:80 bootshiro shell
      * --------------------------------------
      *
      * 2020/12/30 补充一个新特性
@@ -148,7 +149,7 @@ public class AdvancedDemo {
     @Cmd
     private void run(String imageName,
                      @Opt('d') boolean d, @Opt('i') boolean i, @Opt('t') boolean t,
-                     @Req("name") String name,
+                     @Opt(value = 'n', fullName = "name") String name,
                      @Opt('v') String pathMapping, @Opt('p') String portMapping,
                      @Opt(value = '*', defVal = "/bin/bash") String interpreter) {
 
@@ -169,7 +170,7 @@ public class AdvancedDemo {
      * 自定义某种类型的处理方式，这里示例对byte类型的自定义处理方式，将byte结果进行自增1
      * 注意，方法参数是String，这个是不能变的
      * @param bt String，且只能有这一个参数
-     * @return 最终类型，于targets一致，起码是能相互转换的
+     * @return 最终类型，于targets一致，起码是返回值能向targets转换的
      */
     @Cmd(type = CmdType.Parser, targets = {byte.class, Byte.class})
     public byte resolveByte(String bt) {

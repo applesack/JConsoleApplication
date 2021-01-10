@@ -16,7 +16,7 @@ import java.util.Set;
  * ######################################
  *
  * ---- 快速开始，演示基本功能 ----
- * 方法即是命令，方法参数即是命令参数
+ * 命令即是方法，命令参数即是方法参数
  *
  * 系统的进阶用法，请跳转至:
  * {@link AdvancedDemo}
@@ -114,15 +114,6 @@ public class QuickStart {
         System.out.println(sum);
     }
 
-    @Cmd
-    public void set(@Opt('i') boolean i, @Opt(value = 'd', defVal = "true") boolean d, @Opt('t') boolean t) {
-        List<Character> options = new ArrayList<>();
-        if (d) options.add('d');
-        if (i) options.add('i');
-        if (t) options.add('t');
-        System.out.println("选中: " + options);
-    }
-
     /**
      * 表单功能
      * 尝试输入
@@ -142,7 +133,7 @@ public class QuickStart {
      * 另外需要由键盘输入值的属性上增加 @Prop 注解
      * 然后这个类就可以做为 命令方法 的参数了
      */
-    @Form(dftExtCmd = "-") // 这个注解参数表示，当输入了这个 "-" 符号，则执行退出继续输入，
+    @Form(dftExtCmd = "-") // 这个注解参数表示，当输入了这个 "-" 符号，则执行退出输入，
     public static class Student {
         // prompt属性表示输入此项数据时的提示，isRequired表示此属性是必选项，未获得有效数据的时候无法退出
         @Prop(prompt = "输入学生姓名", isRequired = true)

@@ -58,10 +58,10 @@ public class Start {
                         // 增加命令工厂，enable参数决定是否启用该命令工厂，将false修改为true可以开启对应命令工厂的测试，
                         // 但是为了方便功能演示，建议测试以下几个类的时候，每次只有一个工厂类enable为true
                         .addCommandFactories()
-                            .add(QuickStart.class, true)
+                            .add(QuickStart.class, false)
                             .add(AdvancedDemo.class, false)
                             .add(ListenerDemo.class, false)
-                            .add(LoginDemo.class, false)
+                            .add(LoginDemo.class, true)
                             .ok()
                         // 设置完成，应用启动
                         .build());

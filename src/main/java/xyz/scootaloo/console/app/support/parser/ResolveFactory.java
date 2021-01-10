@@ -126,7 +126,7 @@ public class ResolveFactory {
             if (curSegment.isEmpty())
                 continue;
             String nextSeg = PLACEHOLDER;
-            if (isContainsAll(curSegment, shortParamsSet)) {
+            if (curSegment.length() > 1 && isContainsAll(curSegment, shortParamsSet)) {
                 for (char shortParam : curSegment.toCharArray()) {
                     optMap.put(String.valueOf(shortParam), true);
                 }
@@ -165,7 +165,6 @@ public class ResolveFactory {
             else
                 return TransformFactory.resolveArgument(value, classType, genericType);
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException("格式解析时异常: " + e.getMessage());
         }
     }

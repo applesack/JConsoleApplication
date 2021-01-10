@@ -293,7 +293,7 @@ public class AssemblyFactory {
                     boolean result = (boolean) info.get();
                     if (!result)
                         return InvokeInfo.failed(rtnType, null,
-                                new RuntimeException("错误信息: " + actuator.cmd.onError()));
+                                new RuntimeException(actuator.cmd.onError()));
                 }
             }
             return InvokeInfo.simpleSuccess();

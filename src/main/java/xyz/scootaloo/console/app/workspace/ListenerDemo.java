@@ -15,9 +15,9 @@ import java.util.List;
  * ------ 插件 ------
  * 更准确的说法应该是拦截器，
  * 在系统运行的不同节点，注册的方法即被调用。
- * 可以通过实现 ConsolePlugin 接口来补充
+ * 可以通过实现 AppListener 接口来补充
  * ConsolePlugin 有一个适配器接口 ConsolePluginAdapter，可以通过实现这个适配器来完成插件的开发。
- * 系统中有一个默认的插件，实现历史记录功能和占位符替换功能 {@link xyz.scootaloo.console.app.support.parser.SystemPresetCmd}
+ * 系统中有一个默认的监听器，实现历史记录功能和占位符替换功能 {@link xyz.scootaloo.console.app.support.parser.SystemPresetCmd}
  * -----------------
  * @see AppListener
  *
@@ -27,25 +27,25 @@ import java.util.List;
 public class ListenerDemo implements AppListenerAdapter {
 
     /**
-     * 每个插件都需要有一个名字，
-     * 可以通过下面几个命令查看系统中的插件
-     *      plgs             --- 查看系统中的插件
-     *      dis [插件名]      --- 停用某插件
-     *      en [插件名]       --- 重新启用被停用的插件
+     * 每个监听器都需要有一个名字，
+     * 可以通过下面几个命令查看系统中的监听器
+     *      lis               --- 查看系统中的监听器
+     *      dis [监听器名]      --- 停用某监听器
+     *      en [监听器名]       --- 重新启用被停用的监听器
      * @return 插件的名字
      */
     @Override
     public String getName() {
-        return "myPlg";
+        return "myLis";
     }
 
     /**
-     * 通过 plgs 命令可以查看到
-     * @return 返回插件的描述
+     * 通过 lis 命令可以查看到
+     * @return 返回监听器的描述
      */
     @Override
     public String info() {
-        return "插件测试 -";
+        return "监听器测试 -";
     }
 
     /**

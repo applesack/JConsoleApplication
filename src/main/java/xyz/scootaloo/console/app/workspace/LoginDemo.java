@@ -25,17 +25,18 @@ import java.util.stream.Stream;
  * @since 2020/12/30 23:06
  */
 public class LoginDemo implements AppListenerAdapter,
-        Colorful { // 本系统可以使用实现接口的方式，简洁的调用工具类的方法
+        Colorful { // 本系统可以使用实现接口的方式，简洁的调用工具类的方法，目前支持的接口有ResourceManager和Colorful
 
-    private final Map<String, User> userMap;
-    private String curCmd;
-    private boolean hasLogin = false;
+    private final Map<String, User> userMap; // 用户map, key=用户名, value=密码
+    private String curCmd; // 当前执行的命令
+    private boolean hasLogin = false; // 当前是否登陆了
 
     // 提供public的无参构造方法
     public LoginDemo() {
         userMap = new HashMap<>();
     }
 
+    // 在系统启动后载入用户数据
     @Cmd(type = CmdType.Init)
     private void loadUsers() {
         // 加载用户数据，可以修改成其他实现方式，例如从数据库中或者文件中获取
@@ -45,6 +46,7 @@ public class LoginDemo implements AppListenerAdapter,
         userMap.put("test", new User("test", "admin"));
     }
 
+    // 检查用户当前的操作是否被运行
     @Cmd(type = CmdType.Pre,onError = "未登陆，无法执行此操作")
     private boolean checkLogin() {
         // 保存一个允许放行的集合
@@ -92,7 +94,7 @@ public class LoginDemo implements AppListenerAdapter,
 
     @Override
     public String getName() {
-        return "loginPlg";
+        return "loginLis";
     }
 
     @Override

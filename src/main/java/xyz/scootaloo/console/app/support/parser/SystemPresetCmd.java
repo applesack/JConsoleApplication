@@ -25,7 +25,7 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
     private static ConsoleConfig config;
 
     @Cmd(name = "hp")
-    private void help(@Opt(value = '*', defVal = "all") String cmdName) {
+    private void help(@Opt(value = 'n', defVal = "all") String cmdName) {
         if (cmdName.equals("all")) {
             for (Actuator actuator : AssemblyFactory.strategyMap.values()) {
                 printInfo(actuator);
@@ -37,13 +37,13 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
     }
 
     @Cmd(name = "dis")
-    private void disable(String plgName) {
-        EventPublisher.disableListener(plgName);
+    private void disable(String lisName) {
+        EventPublisher.disableListener(lisName);
     }
 
     @Cmd(name = "en")
-    private void enable(String plgName) {
-        EventPublisher.enableListener(plgName);
+    private void enable(String lisName) {
+        EventPublisher.enableListener(lisName);
     }
 
     @Cmd(name = "lis")
@@ -107,13 +107,13 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
 
     @Override
     public String info() {
-        return "系统自带的插件，将命令参数中的占位符替换成函数的返回值，另外记录执行过的命令信息";
+        return "系统自带的监听器，将命令参数中的占位符替换成函数的返回值，另外记录执行过的命令信息";
     }
 
 
 
     // ---------------------------------------------------------------------------------
-    // 实现历史记录功能时使用，前提条件是必须启用本类的插件
+    // 实现历史记录功能时使用，前提条件是sys监听器已经启用
     private static class CmdInfo {
         private static final LinkedList<CmdInfo> history = new LinkedList<>();
 
