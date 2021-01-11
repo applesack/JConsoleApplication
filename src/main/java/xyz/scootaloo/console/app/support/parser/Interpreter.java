@@ -10,8 +10,8 @@ import java.util.List;
  * @since 2021/1/6 23:00
  */
 public class Interpreter {
-
     private final ConsoleConfig config;
+    protected static InvokeInfo lastInvokeInfo;
 
     public Interpreter(ConsoleConfig config) {
         if (!AssemblyFactory.hasInit) {
@@ -21,6 +21,7 @@ public class Interpreter {
         this.config = config;
     }
 
+    // 执行命令
     public InvokeInfo interpret(String cmd) {
         List<String> allTheCmdItem = StringUtils.toList(cmd);
         String cmdName = getCmdName(allTheCmdItem);
@@ -28,13 +29,15 @@ public class Interpreter {
         return actuator.invoke(allTheCmdItem);
     }
 
+    // 根据方法名调用有参方法，需要注入参数
     public InvokeInfo invoke(String name, Object ... args) {
-        AssemblyFactory.ActuatorImpl actuator = (AssemblyFactory.ActuatorImpl) AssemblyFactory.findInvoker(name);
+        AssemblyFactory.MethodActuator actuator = (AssemblyFactory.MethodActuator) AssemblyFactory.findInvoker(name);
         return actuator.invokeByArgs(args);
     }
 
+    // 根据方法名调用无参方法
     public InvokeInfo invoke(String name) {
-        AssemblyFactory.ActuatorImpl actuator = (AssemblyFactory.ActuatorImpl) AssemblyFactory.findInvoker(name);
+        AssemblyFactory.MethodActuator actuator = (AssemblyFactory.MethodActuator) AssemblyFactory.findInvoker(name);
         return actuator.invokeByArgs();
     }
 

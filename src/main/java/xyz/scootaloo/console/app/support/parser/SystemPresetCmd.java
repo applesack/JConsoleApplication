@@ -1,7 +1,9 @@
 package xyz.scootaloo.console.app.support.parser;
 
 import xyz.scootaloo.console.app.support.common.Colorful;
-import xyz.scootaloo.console.app.support.component.*;
+import xyz.scootaloo.console.app.support.component.Cmd;
+import xyz.scootaloo.console.app.support.component.Moment;
+import xyz.scootaloo.console.app.support.component.Opt;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 import xyz.scootaloo.console.app.support.listener.AppListenerAdapter;
 import xyz.scootaloo.console.app.support.listener.EventPublisher;
@@ -10,12 +12,11 @@ import xyz.scootaloo.console.app.support.utils.StringUtils;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.ListIterator;
 
 /**
  * 系统预设的命令
- * help dis en his sleep 等
+ * app help dis en his sleep 等
  * @author flutterdash@qq.com
  * @since 2020/12/29 19:43
  */
@@ -23,8 +24,17 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
 
     private static final Colorful cPrint = instance;
     private static ConsoleConfig config;
+    private static final String version = "v0.1";
+    private static final String SYS_TAG = "sys";
 
-    @Cmd(name = "hp")
+    @Cmd(name = "app", tag = SYS_TAG)
+    private void application(@Opt('v') boolean ver) {
+        if (ver)
+            println("版本: " + version);
+        cPrint.println("https://github.com/applesack/JConsoleApplication.git");
+    }
+
+    @Cmd(name = "hp", tag = SYS_TAG)
     private void help(@Opt(value = 'n', defVal = "all") String cmdName) {
         if (cmdName.equals("all")) {
             for (Actuator actuator : AssemblyFactory.strategyMap.values()) {
@@ -36,39 +46,46 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
         }
     }
 
-    @Cmd(name = "dis")
+    @Cmd(name = "dis", tag = SYS_TAG)
     private void disable(String lisName) {
         EventPublisher.disableListener(lisName);
     }
 
-    @Cmd(name = "en")
+    @Cmd(name = "en", tag = SYS_TAG)
     private void enable(String lisName) {
         EventPublisher.enableListener(lisName);
     }
 
-    @Cmd(name = "lis")
+    @Cmd(name = "lis", tag = SYS_TAG)
     private void listeners() {
         EventPublisher.showAllListeners();
     }
 
-    @Cmd(name = "his")
-    private void history(@Opt(value = 'n', defVal = "-1") int n, @Opt(value = 's') String name) {
-        CmdInfo.select(name, n);
+    @Cmd(name = "his", tag = SYS_TAG)
+    private void history(@Opt(value = 'n', fullName = "size", defVal = "-1") int size,
+                         @Opt(value = 's', fullName = "name") String name,
+                         @Opt(value = 'a', fullName = "all") boolean isAll,
+                         @Opt(value = 'u', fullName = "success") boolean success,
+                         @Opt(value = 'r', fullName = "rtnVal") boolean rtnVal,
+                         @Opt(value = 'g', fullName = "args") boolean args,
+                         @Opt(value = 't', fullName = "invokeAt") boolean invokeAt,
+                         @Opt(value = 'i', fullName = "interval") boolean interval) {
+        History.select(name, size, isAll, success, rtnVal, args, invokeAt, interval);
     }
 
-    @Cmd
-    private void sleep(int millis) throws InterruptedException {
+    @Cmd(tag = SYS_TAG)
+    private void sleep(@Opt('m') int millis) throws InterruptedException {
         Thread.sleep(millis);
     }
 
-    @Cmd(name = "cls")
+    @Cmd(name = "cls", tag = SYS_TAG)
     private void clear() {
         println("清屏功能用java代码实现比较繁琐，目前暂时不考虑实现这个功能");
     }
 
     private void printInfo(Actuator actuator) {
-        if (actuator instanceof AssemblyFactory.ActuatorImpl) {
-            ((AssemblyFactory.ActuatorImpl) actuator).printInfo();
+        if (actuator instanceof AssemblyFactory.MethodActuator) {
+            ((AssemblyFactory.MethodActuator) actuator).printInfo();
         }
     }
 
@@ -91,18 +108,13 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
 
     @Override
     public boolean accept(Moment moment) {
-        return moment == Moment.OnResolveInput || moment == Moment.OnAppStarted ||
-                moment == Moment.OnInputResolved;
+        return moment == Moment.OnInputResolved || moment == Moment.OnAppStarted;
     }
 
     @Override
-    public void onResolveInput(String cmdName, List<String> cmdItems) {
-        CmdInfo.start(cmdName, cmdItems);
-    }
-
-    @Override
-    public void onInputResolved(String cmdName, Object rtnVal) {
-        CmdInfo.end();
+    public void onInputResolved(String cmdName, InvokeInfo info) {
+        if (info != null)
+            History.add(info);
     }
 
     @Override
@@ -111,45 +123,47 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
     }
 
 
-
     // ---------------------------------------------------------------------------------
     // 实现历史记录功能时使用，前提条件是sys监听器已经启用
-    private static class CmdInfo {
-        private static final LinkedList<CmdInfo> history = new LinkedList<>();
+    private static class History {
+        // 历史记录
+        private static final LinkedList<InvokeInfo> history = new LinkedList<>();
 
-        private static final SimpleDateFormat sdf = new SimpleDateFormat("hh:mm");
-        private final String name;
-        private final String time;
+        // 日期转换器 执行时间
+        private static final SimpleDateFormat time_sdf = new SimpleDateFormat("hh:mm");
 
-        private final String args;
-        private long interval;
-
-        private CmdInfo(String name, List<String> args) {
-            this.args = (args == null ? "" : String.join(" ", args)).trim();
-            this.name = name;
-            this.time = sdf.format(new Date());
-            this.interval = System.currentTimeMillis();
-        }
-
-        public void printInfo() {
+        public static void printInfo(InvokeInfo info, boolean isAll, boolean success,
+                                     boolean rtnVal, boolean args,
+                                     boolean invokeAt, boolean interval) {
             StringBuilder sb = new StringBuilder();
-            sb.append("[").append(time).append(" ").append(StringUtils.trimNumberSizeTo4(interval))
-                    .append("] [").append(name).append(" ").append(args).append("]");
+            // 执行的日期
+            if (isAll || invokeAt)
+                sb.append('[').append(time_sdf.format(new Date(info.getInvokeAt()))).append("] ");
+            // 执行用时
+            if (isAll || interval)
+                sb.append('[').append(StringUtils.trimNumberSizeTo4(info.getInterval())).append("] ");
+            // 命令/方法名
+            sb.append("[name: ").append(info.getName()).append("] ");
+            // 是否成功
+            if (isAll || success)
+                sb.append('[').append(info.isSuccess()).append("] ");
+            // 使用的参数
+            if (isAll || args)
+                sb.append("[args: ").append(info.getCmdArgs()).append("] ");
+            // 返回值
+            if (isAll || rtnVal)
+                sb.append("[rtn: ").append(info.getRtnVal()).append(']');
             cPrint.println(sb);
         }
 
-        public static void start(String name, List<String> args) {
+        public static void add(InvokeInfo info) {
             if (history.size() >= config.getMaxHistory())
                 history.removeFirst();
-            history.addLast(new CmdInfo(name, args));
+            history.addLast(info);
         }
 
-        public static void end() {
-            CmdInfo info = history.getLast();
-            info.interval = System.currentTimeMillis() - info.interval;
-        }
-
-        public static void select(String name, int size) {
+        public static void select(String name, int size, boolean isAll, boolean success, boolean rtnVal,
+                                  boolean args, boolean invokeAt, boolean interval) {
             boolean matchByName = true;
             if (name == null)
                 matchByName = false;
@@ -157,14 +171,14 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
                 size = history.size();
             else
                 size = Math.min(history.size(), size);
-            LinkedList<CmdInfo> targetInfos = new LinkedList<>();
-            ListIterator<CmdInfo> it = history.listIterator(history.size());
+            LinkedList<InvokeInfo> targetInfos = new LinkedList<>();
+            ListIterator<InvokeInfo> it = history.listIterator(history.size());
             while (it.hasPrevious()) {
                 if (size <= 0)
                     break;
-                CmdInfo info = it.previous();
+                InvokeInfo info = it.previous();
                 if (matchByName) {
-                    if (info.name.equals(name)) {
+                    if (info.getName().equals(name)) {
                         targetInfos.addFirst(info);
                         size--;
                     }
@@ -174,8 +188,8 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
                 }
             }
 
-            for (CmdInfo inf : targetInfos) {
-                inf.printInfo();
+            for (InvokeInfo inf : targetInfos) {
+                printInfo(inf, isAll, success, rtnVal, args, invokeAt, interval);
             }
         }
 

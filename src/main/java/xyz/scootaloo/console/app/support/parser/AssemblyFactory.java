@@ -3,12 +3,13 @@ package xyz.scootaloo.console.app.support.parser;
 import xyz.scootaloo.console.app.support.common.Colorful;
 import xyz.scootaloo.console.app.support.common.ProxyInvoke;
 import xyz.scootaloo.console.app.support.common.ResourceManager;
-import xyz.scootaloo.console.app.support.component.*;
+import xyz.scootaloo.console.app.support.component.Cmd;
+import xyz.scootaloo.console.app.support.component.CmdType;
 import xyz.scootaloo.console.app.support.config.Author;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
-import xyz.scootaloo.console.app.support.parser.ResolveFactory.ResultWrapper;
 import xyz.scootaloo.console.app.support.listener.AppListener;
 import xyz.scootaloo.console.app.support.listener.EventPublisher;
+import xyz.scootaloo.console.app.support.parser.ResolveFactory.ResultWrapper;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -25,9 +26,9 @@ public class AssemblyFactory {
     // resources
     private static final Colorful cPrint = ResourceManager.cPrint;
     protected static final Map<String, Actuator> strategyMap = new HashMap<>();
-    protected static final List<ActuatorImpl> initActuators = new ArrayList<>();
-    protected static final List<ActuatorImpl> preActuators = new ArrayList<>();
-    protected static final List<ActuatorImpl> destroyActuators = new ArrayList<>();
+    protected static final List<MethodActuator> initActuators = new ArrayList<>();
+    protected static final List<MethodActuator> preActuators = new ArrayList<>();
+    protected static final List<MethodActuator> destroyActuators = new ArrayList<>();
 
     // config
     private static ConsoleConfig config;
@@ -95,11 +96,11 @@ public class AssemblyFactory {
         sortActuatorLists();
 
         try {
-            for (ActuatorImpl actuator : initActuators) {
+            for (MethodActuator actuator : initActuators) {
                 actuator.invoke0(null);
             }
         } catch (Exception e) {
-            cPrint.exit0("初始化失败, msg:" + e.getMessage() + "\n");
+            cPrint.exit0("初始化失败, msg: " + e.getMessage() + "\n");
             e.printStackTrace();
         }
 
@@ -118,7 +119,7 @@ public class AssemblyFactory {
     // 解析带有 @Cmd 注解的方法
     private static void doResolveCmd(Method method, Cmd cmdAnno, Object o) {
         // 生成一个包装执行器类对象，这个类提供了一些便捷的方法
-        ActuatorImpl actuator = new ActuatorImpl(method, cmdAnno, o);
+        MethodActuator actuator = new MethodActuator(method, cmdAnno, o);
         // 假如这个执行器某些规范不通过，则不进行装配
         if (!actuator.checkMethod())
             return;
@@ -148,9 +149,9 @@ public class AssemblyFactory {
 
     // 对有顺序要求的集合进行排序
     private static void sortActuatorLists() {
-        initActuators.sort(Comparator.comparingInt(ActuatorImpl::getOrder));
-        preActuators.sort(Comparator.comparingInt(ActuatorImpl::getOrder));
-        destroyActuators.sort(Comparator.comparingInt(ActuatorImpl::getOrder));
+        initActuators.sort(Comparator.comparingInt(MethodActuator::getOrder));
+        preActuators.sort(Comparator.comparingInt(MethodActuator::getOrder));
+        destroyActuators.sort(Comparator.comparingInt(MethodActuator::getOrder));
     }
 
     // 假如 enable() 返回true，则装配至事件发布器
@@ -213,7 +214,7 @@ public class AssemblyFactory {
      * @author flutterdash@qq.com
      * @since 2020/12/29 11:00
      */
-    public static class ActuatorImpl implements Actuator {
+    public static class MethodActuator implements Actuator {
         // 元信息，方法对象，注解，方法所在的类的实例
         private final Method method;
         private final Cmd cmd;
@@ -224,7 +225,7 @@ public class AssemblyFactory {
         private final String cmdName;
 
         // construct
-        public ActuatorImpl(Method m, Cmd c, Object o) {
+        public MethodActuator(Method m, Cmd c, Object o) {
             this.cmd = c;
             this.method = m;
             this.obj = o;
@@ -283,7 +284,7 @@ public class AssemblyFactory {
 
         // 执行过滤链
         protected InvokeInfo doInvokePreProcess() {
-            for (ActuatorImpl actuator : preActuators) {
+            for (MethodActuator actuator : preActuators) {
                 // 方法执行结果
                 InvokeInfo info = actuator.invoke0(null);
                 // 方法执行错误
@@ -309,32 +310,31 @@ public class AssemblyFactory {
             InvokeInfo info = InvokeInfo.beforeInvoke(cmdName, rtnType, items);
             // 发布命令解析事件
             EventPublisher.onResolveInput(cmdName, items);
-            // 由解析工厂将字符串命令解析成Object数组供method对象调用，结果被wrapper包装
+            // 由解析工厂将字符串命令解析成Object数组供method对象调用，结果由wrapper包装
             ResultWrapper wrapper = ResolveFactory.transform(method, items);
             // 如果解析成功
             if (wrapper.success) {
                 method.setAccessible(true);
-                Object rtnVal = null;
                 try {
-                    // 解析后的参数进行执行
-                    rtnVal = method.invoke(obj, wrapper.args);
+                    // 用解析后的参数对method进行调用
+                    Object rtnVal = method.invoke(obj, wrapper.args);
                     // 得到结果填充给info对象
                     info.finishInvoke(rtnVal, wrapper.args);
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     // 执行方法时方法内部发生错误，或者参数不匹配，错误信息填充给info对象
                     info.onException(e, wrapper.args);
                 }
-                // 发布输入解析完成事件
-                EventPublisher.onInputResolved(cmdName, rtnVal);
+                // 记录最近一次的执行信息
+                Interpreter.lastInvokeInfo = info;
             }
             // 解析失败
             else {
-                // 仍然发布输入解析完成事件，此时返回值无效
-                EventPublisher.onInputResolved(cmdName,null);
                 // 将错误信息填充至info
                 info.onException(wrapper.ex, null);
             }
-            // 执行信息
+            // 发布输入解析完成事件
+            EventPublisher.onInputResolved(cmdName, info);
+            // 返回调用信息
             return info;
         }
 

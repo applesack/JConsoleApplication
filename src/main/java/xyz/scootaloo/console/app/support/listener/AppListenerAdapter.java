@@ -2,6 +2,7 @@ package xyz.scootaloo.console.app.support.listener;
 
 import xyz.scootaloo.console.app.support.component.Moment;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
+import xyz.scootaloo.console.app.support.parser.InvokeInfo;
 
 import java.util.List;
 
@@ -37,7 +38,7 @@ public interface AppListenerAdapter extends AppListener {
 
     }
 
-    default void onInputResolved(String cmdName, Object rtnVal) {
+    default void onInputResolved(String cmdName, InvokeInfo info) {
 
     }
 }

@@ -16,7 +16,7 @@ public class InvokeInfo {
     private boolean success;       // 是否执行成功
     private Object rtnVal;         // 方法返回值
     private Class<?> rtnType;      // 返回值类型
-    private List<String> cmdItems; // 执行此方法所使用的字符串命令
+    private List<String> cmdArgs; // 执行此方法所使用的字符串命令
     private Object[] methodArgs;   // 经过解析后得到的方法参数数组
     private Exception exception;   // 执行方法时遇到的异常
     private String exMsg;          // 异常信息
@@ -32,7 +32,7 @@ public class InvokeInfo {
         info.success = false;
         info.exception = ex;
         info.rtnType = rtnType;
-        info.cmdItems = cmdItems;
+        info.cmdArgs = cmdItems;
         info.exMsg = ex.getMessage();
         info.invokeAt = 0;
         info.interval = 0;
@@ -51,7 +51,7 @@ public class InvokeInfo {
         InvokeInfo info = new InvokeInfo();
         info.name = name;
         info.rtnType = rtnType;
-        info.cmdItems = cmdItems;
+        info.cmdArgs = cmdItems;
         info.invokeAt = System.currentTimeMillis();
         return info;
     }

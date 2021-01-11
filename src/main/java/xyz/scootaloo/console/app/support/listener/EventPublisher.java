@@ -3,6 +3,7 @@ package xyz.scootaloo.console.app.support.listener;
 import xyz.scootaloo.console.app.support.common.Colorful;
 import xyz.scootaloo.console.app.support.component.Moment;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
+import xyz.scootaloo.console.app.support.parser.InvokeInfo;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -85,10 +86,10 @@ public class EventPublisher {
     }
 
     // 解析输入后
-    public static void onInputResolved(String cmdName, Object rtnVal) {
+    public static void onInputResolved(String cmdName, InvokeInfo info) {
         LISTENER_MAP.values().stream()
                 .filter(listener -> listener.accept(Moment.OnInputResolved))
-                .forEach(listener -> listener.onInputResolved(cmdName, rtnVal));
+                .forEach(listener -> listener.onInputResolved(cmdName, info));
     }
 
 }

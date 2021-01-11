@@ -4,6 +4,7 @@ import xyz.scootaloo.console.app.support.component.Moment;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 import xyz.scootaloo.console.app.support.listener.AppListener;
 import xyz.scootaloo.console.app.support.listener.AppListenerAdapter;
+import xyz.scootaloo.console.app.support.parser.InvokeInfo;
 
 import java.util.List;
 
@@ -93,8 +94,8 @@ public class ListenerDemo implements AppListenerAdapter {
     }
 
     @Override
-    public void onInputResolved(String cmdName, Object rtnVal) {
-        System.out.println("命令名:[" + cmdName + "], 返回值:" + rtnVal);
+    public void onInputResolved(String cmdName, InvokeInfo info) {
+        System.out.println("命令名:[" + cmdName + "], 返回值:" + info.get());
     }
 
 }

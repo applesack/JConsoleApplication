@@ -2,6 +2,7 @@ package xyz.scootaloo.console.app.support.listener;
 
 import xyz.scootaloo.console.app.support.component.Moment;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
+import xyz.scootaloo.console.app.support.parser.InvokeInfo;
 
 import java.util.List;
 
@@ -60,9 +61,9 @@ public interface AppListener {
     /**
      *
      * @param cmdName 当前准备处理的命令的名字
-     * @param rtnVal 命令执行执行的返回值，假如命令无返回值或者命令执行过程中抛出异常，则得到的值是null
+     * @param info 命令执行执行的返回值包装，假如命令无返回值或者命令执行过程中抛出异常，则得到的值是null
      */
-    void onInputResolved(String cmdName, Object rtnVal);
+    void onInputResolved(String cmdName, InvokeInfo info);
 
     /**
      *

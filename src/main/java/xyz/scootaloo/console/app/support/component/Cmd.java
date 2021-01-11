@@ -15,17 +15,26 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Cmd {
+
     // 命令的类型
     CmdType type() default CmdType.Cmd;
 
     // 命令的别名
     String name() default "";
+
     // 命令对应的类对象(type = CmdType.Parser时用)
     Class<?>[] targets() default {};
-    // 前置方法返回false时被输出(type = CmdType.Pre时用)
+
+    // 命令条件返回false时被输出(type = CmdType.Pre时用)
     String onError() default "";
 
     // 命令的优先级别，目前这个好像没什么用
     int order() default 5;
+
+    // 命令的标签，用于查找
+    String tag() default "usr";
+
+    // 用于获取此命令的帮助
+    String help() default "没有此命令的描述";
 
 }
