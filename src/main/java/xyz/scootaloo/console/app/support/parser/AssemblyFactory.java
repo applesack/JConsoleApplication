@@ -10,11 +10,14 @@ import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 import xyz.scootaloo.console.app.support.listener.AppListener;
 import xyz.scootaloo.console.app.support.listener.EventPublisher;
 import xyz.scootaloo.console.app.support.parser.ResolveFactory.ResultWrapper;
+import xyz.scootaloo.console.app.support.utils.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 装配工厂
@@ -30,6 +33,11 @@ public class AssemblyFactory {
     protected static final List<MethodActuator> preActuators = new ArrayList<>();
     protected static final List<MethodActuator> destroyActuators = new ArrayList<>();
 
+    // 所有可调用的命令
+    private static final List<MethodActuator> ALL_COMMANDS = new ArrayList<>();
+    // 帮助信息map
+    private static final Map<String, String> HELP_MAP = new HashMap<>();
+
     // config
     private static ConsoleConfig config;
     protected static boolean hasInit = false;
@@ -37,7 +45,7 @@ public class AssemblyFactory {
     // 进行初始化
     public static void init(ConsoleConfig conf) {
         config = conf;
-        doGetStrategyFactories();
+        doInitStrategyFactories();
     }
 
     /**
@@ -46,7 +54,7 @@ public class AssemblyFactory {
      * @param cmdName 命令名，或者方法名
      * @return 执行器对象
      */
-    public static Actuator findInvoker(String cmdName) {
+    public static Actuator findActuator(String cmdName) {
         cmdName = cmdName.toLowerCase(Locale.ROOT);
         Actuator actuator = strategyMap.get(cmdName);
         if (actuator != null)
@@ -59,6 +67,20 @@ public class AssemblyFactory {
         };
     }
 
+    // 返回系统中所有可调用的命令
+    public static List<MethodActuator> getAllCommands() {
+        return ALL_COMMANDS;
+    }
+
+    // 返回系统命令信息
+    public static Set<String> getSysCommands() {
+        return getAllCommands().stream()
+                .filter(methodActuator -> methodActuator.getCmd().tag().equals(SystemPresetCmd.SYS_TAG))
+                .flatMap(methodActuator -> Stream.of(methodActuator.getCmdName(),
+                        methodActuator.cmd.name().toLowerCase(Locale.ROOT)))
+                .collect(Collectors.toSet());
+    }
+
     /**
      * 执行装配工厂的初始化
      * 1. 遍历所有的工厂类
@@ -68,16 +90,18 @@ public class AssemblyFactory {
      * 4. 装配完成，将所有的 init 方法排序后调用
      * 5. 将 destroy 方法注册到关闭钩子上
      */
-    private static void doGetStrategyFactories() {
+    private static void doInitStrategyFactories() {
         if (config == null) {
             cPrint.exit0("未加载到配置");
             return;
         }
         hasInit = true;
         welcome();
-        Set<Class<?>> factories = new LinkedHashSet<>(config.getFactories());
-        factories.add(SystemPresetCmd.class);
-        for (Class<?> factory : factories) {
+
+        // 处理命令工厂
+        Set<Class<?>> cmdFactories = new LinkedHashSet<>(config.getFactories());
+        cmdFactories.add(SystemPresetCmd.class);
+        for (Class<?> factory : cmdFactories) {
             Object instance = ProxyInvoke.invoke(factory);
             if (instance instanceof AppListener)
                 doGetListener((AppListener) instance);
@@ -91,6 +115,11 @@ public class AssemblyFactory {
             }
         }
 
+        // 处理帮助工厂
+        Set<Object> helpFactories = config.getHelpFactories();
+        helpFactories.add(SystemPresetCmd.Help.INSTANCE);
+        doGetHelpFactories(helpFactories);
+
         // 发布应用启动事件
         EventPublisher.onAppStarted(config);
         sortActuatorLists();
@@ -101,7 +130,8 @@ public class AssemblyFactory {
             }
         } catch (Exception e) {
             cPrint.exit0("初始化失败, msg: " + e.getMessage() + "\n");
-            e.printStackTrace();
+            if (config.isPrintStackTraceOnException())
+                e.printStackTrace();
         }
 
         // 将销毁方法注入到系统关闭钩子中
@@ -126,7 +156,8 @@ public class AssemblyFactory {
         // 根据 type ，执行不同的装配方式
         switch (cmdAnno.type()) {
             case Cmd: {
-                strategyMap.put(method.getName().toLowerCase(Locale.ROOT), actuator);
+                strategyMap.put(actuator.cmdName, actuator);
+                ALL_COMMANDS.add(actuator);
                 Cmd cmd = method.getAnnotation(Cmd.class);
                 if (!cmd.name().equals("")) {
                     strategyMap.put(cmd.name().toLowerCase(Locale.ROOT), actuator);
@@ -193,6 +224,39 @@ public class AssemblyFactory {
             }
         };
         TransformFactory.addParser(parserFunc, types);
+    }
+
+    // 装配Help工厂
+    private static void doGetHelpFactories(Set<Object> factories) {
+        for (Object factory : factories) {
+            Class<?> helpObjClass = factory.getClass();
+            Method[] methods = helpObjClass.getDeclaredMethods();
+            for (Method method : methods) {
+                String methodName = method.getName().toLowerCase(Locale.ROOT);
+                methodName = StringUtils.ignoreChars(methodName, '_');
+
+                // 检查方法的参数和返回值
+                if (method.getParameterCount() != 0)
+                    continue;
+                if (method.getReturnType() != String.class)
+                    continue;
+
+                method.setAccessible(true);
+                try {
+                    String helpInfo = (String) method.invoke(factory);
+                    // 已经执行成功得到了返回值，现在将结果保存到对于的位置
+                    Actuator actuator = findActuator(methodName);
+                    if (actuator instanceof MethodActuator) {
+                        HELP_MAP.put(methodName, helpInfo);
+                    }
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    cPrint.println("装配帮助信息时遇到异常: " + e.getMessage() + ", 类: "
+                            + helpObjClass.getSimpleName() + ", 方法名称: " + method.getName());
+                    if (config.isPrintStackTraceOnException())
+                        e.printStackTrace();
+                }
+            }
+        }
     }
 
     // 打印欢迎信息，随便写的 ...
@@ -356,15 +420,45 @@ public class AssemblyFactory {
             }
         }
 
+        // getter
+
+        // 获取此方法对应的类的实例
+        public Object getInstance() {
+            return this.obj;
+        }
+
+        // 获取方法对象
+        public Method getMethod() {
+            return this.method;
+        }
+
+        // 获取方法的名称
+        public String getCmdName() {
+            return this.cmdName;
+        }
+
+        // 获取此命令方法上的注解
+        public Cmd getCmd() {
+            return this.cmd;
+        }
+
         // 获取执行方法的优先级
         public int getOrder() {
             return cmd.order();
         }
 
-        // 打印此 方法/命令 的帮助信息， 即将被弃用
-        @Deprecated
+        // 打印此 方法/命令 的帮助信息
         public void printInfo() {
-
+            String helpInfo = HELP_MAP.get(this.cmdName);
+            if (helpInfo == null) {
+                cPrint.println("没有此命令的帮助信息");
+            } else {
+                String title = "\n[" + cmdName;
+                title += !cmd.name().equals("") ? ", " + cmd.name() : "";
+                title += "]";
+                cPrint.println(title);
+                cPrint.println(helpInfo);
+            }
         }
 
     }

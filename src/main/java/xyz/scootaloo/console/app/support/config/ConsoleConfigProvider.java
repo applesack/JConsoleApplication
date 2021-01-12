@@ -38,24 +38,6 @@ public abstract class ConsoleConfigProvider {
         }
     }
 
-    /**
-     * 修改配置方式后，这个方法也要被弃用了
-     * @return conf
-     */
-    @Deprecated
-    public ConsoleConfig getConfig() {
-        ConsoleConfig rsl = register(new DefaultValueConfigBuilder());
-        return rsl != null ? rsl : DefaultValueConfigBuilder.defaultConfig();
-    }
-
-    /**
-     * 修改配置方式后，这个方法也要被弃用了
-     * @param builder -
-     * @return -
-     */
-    @Deprecated
-    public abstract ConsoleConfig register(DefaultValueConfigBuilder builder);
-
     // 所有域都有默认值的默认值构建者
     public static class DefaultValueConfigBuilder {
 
@@ -70,6 +52,7 @@ public abstract class ConsoleConfigProvider {
         private boolean printStackTraceOnException = false;
         private List<String> initCommands = new ArrayList<>();
         private Set<Class<?>> factories = new LinkedHashSet<>();
+        private Set<Object> helpFactories = new LinkedHashSet<>();
 
         // 作者信息
         private Author author;
@@ -132,6 +115,13 @@ public abstract class ConsoleConfigProvider {
 
         public CommandFactory addCommandFactories() {
             return new CommandFactory(this);
+        }
+
+        public DefaultValueConfigBuilder addHelpFactory(Object helpFac) {
+            if (helpFac != null) {
+                this.helpFactories.add(helpFac);
+            }
+            return this;
         }
 
         protected void setInitCommands(StringCommands commands) {

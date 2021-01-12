@@ -78,6 +78,7 @@ public class TransformFactory {
         }
     }
 
+    // 解析数组和集合
     private static Object resolveArray(Object value, Class<?> type, Type genericType) throws ClassNotFoundException {
         if (type.isArray()) {
             return ClassUtils.genArray(type.getComponentType(), (String) value);

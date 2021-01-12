@@ -121,7 +121,7 @@ public class QuickStart {
      * 提示: 命令参数中表单的位置用任意占位符代替
      * @param student 由键盘输入生成的对象
      */
-    @Cmd(name = "stuAdd")
+    @Cmd(name = "addStu")
     private void addStudent(Student student) {
         System.out.println("姓名： " + student.name);
         System.out.println("年龄： " + student.age);

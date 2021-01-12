@@ -28,6 +28,7 @@ public class ConsoleConfig {
     private boolean printStackTraceOnException; // 遇到异常时是否打印调用栈
     private Set<Class<?>> factories;
     private List<String> initCommands;
+    private Set<Object> helpFactories;
 
     // 扫描的基础包路径
     private String basePack;

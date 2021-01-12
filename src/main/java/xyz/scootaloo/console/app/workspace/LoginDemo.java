@@ -3,12 +3,11 @@ package xyz.scootaloo.console.app.workspace;
 import xyz.scootaloo.console.app.support.common.Colorful;
 import xyz.scootaloo.console.app.support.component.*;
 import xyz.scootaloo.console.app.support.listener.AppListenerAdapter;
+import xyz.scootaloo.console.app.support.parser.AssemblyFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  *   #####################################
@@ -30,10 +29,18 @@ public class LoginDemo implements AppListenerAdapter,
     private final Map<String, User> userMap; // 用户map, key=用户名, value=密码
     private String curCmd; // 当前执行的命令
     private boolean hasLogin = false; // 当前是否登陆了
+    private Set<String> allowCmdSet; // 使用一个集合保存放行的命令
 
     // 提供public的无参构造方法
     public LoginDemo() {
         userMap = new HashMap<>();
+    }
+
+    @Cmd(type = CmdType.Init)
+    private void init() {
+        allowCmdSet = AssemblyFactory.getSysCommands();
+        allowCmdSet.add("login");    allowCmdSet.add("log");
+        allowCmdSet.add("register"); allowCmdSet.add("reg");
     }
 
     // 在系统启动后载入用户数据
@@ -49,10 +56,8 @@ public class LoginDemo implements AppListenerAdapter,
     // 检查用户当前的操作是否被运行
     @Cmd(type = CmdType.Pre,onError = "未登陆，无法执行此操作")
     private boolean checkLogin() {
-        // 保存一个允许放行的集合
-        Set<String> allowOptions = Stream.of("reg", "register", "login", "help").collect(Collectors.toSet());
-        // 当前用户未登陆，但是访问了需要登陆才能执行的操作时，拦截
-        return this.hasLogin || allowOptions.contains(this.curCmd);
+        // 当前用户已登陆，放行； 当前用户访问允许的命令，放行
+        return this.hasLogin || allowCmdSet.contains(this.curCmd);
     }
 
     // 简易的登陆判断
@@ -104,7 +109,7 @@ public class LoginDemo implements AppListenerAdapter,
 
     @Override
     public String onInput(String cmdline) {
-        // 在用户输入之前进行拦截，此方法将在过滤器之间执行，保存用户当前执行的命令名
+        // 在用户输入之后进行拦截，此方法将在过滤器之前执行，保存用户当前执行的命令名
         String[] items = cmdline.split(" ");
         this.curCmd = items.length == 0 ? null : items[0];
         return cmdline;

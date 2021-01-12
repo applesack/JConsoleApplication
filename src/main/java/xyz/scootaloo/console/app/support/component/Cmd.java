@@ -34,7 +34,4 @@ public @interface Cmd {
     // 命令的标签，用于查找
     String tag() default "usr";
 
-    // 用于获取此命令的帮助
-    String help() default "没有此命令的描述";
-
 }

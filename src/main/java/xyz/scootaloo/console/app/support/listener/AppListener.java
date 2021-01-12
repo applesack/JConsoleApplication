@@ -7,7 +7,7 @@ import xyz.scootaloo.console.app.support.parser.InvokeInfo;
 import java.util.List;
 
 /**
- * 插件接口
+ * 监听器接口
  * @author flutterdash@qq.com
  * @since 2020/12/30 9:30
  */
@@ -27,7 +27,7 @@ public interface AppListener {
 
     /**
      *
-     * @return 返回插件的优先级
+     * @return 返回监听器的优先级
      */
     int getOrder();
 
@@ -67,7 +67,7 @@ public interface AppListener {
 
     /**
      *
-     * @return 返回此插件的描述
+     * @return 返回此监听器的描述
      */
     default String info() { return ""; }
 

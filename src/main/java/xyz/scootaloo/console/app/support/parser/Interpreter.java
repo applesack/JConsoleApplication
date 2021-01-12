@@ -25,22 +25,23 @@ public class Interpreter {
     public InvokeInfo interpret(String cmd) {
         List<String> allTheCmdItem = StringUtils.toList(cmd);
         String cmdName = getCmdName(allTheCmdItem);
-        Actuator actuator = AssemblyFactory.findInvoker(cmdName);
+        Actuator actuator = AssemblyFactory.findActuator(cmdName);
         return actuator.invoke(allTheCmdItem);
-    }
-
-    // 根据方法名调用有参方法，需要注入参数
-    public InvokeInfo invoke(String name, Object ... args) {
-        AssemblyFactory.MethodActuator actuator = (AssemblyFactory.MethodActuator) AssemblyFactory.findInvoker(name);
-        return actuator.invokeByArgs(args);
     }
 
     // 根据方法名调用无参方法
     public InvokeInfo invoke(String name) {
-        AssemblyFactory.MethodActuator actuator = (AssemblyFactory.MethodActuator) AssemblyFactory.findInvoker(name);
+        AssemblyFactory.MethodActuator actuator = (AssemblyFactory.MethodActuator) AssemblyFactory.findActuator(name);
         return actuator.invokeByArgs();
     }
 
+    // 根据方法名调用有参方法，需要注入参数
+    public InvokeInfo invoke(String name, Object ... args) {
+        AssemblyFactory.MethodActuator actuator = (AssemblyFactory.MethodActuator) AssemblyFactory.findActuator(name);
+        return actuator.invokeByArgs(args);
+    }
+
+    // 获取当前解释器的配置对象
     public ConsoleConfig getConfig() {
         return this.config;
     }

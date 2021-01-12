@@ -6,10 +6,7 @@ import xyz.scootaloo.console.app.support.common.Commons;
 import xyz.scootaloo.console.app.support.component.Boot;
 import xyz.scootaloo.console.app.support.parser.Interpreter;
 import xyz.scootaloo.console.app.support.parser.InvokeInfo;
-import xyz.scootaloo.console.app.workspace.AdvancedDemo;
-import xyz.scootaloo.console.app.workspace.LoginDemo;
-import xyz.scootaloo.console.app.workspace.ListenerDemo;
-import xyz.scootaloo.console.app.workspace.QuickStart;
+import xyz.scootaloo.console.app.workspace.*;
 import xyz.scootaloo.console.app.workspace.QuickStart.Student;
 
 /**
@@ -37,23 +34,24 @@ public class Start {
                 Commons.config()
                         // 应用信息
                         .appName("测试应用示例") // 应用的名称
-                        .printWelcome(true)   // 是否打印欢迎信息
+                        .printWelcome(false)  // 是否打印欢迎信息
                         .prompt("example> ")  // 控制台输入的提示符
-                        .printStackTrace(true) // 遇到异常时是否打印调用栈
+                        .printStackTrace(false) // 遇到异常时是否打印调用栈
                         .exitCmd(new String[] {"exit", "e.", "q"}) // 使用这些命令可以退出应用
                         .maxHistory(128) // 最多保存的历史记录，
                         // 编辑作者信息，当printWelcome设置为false时，这些信息不会被输出
                         .editAuthorInfo()
                             .authorName("fd")
                             .email("~~")
-                            .comment("备注")
+                            .comment("备注: ~~")
                             .createDate("2020/12/27")
                             .updateDate("2021/1/11")
                             .ok()
                         // 设置系统启动时执行的命令
                         .addInitCommands()
                             .getFromFile("init.txt") // 从文件中读取
-                            .add("help") // 系统启动时执行 help 命令
+                            .add("find --tag usr")   // 查询所有的用户命令
+                            .add("help --name help") // 获取 help 命令的使用帮助
                             .ok()
                         // 增加命令工厂，enable参数决定是否启用该命令工厂，将false修改为true可以开启对应命令工厂的测试，
                         // 但是为了方便功能演示，建议测试以下几个类的时候，每次只有一个工厂类enable为true
@@ -63,6 +61,7 @@ public class Start {
                             .add(ListenerDemo.class, false)
                             .add(LoginDemo.class, false)
                             .ok()
+                        .addHelpFactory(HelpForDemo.INSTANCE) // 加入命令帮助
                         // 设置完成，应用启动
                         .build());
     }

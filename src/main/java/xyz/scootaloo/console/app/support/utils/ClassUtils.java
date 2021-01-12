@@ -8,6 +8,8 @@ import xyz.scootaloo.console.app.support.parser.TransformFactory;
 
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 执行反射操作时的一些便捷方法
@@ -85,6 +87,15 @@ public class ClassUtils {
         return f1.getGenericType().getTypeName().equals(f2.getGenericType().getTypeName());
     }
 
+    public static String getMethodInfo(Method method) {
+        return method.getName() + '(' +
+                Stream.of(method.getParameterTypes())
+                        .map(Class::getSimpleName)
+                        .collect(Collectors.joining(",")) +
+                ')' + ':' +
+                method.getReturnType().getSimpleName();
+    }
+
     // 获取方法泛型参数的实际类型 List<Integer> => Integer
     public static Class<?> getRawType(Type type) throws ClassNotFoundException {
         return Class.forName(((ParameterizedTypeImpl) type).getActualTypeArguments()[0].getTypeName(),
@@ -125,31 +136,20 @@ public class ClassUtils {
         }
     }
 
-    public static void main(String[] args) {
-        String raw = "1,23,34,65,1";
-        Integer[] arr = genArray(Integer.class, raw);
-        Set<Integer> set = genSet(Integer.class, raw);
-        System.out.println(isExtendForm(set, Set.class));
-        System.out.println(Arrays.toString(arr));
-        System.out.println(set);
-    }
-
     @Test
-    public void test() throws NoSuchMethodException, ClassNotFoundException {
-        Method m = getMethod();
-        final Type[] parameterTypes = m.getGenericParameterTypes();
-        Type type = ((ParameterizedTypeImpl) parameterTypes[2]).getActualTypeArguments()[0];
-        Class<?> tyClass = Class.forName(type.getTypeName(), false, this.getClass().getClassLoader());
+    public void test() throws NoSuchMethodException {
+        Method method = getMethod();
+        method.getTypeParameters();
         System.out.println();
     }
 
     public Method getMethod() throws NoSuchMethodException {
         Class<?> clazz = this.getClass();
-        return clazz.getDeclaredMethod("fun", int.class, int[].class, List.class);
+        return clazz.getDeclaredMethod("getZ", int.class, String.class);
     }
 
-    public List<String> fun(int a, int[] strings, List<Integer> nums) {
-        return null;
+    public Integer getZ(int a, String b) {
+        return 12;
     }
 
 }

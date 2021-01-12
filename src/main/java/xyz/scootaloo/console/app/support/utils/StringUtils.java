@@ -24,17 +24,33 @@ public class StringUtils {
         return BOX[lack - 1] + nStr;
     }
 
+    public static String trimSizeTo7(String str) {
+        char[] rslChars = new char[7];
+        int minSize = Math.min(str.length(), 7);
+        for (int i = 0; i<minSize; i++) {
+            rslChars[i] = str.charAt(i);
+        }
+        for (int i = minSize; i<7; i++)
+            rslChars[i] = '_';
+        if (str.length() > 7) {
+            for (int i = 4; i<7; i++)
+                rslChars[i] = '.';
+        }
+        return new String(rslChars);
+    }
+
     public static List<String> toList(String line) {
         return Stream.of(line)
                 .flatMap(ine -> Arrays.stream(ine.split(" ")))
                 .collect(Collectors.toList());
     }
 
-    public static String trimBothEnds(String line) {
-        int len = line.length() - 1;
-        StringBuilder sb = new StringBuilder(Math.max(len, 0));
-        for (int i = 1; i<len; i++) {
-            sb.append(line.charAt(i));
+    public static String ignoreChars(String rawString, char igChar) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i<rawString.length(); i++) {
+            char c = rawString.charAt(i);
+            if (c != igChar)
+                sb.append(c);
         }
         return sb.toString();
     }

@@ -99,6 +99,7 @@ public class ResolveFactory {
         return ResultWrapper.success(args);
     }
 
+    // 从方法参数注解中取出所有可简写的参数
     private static Set<Character> doGetAllParameter(Annotation[][] parameterAnnoArrays) {
         Set<Character> parameterSet = new LinkedHashSet<>();
         for (Annotation[] pAnnoArray : parameterAnnoArrays) {
@@ -110,6 +111,7 @@ public class ResolveFactory {
         return parameterSet;
     }
 
+    // 从命令行中取出命令参数和值
     private static List<String> loadArgumentFromCmdline(List<String> cmdline,
                                                         Map<String, Object> optMap,
                                                         Set<Character> shortParamsSet) {
@@ -141,6 +143,7 @@ public class ResolveFactory {
         return retainList;
     }
 
+    // 检查一个命令参数是否由多个可选项参数构成
     private static boolean isContainsAll(String param, Set<Character> paramsSet) {
         for (int i = 0; i<param.length(); i++) {
             if (!paramsSet.contains(param.charAt(i)))
@@ -149,6 +152,7 @@ public class ResolveFactory {
         return true;
     }
 
+    // 找出其中的 @Opt 注解
     private static Annotation findOptFromArray(Annotation[] annotations) {
         for (Annotation anno : annotations) {
             if (anno.annotationType() == Opt.class) {
@@ -158,9 +162,10 @@ public class ResolveFactory {
         return null;
     }
 
+    // 将一个对象根据类型解析成另外一个对象
     private static Object resolveArgument(Object value, Class<?> classType, Type genericType) {
         try {
-            if (value.equals(PLACEHOLDER))
+            if ((classType == boolean.class || classType == Boolean.class) && value.equals(PLACEHOLDER))
                 return true;
             else
                 return TransformFactory.resolveArgument(value, classType, genericType);
@@ -195,6 +200,7 @@ public class ResolveFactory {
 
     // ------------------------------------POJO--------------------------------------------
 
+    // 对结果进行包装
     public static class ResultWrapper {
 
         protected final boolean success;
@@ -220,11 +226,12 @@ public class ResolveFactory {
 
     }
 
+    // 用于处理可选参数缺省的情况
     private static class WildcardArgument {
 
-        final int idx;
-        final Class<?> type;
-        final Type generic;
+        final int idx;       // 缺省参数位于参数数组的下标
+        final Class<?> type; // 对应方法参数的类型
+        final Type generic;  // 对应方法参数的泛型类型
 
         public WildcardArgument(int idx, Class<?> type, Type generic) {
             this.idx = idx;
