@@ -24,6 +24,6 @@ public @interface Opt {
     boolean required() default false;
 
     // 当可选参数未选中时可以提供一个默认值
-    String defVal() default "";
+    String dftVal() default "";
 
 }

@@ -50,9 +50,7 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
                       @Opt(value = 't', fullName = "tag") String tag) {
         List<MethodActuator> actuatorList = AssemblyFactory.getAllCommands();
         if (name == null && tag == null) {
-            actuatorList.forEach(methodActuator -> {
-                println(methodActuator.getCmdName() + " " + methodActuator.getCmd().name());
-            });
+            actuatorList.forEach(methodActuator -> println(methodActuator.getCmdName() + " " + methodActuator.getCmd().name()));
         } else {
             if (name != null) {
                 name = name.toLowerCase(Locale.ROOT);
@@ -103,7 +101,7 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
     }
 
     @Cmd(name = "his", tag = SYS_TAG)
-    private void history(@Opt(value = 'n', fullName = "size", defVal = "-1") int size,
+    private void history(@Opt(value = 'n', fullName = "size", dftVal = "-1") int size,
                          @Opt(value = 's', fullName = "name") String name,
                          @Opt(value = 'a', fullName = "all" ) boolean isAll,
                          @Opt(value = 'u', fullName = "success" ) boolean success,

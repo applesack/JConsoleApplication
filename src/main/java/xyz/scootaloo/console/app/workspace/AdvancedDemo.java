@@ -93,7 +93,7 @@ public class AdvancedDemo {
      *        value 此参数的简称
      *        fullName 用一个参数的全称来指向这个方法参数
      *        required 表示这个方法是否是必须的，假如是，命令中没有这个参数则方法不会被调用。默认是false
-     *        defVal 在命令中没有参数时，提供一个默认值
+     *        dftVal 在命令中没有参数时，提供一个默认值
      * 注意: value 和 fullName 效果相同，只是习惯上单横杠接参数简称，双横杠接参数全称，比如 -n jack 等于 --name jack
      * 注意: 在命名参数中，假如对应的方法参数是布尔值，则对应的命令值可以省略，例如 -a true 等于 -a
      *      多个布尔类型的命令参数，可以写到一起，例如 -a -b -c 等于 -abc 等于 -ab -c
@@ -111,7 +111,7 @@ public class AdvancedDemo {
      */
     @Cmd
     public void opt(@Opt('a') boolean a, @Opt('b') boolean b, @Opt('c') boolean c,
-                    @Opt(value = 'd', defVal = "19") int d,
+                    @Opt(value = 'd', dftVal = "19") int d,
                     @Opt(value = 'n', fullName = "name", required = true) String name, @Opt('g') int age) {
 
         List<Character> options = new ArrayList<>();
@@ -151,7 +151,7 @@ public class AdvancedDemo {
                      @Opt('d') boolean d, @Opt('i') boolean i, @Opt('t') boolean t,
                      @Opt(value = 'n', fullName = "name") String name,
                      @Opt('v') String pathMapping, @Opt('p') String portMapping,
-                     @Opt(value = '*', defVal = "/bin/bash") String interpreter) {
+                     @Opt(value = '*', dftVal = "/bin/bash") String interpreter) {
 
         List<Character> options = new ArrayList<>();
         if (d) options.add('d');

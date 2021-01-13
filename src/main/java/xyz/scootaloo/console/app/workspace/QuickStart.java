@@ -2,10 +2,8 @@ package xyz.scootaloo.console.app.workspace;
 
 import xyz.scootaloo.console.app.support.component.Cmd;
 import xyz.scootaloo.console.app.support.component.Form;
-import xyz.scootaloo.console.app.support.component.Opt;
 import xyz.scootaloo.console.app.support.component.Prop;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;

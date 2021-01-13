@@ -16,7 +16,7 @@ public class InvokeInfo {
     private boolean success;       // 是否执行成功
     private Object rtnVal;         // 方法返回值
     private Class<?> rtnType;      // 返回值类型
-    private List<String> cmdArgs; // 执行此方法所使用的字符串命令
+    private List<String> cmdArgs;  // 执行此方法所使用的字符串命令
     private Object[] methodArgs;   // 经过解析后得到的方法参数数组
     private Exception exception;   // 执行方法时遇到的异常
     private String exMsg;          // 异常信息
@@ -86,7 +86,7 @@ public class InvokeInfo {
         return rtnVal;
     }
 
-    // 以基本类型的方式获取
+    // 以基本类型的方式获取方法返回值
 
     public long longValue() {
         return (long) rtnVal;

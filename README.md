@@ -1,7 +1,7 @@
 # JConsoleApplication
 > 基于`Java8`，开发控制台应用的轻量级的框架，简化控制台应用的开发过程。
 >
-> 框架的核心功能是使用一个工厂管理`java`方法，使得其他位置可以不受限制的的用工厂管理的方法并接收结果，同时框架提供一个命令解释器，可以将字符串格式的命令映射到`java`方法的参数上并执行，可以像执行`liunx`命令一样调用`java`方法，命令名称即是方法名称，命令参数即是方法参数。
+> 框架的核心功能是使用一个工厂管理`java`方法，使得其他位置可以不受限制的调用工厂管理的方法并接收结果，同时框架提供一个命令解释器，可以将字符串格式的命令映射到`java`方法的参数上并执行，可以像执行`liunx`命令一样调用`java`方法，命令名称即是方法名称，命令参数即是方法参数。
 >
 > 以此为基础扩展出其他实用的功能，例如应用事件监听器，命令执行条件、自定义类型解析，可选参数和参数默认值等。
 >
@@ -10,6 +10,10 @@
 - 注解式开发，通过标记注解实现对应的功能
 
 
+
+<center>** 2020-12-27  ~  2021-1-13 **<center>
+<center>flutterdash@qq.com</center>
+<center>last updated : 2021-1-13<center>
 
 ## 相关技术
 
@@ -98,7 +102,8 @@
 
   `show 1,2,3,1 1,2,3,1 1,1,1,2`
 
-  
+
+
 
 ### 启动配置
 
@@ -173,9 +178,128 @@
 
 
 
+### 解释器
+
+框架的第二种启动方式，获取一个解释器。
+
+不再从控制台获取输入，解释器如何使用由代码决定，解释器仍然具有调用工厂中的方法的功能。
+
+**获取解释器**
+
+在使用配置信息生成一个解释器对象，只需要进行少量的配置，加入命令工厂即可。
+
+```java
+// 使用 Commons.simpleConf() 获取更精简的配置类
+Interpreter interpreter = ApplicationRunner.getInterpreter(Commons.simpleConf()
+            .printStackTrace(false)
+            .addFactory(QuickStart.class, true)
+            .build());
+```
+
+使用时
+
+```java
+// 直接运行命令，得到结果的包装类
+InvokeInfo result = interpreter.interpret("add 11 12");
+```
+
+解释器执行一条命令后会返回一个`InvokeInfo`对象，这个对象包含了命令执行的一些信息，如执行命令对应的方法，是否执行成功，方法返回值，返回值类型，调用方法实际的参数，执行时遇到的异常，异常信息，执行花费的时间，命令执行日期。这样一些信息。并且此对象提供一些诸如`intValue()`、`floatValue()`这样的方法可以以基本类型获得方法返回值。
+
+使用方法名或者方法别名以参数的形式调用命令
+
+```java
+InvokeInfo result = interpreter.invoke("stuAdd", new Student());
+```
+
+
+
+
+
 ----
 
 ## 扩展功能
+
+> 学习其他功能的使用之前，先了解一下系统的基本原理
+
+### 类型解析
+
+要是经过观察命令的执行过程就会发现一个问题，比如前面演示的命令，`add 1 2`如何映射到add方法上，并且准确的进行了类型转换，这是因为系统中有一个转换工厂，其中有一个Map，记录了所有的基本类型和字符串到此类型的转换方式。
+
+1. 系统接收到键盘输入的命令
+2. 根据命令名称找到对应的`java`方法
+3. 获取此`java`方法的参数类型列表，将命令参数向方法参数进行映射
+4. 逐个按照目标类型进行解析和填充。
+
+
+
+
+### @Cmd 注解
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface Cmd {
+
+    CmdType type() default CmdType.Cmd;
+    String name() default "";
+    Class<?>[] targets() default {};
+    String onError() default "";
+    int order() default 5;
+    String tag() default "usr";
+
+}
+```
+
+以上是`@Cmd`注解的源码(去除了注释)，这个注解用于标记在方法上，配合设置这个标记了`@Cmd`注解的方法可以被系统扫描并装配至工厂。
+
+- **type:**  type有5种类型，默认的是`Cmd`，这个代表这个方法可以用命令的格式调用，其他的
+  - `Init` 类型为init的方法不能用命令调用，不能有参数，它的执行时机是在系统所有命令装配完成时，可以根据`order`属性决定init方法的执行顺序。同一个init方法在整个系统中只会被执行一次。
+
+  - `Pre`  类型为pre的方法不能用命令调用， 不能有参数，返回值必须是布尔类型，它的执行时机是在所有类型为`Cmd`的命令之前被调用，同一个系统可以有多个pre方法，并且这些pre方法可以根据`order`值决定执行顺序。对于返回值，如果返回true表示通过，进行下一个pre方法，或者是执行当前的命令，反之返回了false，则表示过滤阻断，当前命令不被调用。返回false时，`onError`的内容被输出在控制台。
+
+  - `Destory`  类型为Destory的方法不能被命令调用，不能有参数，这种方法被注册到了系统关闭钩子上，所以会在系统退出时被调用，可以根据`order`属性来决定Destory方法的执行顺序。同一个Destory方法在系统中只会被调用一次，假如系统进程直接被杀，这个方法不会被调用。
+
+  - `Parser`  解析器。这个类型，是为了解决系统只支持基本类型的转换方式的问题，假如方法参数中要使用其他的引用类型，比如`Date`或者是自定义的类型，那系统就无能为力了，这个时候可以向系统注册自己的类型转换实现，例如这里:
+
+    ```java
+    @Cmd(type = CmdType.Parser, targets = {Time.class})
+    private Time dateConverter(String rawStr) {
+        String[] segment = rawStr.split(":");
+        return new Time(Integer.parseInt(segment[0]), Integer.parseInt(segment[1]), 0);
+    }
+    
+    @Cmd
+    private void getTime(Time t) {
+        System.out.println(t);
+    }
+    ```
+	启动系统后
+    ```bash
+    # 输入
+    getTime 12:12
+    # 输出
+    12:12:00
+    ```
+
+    此时调用`getTime`命令时，`12:12`这个数值以及交由`dateConvertor`方法进行处理了，这里有一点需要注意，`Parser`方法的返回值需要和`@Cmd`注解的`targets`属性一致，使得方法返回值可以转换成`targets`的类型。可以自定义基本类型的处理方式，覆盖系统的默认转换。
+
+- **tag:**  给一个命令指定标签，默认的标签是`usr`，代表用户命令的意思，可以改成别的。当系统中命令比较多的时候，要查找某一类功能的命令就比较方便，按照标签查找使用的是系统命令`find`，比如:
+
+  ```bash
+  # 查找标签为 usr 的命令
+  find --tag usr
+  # 查找标签为 sys 的命令
+  find --tag sys
+  ```
+
+  ![系统预设的命令](./imgs/系统预设的命令.png)
+
+  > 查询结果
+
+  这些是此命令所在的类和方法的签名，以及返回值类型，可以按照这个方法名使用`help`或者`man`命令查询详细用法，其他命令后面再写。
+
+
+
 
 ### @Opt 注解
 
@@ -187,7 +311,7 @@ public @interface Opt {
     char value();
     String fullName() default "";
     boolean required() default false;
-    String defVal() default "";
+    String dftVal() default "";
 
 }
 ```
@@ -197,15 +321,69 @@ public @interface Opt {
 - **value:**  在命令中可以用value来为指定的参数赋值，这个功能前面已经介绍过了。
 - **fullName:**  这个在之前也介绍过了，指定一个参数的全称，一般使用`--`做为参数名的前缀，效果与value相同。
 - **required:**  标记这个参数是否是必选项，默认这个属性是`false`，假如标记为`true`则当命令缺少此参数时方法不会被执行，且抛出异常。
-- **defVal:**  默认值功能，用于在命令中没有选中此参数，则这个参数应用默认值，虽然是这个属性是`String`类型，但是会由系统向目标类型进行转换，只需要写上自己需要的数值的字符串形式就可以了。
+- **dftVal:**  默认值功能，用于在命令中没有选中此参数，则这个参数应用默认值，虽然是这个属性是`String`类型，但是会由系统向目标类型进行转换，只需要写上自己需要的数值的字符串形式就可以了。
 
 
 
-### @Cmd 注解
+### 表单
 
-### 命令工厂的生命周期
+有时候需要在方法上接收一个`pojo`类的对象，并且希望一项一项地把所有属性输入完成，这个时候可以使用系统的表单功能。
+
+需要用到两个注解。
+
+```java
+@Form(dftExtCmd = "-")
+public class Student {
+    @Prop(prompt = "输入学生姓名", isRequired = true)
+    private String name;
+
+    @Prop(prompt = "输入学生年龄")
+    private int age;
+
+    // 表单类需要提供一个无参构造方法，private 或者 public 无所谓
+    public Student() {
+    }
+}
+```
+
+比如这样的一个类，类上的`Form`注解表示它是一个表单类，它包含两个域，一个是`name`，一个是`age`，这两个域是希望由使用者键盘输入得到的值，所以上面有`@Prop`注解，其中`name`上的注解`isRequired`属性为true，表示这个属性是必选的，而`age`上没有这个属性，则`age`在输入时是可以跳过的。
+
+下面是使用表单参数的方法。
+
+```java
+@Cmd(name = "addStu")
+private void addStudent(Student student) {
+    System.out.println("姓名： " + student.name);
+    System.out.println("年龄： " + student.age);
+}
+```
+
+![表单演示](./imgs/表单演示.png)
+
+对于这两个注解，有以下规则:
+
+- `@Form`注解的属性`dftExtCmd`的属性可用于在输入过程中退出剩余的属性输入。
+- 用于区别可选项和必选项(`isRequired`为true)，可选项的提示符是`~`，必选项的提示符是`!`
+- 回车可以跳过当前属性的输入，前提是当前属性是必选项，否则无法跳过。
+- 输入了`dftExtCmd`的退出命令后，假如当前输入的是必选项，则无法退出，假如当前是可选项，则跳转到下一条必选项属性的输入，假如余下没有必选项了，则进行选择是否需要对当前的输入修改。
+- 在修改模式，输入`dftExtCmd`可以直接退出，无视必选项
+- 在修改模式，回车可以跳到下一条属性的检查，无视当前是否是必选项。
+
+
 
 ### 系统事件监听器
+
+
+
+
+
+### 系统预置的命令
+
+
+
+
+
+### 编写应用的帮助信息
 
 
 

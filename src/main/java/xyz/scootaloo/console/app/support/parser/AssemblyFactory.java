@@ -372,7 +372,7 @@ public class AssemblyFactory {
         protected InvokeInfo invoke0(List<String> items) {
             // 在方法执行之前先获取此方法的一些信息
             InvokeInfo info = InvokeInfo.beforeInvoke(cmdName, rtnType, items);
-            // 发布命令解析事件
+            // 发布命令解析前事件
             EventPublisher.onResolveInput(cmdName, items);
             // 由解析工厂将字符串命令解析成Object数组供method对象调用，结果由wrapper包装
             ResultWrapper wrapper = ResolveFactory.transform(method, items);

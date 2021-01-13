@@ -77,9 +77,9 @@ public class ResolveFactory {
                 // 给这个位置的参数做一个标记，假如处理完还有多余的参数就填补到这个位置来
                 wildcardArguments.add(new WildcardArgument(i, curArgType, genericTypes[i]));
                 // 在 getAndRemove方法中已经处理了类型默认值的情况，这里处理用户给定的自定义默认值
-                if (!option.defVal().equals("")) {
+                if (!option.dftVal().equals("")) {
                     args.set(args.size() - 1, TransformFactory
-                            .simpleTrans(option.defVal(), curArgType));
+                            .simpleTrans(option.dftVal(), curArgType));
                 }
             }
         }
