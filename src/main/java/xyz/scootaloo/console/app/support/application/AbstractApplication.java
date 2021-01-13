@@ -2,12 +2,17 @@ package xyz.scootaloo.console.app.support.application;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Consumer;
 
 /**
  * @author flutterdash@qq.com
  * @since 2020/12/27 21:54
  */
 public abstract class AbstractApplication {
+
+    // 需要提供一个异常处理器
+    protected Consumer<Exception> exceptionHandle;
+
     // 获取字符串输入
     protected abstract String getInput();
 
@@ -47,7 +52,13 @@ public abstract class AbstractApplication {
 
     // 异常处理器
     protected void exceptionHandle(Exception e) {
-        e.printStackTrace();
+        if (exceptionHandle != null) {
+            exceptionHandle.accept(e);
+        }
+    }
+
+    public void setExceptionHandle(Consumer<Exception> exceptionHandle) {
+        this.exceptionHandle = exceptionHandle;
     }
 
     /**
@@ -59,7 +70,7 @@ public abstract class AbstractApplication {
     abstract boolean simpleRunCommand(String command) throws Exception;
 
     // 仅获取第一个被空格分隔的字符段，以小写形式返回
-    public String getCmdName(List<String> items) {
+    protected String getCmdName(List<String> items) {
         if (items.isEmpty())
             return "";
         String cmdName = items.get(0).trim();

@@ -32,6 +32,10 @@ public class ConsoleApplication extends AbstractApplication implements Colorful 
     public ConsoleApplication(ConsoleConfig config, Interpreter interpreter) {
         this.config = config;
         this.interpreter = interpreter;
+
+        // 设置默认的异常处理方式
+        setExceptionHandle((e) -> onException(config, e));
+        // 执行初始化命令
         doInit(config.getInitCommands());
     }
 
@@ -45,12 +49,7 @@ public class ConsoleApplication extends AbstractApplication implements Colorful 
                 simpleRunCommand(cmd);
             }
         } catch (Exception e) {
-            if (config.isPrintStackTraceOnException()) {
-                e.printStackTrace();
-            } else {
-                println(e.getMessage());
-                exit0("初始化时遇到异常");
-            }
+            onException(config, e, "初始化遇到异常", true);
         }
     }
 
@@ -73,14 +72,6 @@ public class ConsoleApplication extends AbstractApplication implements Colorful 
                 return true;
         }
         return false;
-    }
-
-    @Override // 处理异常的方式是检查检查是否需要打印调用栈
-    protected void exceptionHandle(Exception e) {
-        if (config.isPrintStackTraceOnException())
-            e.printStackTrace();
-        else
-            println(e.getMessage());
     }
 
     /**

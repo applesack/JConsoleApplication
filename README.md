@@ -11,9 +11,9 @@
 
 
 
-<center>** 2020-12-27  ~  2021-1-13 **<center>
-<center>flutterdash@qq.com</center>
-<center>last updated : 2021-1-13<center>
+<div align = "center">** 2020-12-27  ~  2021-1-13 **</div>
+<div align = "center">flutterdash@qq.com</div>
+<div align = "center">last updated : 2021-1-13</div>  
 
 ## 相关技术
 
@@ -148,7 +148,7 @@
                           .ok()
                       .addHelpFactory(HelpForDemo.INSTANCE) // 加入命令帮助
                       // 设置完成，应用启动
-                      .build());
+                      .build()).run();
   }
   ```
 

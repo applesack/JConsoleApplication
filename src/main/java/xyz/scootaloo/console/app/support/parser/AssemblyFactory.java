@@ -15,7 +15,6 @@ import xyz.scootaloo.console.app.support.utils.StringUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -124,14 +123,13 @@ public class AssemblyFactory {
         EventPublisher.onAppStarted(config);
         sortActuatorLists();
 
+        // 执行初始化方法，遇到异常则退出应用
         try {
             for (MethodActuator actuator : initActuators) {
                 actuator.invoke0(null);
             }
         } catch (Exception e) {
-            cPrint.exit0("初始化失败, msg: " + e.getMessage() + "\n");
-            if (config.isPrintStackTraceOnException())
-                e.printStackTrace();
+            cPrint.onException(config, e, "初始化失败, msg: " + e.getMessage() + "\n", true);
         }
 
         // 将销毁方法注入到系统关闭钩子中
@@ -211,19 +209,15 @@ public class AssemblyFactory {
             return;
         if (method.getReturnType() == void.class || method.getReturnType() == Void.class)
             return;
-        Function<String, Object> parserFunc = (str) -> {
+        TransformFactory.addParser((str) -> {
             try {
                 method.setAccessible(true);
                 return method.invoke(o, str);
             } catch (IllegalAccessException | InvocationTargetException e) {
-                if (config.isPrintStackTraceOnException())
-                    e.printStackTrace();
-                else
-                    cPrint.println(e.getMessage());
+                cPrint.onException(config, e);
                 return null;
             }
-        };
-        TransformFactory.addParser(parserFunc, types);
+        }, types);
     }
 
     // 装配Help工厂
@@ -250,10 +244,8 @@ public class AssemblyFactory {
                         HELP_MAP.put(methodName, helpInfo);
                     }
                 } catch (IllegalAccessException | InvocationTargetException e) {
-                    cPrint.println("装配帮助信息时遇到异常: " + e.getMessage() + ", 类: "
+                    cPrint.onException(config, e, "装配帮助信息时遇到异常: " + e.getMessage() + ", 类: "
                             + helpObjClass.getSimpleName() + ", 方法名称: " + method.getName());
-                    if (config.isPrintStackTraceOnException())
-                        e.printStackTrace();
                 }
             }
         }
@@ -313,10 +305,7 @@ public class AssemblyFactory {
                     if (info.isSuccess()) {
                         return invoke0(items);
                     } else {
-                        if (config.isPrintStackTraceOnException())
-                            info.getException().printStackTrace();
-                        else
-                            cPrint.println(info.getExMsg());
+                        cPrint.onException(config, info.getException(), info.getExMsg());
                         return InvokeInfo.simpleSuccess();
                     }
                 }

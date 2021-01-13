@@ -14,9 +14,9 @@ public abstract class ApplicationRunner {
     private static Interpreter INTERPRETER_SINGLETON;
 
     // 运行一个 ConsoleApplication
-    public static void consoleApplication(ConsoleConfig config) {
+    public static AbstractApplication consoleApplication(ConsoleConfig config) {
         AssemblyFactory.init(config);
-        new ConsoleApplication(config, getInterpreter(config)).run();
+        return new ConsoleApplication(config, getInterpreter(config));
     }
 
     // 获取解释器对象，可以快捷的调用命令工厂的方法

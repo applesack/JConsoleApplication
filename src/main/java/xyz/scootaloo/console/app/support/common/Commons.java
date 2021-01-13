@@ -1,6 +1,6 @@
 package xyz.scootaloo.console.app.support.common;
 
-import xyz.scootaloo.console.app.support.config.ConsoleConfigProvider;
+import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 import xyz.scootaloo.console.app.support.config.ConsoleConfigProvider.DefaultValueConfigBuilder;
 import xyz.scootaloo.console.app.support.config.ConsoleConfigProvider.SimpleConfig;
 
@@ -10,6 +10,7 @@ import xyz.scootaloo.console.app.support.config.ConsoleConfigProvider.SimpleConf
  * @since 2020/12/28 15:17
  */
 public interface Commons {
+
     // 完整的控制台配置类
     static DefaultValueConfigBuilder config() {
         return new DefaultValueConfigBuilder();
@@ -30,11 +31,6 @@ public interface Commons {
         System.out.println(line);
     }
 
-    // jdk的错误输出流
-    default void errPrintln(Object line) {
-        System.err.println();
-    }
-
     // 输出信息后退出应用
     default void exit0(String msg) {
         println(msg);
@@ -45,6 +41,27 @@ public interface Commons {
     default void exit0() {
         println("应用退出");
         System.exit(0);
+    }
+
+    default void onException(ConsoleConfig config, Exception e) {
+        onException(config, e, null);
+    }
+
+    default void onException(ConsoleConfig config, Exception e, String msg) {
+        onException(config, e, msg, false);
+    }
+
+    default void onException(ConsoleConfig config, Exception e, String msg, boolean exit) {
+        if (msg != null) {
+            println(msg);
+        } else {
+            println(e.getMessage());
+        }
+
+        if (config.isPrintStackTraceOnException())
+            e.printStackTrace();
+        if (exit)
+            exit0();
     }
 
 }

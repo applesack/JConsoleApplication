@@ -63,7 +63,7 @@ public class Start {
                             .ok()
                         .addHelpFactory(HelpForDemo.INSTANCE) // 加入命令帮助
                         // 设置完成，应用启动
-                        .build());
+                        .build()).run();
     }
 
     /**
