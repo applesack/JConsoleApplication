@@ -146,6 +146,10 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
             println("未选中键");
             return;
         }
+        if (key.startsWith(".")) {
+            PropertyManager.set(".", null);
+            return;
+        }
         if (value != null) {
             PropertyManager.set(key, value);
         } else {

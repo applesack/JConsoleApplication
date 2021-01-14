@@ -102,8 +102,9 @@ public class TransformFactory {
         if (!value.equals(PropertyManager.placeholder))
             return null;
         Object placeholderObj = PropertyManager.get();
-        if (placeholderObj != null && placeholderObj.getClass() == type)
+        if (placeholderObj != null && placeholderObj.getClass() == type) {
             return placeholderObj;
+        }
         return null;
     }
 

@@ -55,4 +55,13 @@ public abstract class StringUtils {
         return sb.toString();
     }
 
+    public static boolean isNumber(String str) {
+        for (int i = 0; i<str.length(); i++) {
+            char c = str.charAt(i);
+            if (Character.isLetter(c))
+                return false;
+        }
+        return true;
+    }
+
 }

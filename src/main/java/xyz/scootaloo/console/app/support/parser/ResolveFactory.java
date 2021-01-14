@@ -1,6 +1,7 @@
 package xyz.scootaloo.console.app.support.parser;
 
 import xyz.scootaloo.console.app.support.component.Opt;
+import xyz.scootaloo.console.app.support.utils.StringUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -118,7 +119,7 @@ public class ResolveFactory {
         LinkedList<String> retainList = new LinkedList<>();
         for (int i = 0; i<cmdline.size(); i++) {
             String curSegment = cmdline.get(i);
-            if (!curSegment.startsWith("-")) {
+            if (StringUtils.isNumber(curSegment) || !curSegment.startsWith("-")) {
                 retainList.addLast(curSegment);
                 continue;
             }

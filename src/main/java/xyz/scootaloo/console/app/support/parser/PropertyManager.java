@@ -2,7 +2,9 @@ package xyz.scootaloo.console.app.support.parser;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * 属性管理器，如果不需要这个功能则在设置中关闭
@@ -24,11 +26,15 @@ public class PropertyManager {
      * {@code the name is ${student.name}}
      */
     private static final Map<String, Object> properties = new HashMap<>(16);
-
+    private static final Random rand = new Random();
 
     // getter and setter ---------------------------------------------------------------------------
 
     public static void set(String key, Object value) {
+        if (key.startsWith(".")) {
+            properties.clear();
+            return;
+        }
         if (value.equals("."))
             properties.remove(key);
         else
@@ -109,6 +115,8 @@ public class PropertyManager {
         String[] fields = key.split("\\.");
         if (fields.length < 2)
             return defaultValue;
+        if (fields[0].toLowerCase(Locale.ROOT).equals("rand"))
+            return doRandom(fields[1]);
 
         Object obj = properties.get(fields[0]);
         if (obj == null)
@@ -118,6 +126,18 @@ public class PropertyManager {
             return res[0];
         else
             return defaultValue;
+    }
+
+    private static String doRandom(String option) {
+        option = option.toLowerCase(Locale.ROOT);
+        switch (option) {
+            case "int":
+                return String.valueOf(rand.nextInt());
+            case "bool":
+                return String.valueOf(rand.nextInt() % 2 == 0);
+            default:
+                throw new RuntimeException("不支持的选项: " + option);
+        }
     }
 
     private static boolean dfs(Object obj, String[] fields, int idx, String[] res) {
