@@ -20,7 +20,7 @@ import java.util.jar.JarFile;
  * @since 2020/12/28 12:33
  */
 @Deprecated
-public class PackScanner {
+public abstract class PackScanner {
 
     public static Set<Class<?>> getClasses(String pack) {
 

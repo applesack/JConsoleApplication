@@ -1,6 +1,5 @@
 package xyz.scootaloo.console.app.support.utils;
 
-import org.testng.annotations.Test;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 import xyz.scootaloo.console.app.support.common.Colorful;
 import xyz.scootaloo.console.app.support.common.ResourceManager;
@@ -16,7 +15,7 @@ import java.util.stream.Stream;
  * @author flutterdash@qq.com
  * @since 2020/12/27 17:08
  */
-public class ClassUtils {   
+public abstract class ClassUtils {
     private static final Colorful cPrint = ResourceManager.cPrint;
     private static final String DELIMITER = ",";
 
@@ -134,22 +133,6 @@ public class ClassUtils {
         for (String item : items) {
             collection.add((T) TransformFactory.simpleTrans(item, type));
         }
-    }
-
-    @Test
-    public void test() throws NoSuchMethodException {
-        Method method = getMethod();
-        method.getTypeParameters();
-        System.out.println();
-    }
-
-    public Method getMethod() throws NoSuchMethodException {
-        Class<?> clazz = this.getClass();
-        return clazz.getDeclaredMethod("getZ", int.class, String.class);
-    }
-
-    public Integer getZ(int a, String b) {
-        return 12;
     }
 
 }

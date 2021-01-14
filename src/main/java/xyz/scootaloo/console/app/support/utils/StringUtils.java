@@ -10,7 +10,7 @@ import java.util.stream.Stream;
  * @author flutterdash@qq.com
  * @since 2020/12/30 20:16
  */
-public class StringUtils {
+public abstract class StringUtils {
 
     private static final String[] BOX = {"0", "00", "000"};
 
