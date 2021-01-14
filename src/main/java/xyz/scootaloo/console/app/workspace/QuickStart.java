@@ -112,6 +112,14 @@ public class QuickStart {
         System.out.println(sum);
     }
 
+    @Cmd
+    private Student getStu() {
+        Student student = new Student();
+        student.age = 14;
+        student.name = "jack";
+        return student;
+    }
+
     /**
      * 表单功能
      * 尝试输入

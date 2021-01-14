@@ -29,6 +29,7 @@ public class ConsoleConfig {
     private Set<Class<?>> factories;
     private List<String> initCommands;
     private Set<Object> helpFactories;
+    private boolean enablePlaceholder;
 
     // 扫描的基础包路径
     private String basePack;

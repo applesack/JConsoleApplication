@@ -50,6 +50,11 @@ public class TransformFactory {
 
     // 简易的转换，转换基本类型
     public static Object simpleTrans(Object value, Class<?> type) {
+        // 尝试进行占位符替换
+        Object pObj = resolvePlaceholder(value, type);
+        if (pObj != null)
+            return pObj;
+
         Function<String, Object> convertor = STR_RESOLVE_MAP.get(type);
         if (convertor != null) {
             return convertor.apply(String.valueOf(value));
@@ -91,6 +96,15 @@ public class TransformFactory {
                 throw new RuntimeException("暂不支持的数据结构: " + type.getName());
             }
         }
+    }
+
+    private static Object resolvePlaceholder(Object value, Class<?> type) {
+        if (!value.equals(PropertyManager.placeholder))
+            return null;
+        Object placeholderObj = PropertyManager.get();
+        if (placeholderObj != null && placeholderObj.getClass() == type)
+            return placeholderObj;
+        return null;
     }
 
     private static void putDefVal(Function<String, Object> convertor) {

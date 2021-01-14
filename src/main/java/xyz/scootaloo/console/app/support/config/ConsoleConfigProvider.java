@@ -53,6 +53,7 @@ public abstract class ConsoleConfigProvider {
         private List<String> initCommands = new ArrayList<>();
         private Set<Class<?>> factories = new LinkedHashSet<>();
         private Set<Object> helpFactories = new LinkedHashSet<>();
+        private boolean enablePlaceholder = true;
 
         // 作者信息
         private Author author;
@@ -101,6 +102,11 @@ public abstract class ConsoleConfigProvider {
             if (cmd != null) {
                 this.exitCmd = cmd;
             }
+            return this;
+        }
+
+        public DefaultValueConfigBuilder enablePlaceholder(boolean flag) {
+            this.enablePlaceholder = flag;
             return this;
         }
 

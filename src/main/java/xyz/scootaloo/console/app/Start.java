@@ -39,6 +39,7 @@ public class Start {
                         .printStackTrace(false) // 遇到异常时是否打印调用栈
                         .exitCmd(new String[] {"exit", "e.", "q"}) // 使用这些命令可以退出应用
                         .maxHistory(128) // 最多保存的历史记录，
+                        .enablePlaceholder(true) // 开启占位符替换功能
                         // 编辑作者信息，当printWelcome设置为false时，这些信息不会被输出
                         .editAuthorInfo()
                             .authorName("fd")

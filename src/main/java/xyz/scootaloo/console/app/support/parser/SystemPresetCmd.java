@@ -28,6 +28,10 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
     private static final String version = "v0.1";
     protected static final String SYS_TAG = "sys";
 
+    // 使用方法返回值做为属性资源
+    private byte setOpen = 2;
+    private String propKey;
+
     @Cmd(name = "app", tag = SYS_TAG)
     private void application(@Opt('v') boolean ver) {
         if (ver)
@@ -131,6 +135,42 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
         }
     }
 
+    @Cmd(tag = SYS_TAG)
+    private void set(@Opt(value = 'k', fullName = "key") String key,
+                     @Opt(value = 'v', fullName = "value") String value) {
+        if (!config.isEnablePlaceholder()) {
+            println(PropertyManager.msg);
+            return;
+        }
+        if (key == null) {
+            println("未选中键");
+            return;
+        }
+        if (value != null) {
+            PropertyManager.set(key, value);
+        } else {
+            setOpen = 1;
+            propKey = key;
+        }
+    }
+
+    @Cmd(tag = SYS_TAG)
+    private void get(@Opt(value = 'k', fullName = "key") String key) {
+        Object val = PropertyManager.get(key);
+        if (val == null) {
+            println("没有这个键的信息");
+        } else {
+            println(val);
+        }
+    }
+
+    @Cmd(tag = SYS_TAG)
+    private void keys() {
+        PropertyManager.getKVs().forEach((k, v) -> {
+            println("[" + k + "]: " + v);
+        });
+    }
+
     // ---------------------------------监听器----------------------------------------
 
     @Override
@@ -150,13 +190,34 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
 
     @Override
     public boolean accept(Moment moment) {
-        return moment == Moment.OnInputResolved || moment == Moment.OnAppStarted;
+        return moment == Moment.OnInputResolved || moment == Moment.OnAppStarted ||
+                moment == Moment.OnResolveInput;
+    }
+
+    @Override
+    public void onResolveInput(String cmdName, List<String> cmdItems) {
+        for (int i = 0; i<cmdItems.size(); i++) {
+            cmdItems.set(i, PropertyManager.resolvePlaceholders(cmdItems.get(i)));
+        }
     }
 
     @Override
     public void onInputResolved(String cmdName, InvokeInfo info) {
-        if (info != null)
+        if (info != null) {
+            if (setOpen <= 1) {
+                if (setOpen <= 0) {
+                    if (info.isSuccess() && info.getRtnType() != void.class)
+                        PropertyManager.set(propKey, info.get());
+                    else
+                        println("返回值无效，请重新设置 cmd:[" + info.getName() + "] " +
+                                "args:[" + String.join(",", info.getCmdArgs()) + "]");
+                    setOpen = 2;
+                } else {
+                    setOpen--;
+                }
+            }
             History.add(info);
+        }
     }
 
     @Override
