@@ -175,6 +175,12 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
         });
     }
 
+    @Cmd(tag = SYS_TAG)
+    private void echo(@Opt('v') String val) {
+        if (val != null)
+            println(val);
+    }
+
     // ---------------------------------监听器----------------------------------------
 
     @Override

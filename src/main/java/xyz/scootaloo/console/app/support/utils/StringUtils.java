@@ -33,7 +33,7 @@ public abstract class StringUtils {
         for (int i = minSize; i<7; i++)
             rslChars[i] = '_';
         if (str.length() > 7) {
-            for (int i = 4; i<7; i++)
+            for (int i = 5; i<7; i++)
                 rslChars[i] = '.';
         }
         return new String(rslChars);

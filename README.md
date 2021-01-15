@@ -3,7 +3,7 @@
 >
 > 框架的核心功能是使用一个工厂管理`java`方法，使得其他位置可以不受限制的调用工厂管理的方法并接收结果，同时框架提供一个命令解释器，可以将字符串格式的命令映射到`java`方法的参数上并执行，可以像执行`liunx`命令一样调用`java`方法，命令名称即是方法名称，命令参数即是方法参数。
 >
-> 以此为基础扩展出其他实用的功能，例如应用事件监听器，命令执行条件、自定义类型解析，可选参数和参数默认值等。
+> 以此为基础扩展出其他实用的功能，例如应用事件监听器，命令执行条件、自定义类型解析，占位符、可选参数和参数默认值等。
 >
 > 另外框架提供了多种开始方式，用于不同的应用场景。
 
@@ -13,7 +13,9 @@
 
 <div align = "center">** 2020-12-27  ~  2021-1-13 **</div>
 <div align = "center">flutterdash@qq.com</div>
-<div align = "center">last updated : 2021-1-13</div>  
+<div align = "center">last updated : 2021-1-15</div>  
+
+
 
 ## 相关技术
 
@@ -394,17 +396,79 @@ public boolean accept(Moment moment) {
 
 
 
+### 使用占位符
+
+<div align = "right"><i>2020-1-15 补充此功能</i></div>
+
+- `get`  在系统预设的命令中，可以使用`set`来设置一些变量，用`get`获取这些变量。
+  ![设置变量示例](./imgs/设置变量示例.png)
+
+  这样可以给名为`name`的键的值设置为`jack`， 通过`get`将名为`name`的键对应的值显示出来，假如系统中没有这个键，则:
+  ![没有这个键的信息](./imgs/没有这个键的信息.png)
+
+- `keys`  查询系统中所有的键以及对应的值，使用命令`keys`:
+  ![查询所有键](./imgs/查询所有键.png)
+
+- **占位符:**  使用占位符来测试之前的`add`命令, `${}`会被替换成实际的值:
+
+  ![测试占位符](./imgs/测试占位符.png)
+  使用命令的返回值做为一个key的值，实验:
+
+  创建一个命令方法:
+
+  ```java
+  @Cmd
+  private Student getStu() {
+    Student student = new Student();
+    student.age = 14;
+    student.name = "jack";
+    return student;
+  }
+  ```
+
+  这样这个方法不会在控制台输出任何内容，但是它确实是有返回值的，而且可以被系统接收，可以这样做:
+
+  ![将命令的返回值做为value](./imgs/将命令的返回值做为value.png)
+  用`set`指定一个键，`stu`，将下一条命令的返回值做为value， 再使用`get`命令查看这个键。
+  Student类只包含两个属性，name和age，并且没有重写`toString`方法，所以这里输出的是这个对象的地址，可以观察到，确实是把对象设置到这个键上了。
+  再来使用一个命令方法验证这个功能，这个方法会将一个Student对象的内容输出:
+
+  ```java
+  @Cmd(name = "addStu")
+  private void addStudent(Student student) {
+    System.out.println("姓名： " + student.name);
+    System.out.println("年龄： " + student.age);
+  }
+  ```
+
+  ![使用对象做为参数](./imgs/使用对象做为参数.png)
+
+- 查看某个变量的对象的某属性，以上面的`stu`为例，它是一个`Student`对象，要查看它的属性，使用`echo`命令
+  ![变量的属性](./imgs/变量的属性.png)
+
+- 清除某个key，使用小数点`.`做为值
+
+  ![清除某个键](./imgs/清除某个键.png)
+  清除所有键，命令`set .`
+
+  ![清除所有键](./imgs/清除所有键.png)
+
+
+
 ### 系统预置的命令
 
 这部分以及补充了对应的帮助信息，可以通过`find -t sys`查看预设命令的原型，使用`help [命令名]`查看命令的用法，这里就不多赘述了.
 
 - 管理监听器的
-  - dis
-  - en
-  - lis
+  - dis 停用某监听器
+  - en 启用某监听器
+  - lis 显示系统中正在应用的监听器
+- echo 输出变量对象的属性
+- set 设置变量
+- get 获取变量
 - app 应用信息
 - his 查询历史命令记录
-- sleep 休眠当前程序
+- sleep 休眠当前程序若干毫秒
 - help 查看某命令的帮助信息
 
 ![查询his命令的帮助信息](./imgs/查询his命令的帮助信息.png)
@@ -414,4 +478,3 @@ public boolean accept(Moment moment) {
 ### 编写应用的帮助信息
 
 到这就行了，示例代码里都有，也比较简单，这里就不写了。
-
