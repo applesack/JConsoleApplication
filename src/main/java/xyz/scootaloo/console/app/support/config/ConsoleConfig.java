@@ -7,6 +7,7 @@ import xyz.scootaloo.console.app.support.utils.ClassUtils;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * 控制台最终的配置配置
@@ -26,10 +27,10 @@ public class ConsoleConfig {
     // 开发配置
     private int maxHistory;     // 最大保存历史记录的长度
     private boolean printStackTraceOnException; // 遇到异常时是否打印调用栈
-    private Set<Class<?>> factories;
+    private Set<Supplier<Object>> factories;
     private List<String> initCommands;
     private Set<Object> helpFactories;
-    private boolean enablePlaceholder;
+    private boolean enableVariableFunction;
 
     // 扫描的基础包路径
     private String basePack;

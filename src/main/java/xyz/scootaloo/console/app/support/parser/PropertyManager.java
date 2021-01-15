@@ -1,5 +1,7 @@
 package xyz.scootaloo.console.app.support.parser;
 
+import xyz.scootaloo.console.app.support.utils.StringUtils;
+
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Locale;
@@ -26,6 +28,7 @@ public class PropertyManager {
      * {@code the name is ${student.name}}
      */
     private static final Map<String, Object> properties = new HashMap<>(16);
+    private static final String DFT_RAND_STR = "0";
     private static final Random rand = new Random();
 
     // getter and setter ---------------------------------------------------------------------------
@@ -130,13 +133,35 @@ public class PropertyManager {
 
     private static String doRandom(String option) {
         option = option.toLowerCase(Locale.ROOT);
-        switch (option) {
-            case "int":
+        if (option.startsWith("int")) {
+            option = option.substring(3);
+            if (option.isEmpty()) {
                 return String.valueOf(rand.nextInt());
-            case "bool":
-                return String.valueOf(rand.nextInt() % 2 == 0);
-            default:
-                throw new RuntimeException("不支持的选项: " + option);
+            } else {
+                if (option.startsWith("(") && option.endsWith(")")) {
+                    option = StringUtils.trimBothEnds(option);
+                    if (option.isEmpty()) {
+                        return DFT_RAND_STR;
+                    } else {
+                        String[] segment = option.split(",");
+                        if (segment.length == 0 || segment.length > 2)
+                            return DFT_RAND_STR;
+                        int low = Integer.parseInt(segment[0]);
+                        if (segment.length == 1) {
+                            return String.valueOf((rand.nextInt() + low));
+                        } else {
+                            int height = Integer.parseInt(segment[1]);
+                            return String.valueOf((rand.nextInt(height - low) + low));
+                        }
+                    }
+                } else {
+                    throw new RuntimeException("不能识别开闭符号: " + option);
+                }
+            }
+        } else if (option.startsWith("bool")) {
+            return String.valueOf(rand.nextInt() % 2 == 0);
+        } else {
+            throw new RuntimeException("不支持的随机功能");
         }
     }
 

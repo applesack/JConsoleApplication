@@ -27,6 +27,8 @@ import java.util.List;
  */
 public class ListenerDemo implements AppListenerAdapter {
 
+    public static final ListenerDemo INSTANCE = new ListenerDemo();
+
     /**
      * 每个监听器都需要有一个名字，
      * 可以通过下面几个命令查看系统中的监听器

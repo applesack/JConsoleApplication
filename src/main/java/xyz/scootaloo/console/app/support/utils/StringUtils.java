@@ -64,4 +64,13 @@ public abstract class StringUtils {
         return true;
     }
 
+    public static String trimBothEnds(String str) {
+        if (str.length() <= 1)
+            return str;
+        char[] rslChars = new char[str.length() - 2];
+        for (int i = 1; i<str.length() - 1; i++)
+            rslChars[i - 1] = str.charAt(i);
+        return new String(rslChars);
+    }
+
 }

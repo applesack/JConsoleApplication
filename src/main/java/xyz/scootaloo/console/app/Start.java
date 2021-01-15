@@ -38,8 +38,8 @@ public class Start {
                         .prompt("example> ")  // 控制台输入的提示符
                         .printStackTrace(false) // 遇到异常时是否打印调用栈
                         .exitCmd(new String[] {"exit", "e.", "q"}) // 使用这些命令可以退出应用
-                        .maxHistory(128) // 最多保存的历史记录，
-                        .enablePlaceholder(true) // 开启占位符替换功能
+                        .maxHistory(128) // 最多保存的历史记录数量
+                        .enableVariableFunction(true) // 开启变量功能，get set命令可用，占位符功能可用
                         // 编辑作者信息，当printWelcome设置为false时，这些信息不会被输出
                         .editAuthorInfo()
                             .authorName("fd")
@@ -57,9 +57,9 @@ public class Start {
                         // 增加命令工厂，enable参数决定是否启用该命令工厂，将false修改为true可以开启对应命令工厂的测试，
                         // 但是为了方便功能演示，建议测试以下几个类的时候，每次只有一个工厂类enable为true
                         .addCommandFactories()
-                            .add(QuickStart.class, true)
-                            .add(AdvancedDemo.class, false)
-                            .add(ListenerDemo.class, false)
+                            .add(QuickStart.class, true) // 使用Class对象，可以实例化private的无参构造器，但是可能会导致系统中存在多个实例
+                            .add(AdvancedDemo::new, false) // 构造器引用，同样存在导致系统中多例的问题
+                            .add(ListenerDemo.INSTANCE, false) // 使用已存在的对象做为命令工厂，单例
                             .add(LoginDemo.class, false)
                             .ok()
                         .addHelpFactory(HelpForDemo.INSTANCE) // 加入命令帮助
@@ -76,7 +76,9 @@ public class Start {
         // 使用 Commons.simpleConf() 获取更精简的配置类
         Interpreter interpreter = ApplicationRunner.getInterpreter(Commons.simpleConf()
                 .printStackTrace(false)
-                .addFactory(QuickStart.class, true)
+                .addFactory()
+                    .add(QuickStart::new, true)
+                    .ok()
                 .build());
 
         // 直接运行命令，得到结果的包装类

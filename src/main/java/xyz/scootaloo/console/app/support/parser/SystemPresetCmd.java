@@ -82,7 +82,7 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
     private void find(MethodActuator methodActuator) {
         StringBuilder sb = new StringBuilder();
         sb.setLength(0);
-        // 输出 标签 类名.方法名 方法参数
+        // 输出 标签 类名.方法名(方法参数):返回值
         sb.append('[').append(methodActuator.getCmd().tag()).append(']').append(' ')
                 .append(methodActuator.getInstance().getClass().getSimpleName()).append('.')
                 .append(ClassUtils.getMethodInfo(methodActuator.getMethod()));
@@ -138,7 +138,7 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
     @Cmd(tag = SYS_TAG)
     private void set(@Opt(value = 'k', fullName = "key") String key,
                      @Opt(value = 'v', fullName = "value") String value) {
-        if (!config.isEnablePlaceholder()) {
+        if (!config.isEnableVariableFunction()) {
             println(PropertyManager.msg);
             return;
         }
@@ -323,7 +323,7 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
         }
 
         public String _help() {
-            return "帮助\n" +
+            return "帮助信息\n" +
                     "[-s][--name] 查询某命令的用法\n" +
                     "示例，查询history这个命令的用法: \n" +
                     "       help -s history\n" +
@@ -385,6 +385,36 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
                     "       his -n 10\n" +
                     "示例，查询最近5次调用history命令的日期和执行用时\n" +
                     "       his -s history -n 5 -ti\n";
+        }
+
+        public String _set() {
+            return "设置变量\n" +
+                    "set [key] [value]\n" +
+                    "向系统中放置一个键值对\n" +
+                    "\n" +
+                    "可以用命令方法的返回值做为key的value\n" +
+                    "set [key]\n" +
+                    "a command which has return value\n" +
+                    "\n" +
+                    "清除某个key\n" +
+                    "set [key] .\n" +
+                    "\n" +
+                    "清除所有key\n" +
+                    "set .\n";
+        }
+
+        public String _get() {
+            return "获取键的值，并输出\n" +
+                    "get [key]\n";
+        }
+
+        public String _keys() {
+            return "无需参数，显示所有的键值对\n";
+        }
+
+        public String _echo() {
+            return "接收一个参数，显示变量的实际值，也可以用于查看变量对象的属性\n" +
+                    "echo ${[key]}\n";
         }
 
     }

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * 配置提供者
@@ -51,9 +52,9 @@ public abstract class ConsoleConfigProvider {
         private int maxHistory = 64;
         private boolean printStackTraceOnException = false;
         private List<String> initCommands = new ArrayList<>();
-        private Set<Class<?>> factories = new LinkedHashSet<>();
+        private Set<Supplier<Object>> factories = new LinkedHashSet<>();
         private Set<Object> helpFactories = new LinkedHashSet<>();
-        private boolean enablePlaceholder = true;
+        private boolean enableVariableFunction = true;
 
         // 作者信息
         private Author author;
@@ -105,8 +106,8 @@ public abstract class ConsoleConfigProvider {
             return this;
         }
 
-        public DefaultValueConfigBuilder enablePlaceholder(boolean flag) {
-            this.enablePlaceholder = flag;
+        public DefaultValueConfigBuilder enableVariableFunction(boolean flag) {
+            this.enableVariableFunction = flag;
             return this;
         }
 
@@ -162,10 +163,8 @@ public abstract class ConsoleConfigProvider {
             dvBuilder.printWelcome(false);
         }
 
-        public SimpleConfig addFactory(Class<?> factory, boolean enable) {
-            if (enable)
-                this.dvBuilder.factories.add(factory);
-            return this;
+        public CommandFactory addFactory() {
+            return new CommandFactory(this.dvBuilder);
         }
 
         public SimpleConfig printStackTrace(boolean flag) {

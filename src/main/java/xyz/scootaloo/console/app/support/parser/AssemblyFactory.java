@@ -1,7 +1,6 @@
 package xyz.scootaloo.console.app.support.parser;
 
 import xyz.scootaloo.console.app.support.common.Colorful;
-import xyz.scootaloo.console.app.support.common.ProxyInvoke;
 import xyz.scootaloo.console.app.support.common.ResourceManager;
 import xyz.scootaloo.console.app.support.component.Cmd;
 import xyz.scootaloo.console.app.support.component.CmdType;
@@ -15,6 +14,7 @@ import xyz.scootaloo.console.app.support.utils.StringUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -98,19 +98,22 @@ public class AssemblyFactory {
         welcome();
 
         // 处理命令工厂
-        Set<Class<?>> cmdFactories = new LinkedHashSet<>(config.getFactories());
-        cmdFactories.add(SystemPresetCmd.class);
-        for (Class<?> factory : cmdFactories) {
-            Object instance = ProxyInvoke.invoke(factory);
-            if (instance instanceof AppListener)
-                doGetListener((AppListener) instance);
-            Method[] methods = factory.getDeclaredMethods();
+        Set<Supplier<Object>> cmdFactories = new LinkedHashSet<>(config.getFactories());
+        cmdFactories.add(SystemPresetCmd::new);
+        for (Supplier<Object> factorySupplier : cmdFactories) {
+            Object factoryInstance = factorySupplier.get();
+            if (factoryInstance == null)
+                continue;
+            Class<?> factoryClass = factoryInstance.getClass();
+            if (factoryInstance instanceof AppListener)
+                doGetListener((AppListener) factoryInstance);
+            Method[] methods = factoryClass.getDeclaredMethods();
             for (Method method : methods) {
                 method.setAccessible(true);
                 Cmd cmd = method.getAnnotation(Cmd.class);
                 if (cmd == null)
                     continue;
-                doResolveCmd(method, cmd, instance);
+                doResolveCmd(method, cmd, factoryInstance);
             }
         }
 
