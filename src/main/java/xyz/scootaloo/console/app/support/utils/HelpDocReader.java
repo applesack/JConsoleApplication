@@ -15,6 +15,7 @@ import java.util.Map;
  * @author flutterdash@qq.com
  * @since 2020/12/31 11:59
  */
+@Deprecated
 public abstract class HelpDocReader {
 
     private static final String helpFile = "/help.txt";

@@ -10,7 +10,7 @@ import java.util.function.Consumer;
  */
 public abstract class AbstractApplication {
 
-    // 需要提供一个异常处理器
+    // 提供一个异常处理器
     protected Consumer<Exception> exceptionHandle;
 
     // 获取字符串输入

@@ -15,6 +15,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static xyz.scootaloo.console.app.support.parser.PropertyManager.*;
+
 /**
  * 系统预设的命令，可以使用 find -t sys 命令查看到
  * @author flutterdash@qq.com
@@ -139,7 +141,7 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
     private void set(@Opt(value = 'k', fullName = "key") String key,
                      @Opt(value = 'v', fullName = "value") String value) {
         if (!config.isEnableVariableFunction()) {
-            println(PropertyManager.msg);
+            println(msg);
             return;
         }
         if (key == null) {
@@ -170,15 +172,22 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
 
     @Cmd(tag = SYS_TAG)
     private void keys() {
-        PropertyManager.getKVs().forEach((k, v) -> {
+        getKVs().forEach((k, v) -> {
             println("[" + k + "]: " + v);
         });
     }
 
     @Cmd(tag = SYS_TAG)
     private void echo(@Opt('v') String val) {
-        if (val != null)
-            println(val);
+        if (val != null) {
+            // print type
+            if (!NonStringVariable.hisPVs.isEmpty()) {
+                for (NonStringVariable nextPV : NonStringVariable.hisPVs) {
+                    println(nextPV.key + " [type: " + nextPV.value.getClass()
+                            .getSimpleName() + "] " + nextPV.value);
+                }
+            }
+        }
     }
 
     // ---------------------------------监听器----------------------------------------
@@ -206,8 +215,9 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
 
     @Override
     public void onResolveInput(String cmdName, List<String> cmdItems) {
+        PropertyManager.doClear();
         for (int i = 0; i<cmdItems.size(); i++) {
-            cmdItems.set(i, PropertyManager.resolvePlaceholders(cmdItems.get(i)));
+            cmdItems.set(i, resolvePlaceholders(cmdItems.get(i)));
         }
     }
 

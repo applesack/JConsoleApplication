@@ -3,10 +3,7 @@ package xyz.scootaloo.console.app.support.parser;
 import xyz.scootaloo.console.app.support.utils.StringUtils;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 /**
  * 属性管理器，如果不需要这个功能则在设置中关闭
@@ -18,9 +15,6 @@ public class PropertyManager {
 
     protected static final String msg = "设置中已关闭此功能";
     protected static final String placeholder = "@#@";
-
-    private static boolean hasObjValue = false;
-    private static Object objValue = null;
 
     /**
      * 属性集，假如value是一个对象，那么key应该用符合拼写习惯的小驼峰写法，
@@ -49,11 +43,8 @@ public class PropertyManager {
     }
 
     public static Object get() {
-        if (hasObjValue) {
-            Object rVal = objValue;
-            objValue = null;
-            hasObjValue = false;
-            return rVal;
+        if (!NonStringVariable.hisPVs.isEmpty()) {
+            return NonStringVariable.hisPVs.peek().value;
         }
         return null;
     }
@@ -64,12 +55,17 @@ public class PropertyManager {
 
     //----------------------------------------------------------------------------------------------
 
+    public static void doClear() {
+        NonStringVariable.hisPVs.clear();
+    }
+
     /**
      * 将字符串中的占位符替换成Properties中的value
      * @param text 文本
      * @return 替换占位符后的文本
      */
     public static String resolvePlaceholders(String text) {
+        NonStringVariable curPV = new NonStringVariable();
         StringBuilder sb = new StringBuilder();
         boolean isOpen = false;
         int lSign = -1;
@@ -94,30 +90,35 @@ public class PropertyManager {
                 if (lSign == i)
                     continue;
                 String key = String.valueOf(text.subSequence(lSign, i));
-                String value = getValue(key, "${"+ key + "}");
+                curPV.key = key;
+                String value = getValue(key, "${"+ key + "}", curPV);
                 sb.append(value);
                 continue;
             }
             if (!isOpen)
                 sb.append(c);
         }
+        if (curPV.hasVar)
+            NonStringVariable.hisPVs.push(curPV);
         return sb.toString();
     }
 
-    private static String getValue(String key, String defaultValue) {
+    private static String getValue(String key, String defaultValue, NonStringVariable curPV) {
         Object value = properties.get(key);
         if (value != null) {
             if (value instanceof String) {
+                curPV.value = value;
                 return value.toString();
             } else {
-                hasObjValue = true;
-                objValue = value;
+                curPV.value = value;
                 return placeholder;
             }
         }
         String[] fields = key.split("\\.");
-        if (fields.length < 2)
+        if (fields.length < 2) {
+            curPV.hasVar = false;
             return defaultValue;
+        }
         if (fields[0].toLowerCase(Locale.ROOT).equals("rand"))
             return doRandom(fields[1]);
 
@@ -180,6 +181,26 @@ public class PropertyManager {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    // 非字符串变量
+    protected static class NonStringVariable {
+
+        public static final Stack<NonStringVariable> hisPVs = new Stack<>();
+
+        // 是否有变量
+        private boolean hasVar;
+
+        // 此变量的key
+        public String key;
+
+        // 此变量的值
+        public Object value;
+
+        public NonStringVariable() {
+            this.hasVar = true;
+        }
+
     }
 
 }
