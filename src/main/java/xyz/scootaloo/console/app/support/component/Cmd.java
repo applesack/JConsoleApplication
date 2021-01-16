@@ -22,6 +22,9 @@ public @interface Cmd {
     // 命令的别名
     String name() default "";
 
+    // 参数解析方式
+    Mode mode() default Mode.SYS;
+
     // 命令对应的类对象(type = CmdType.Parser时用)
     Class<?>[] targets() default {};
 

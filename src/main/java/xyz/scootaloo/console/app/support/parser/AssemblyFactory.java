@@ -4,11 +4,11 @@ import xyz.scootaloo.console.app.support.common.Colorful;
 import xyz.scootaloo.console.app.support.common.ResourceManager;
 import xyz.scootaloo.console.app.support.component.Cmd;
 import xyz.scootaloo.console.app.support.component.CmdType;
+import xyz.scootaloo.console.app.support.component.Mode;
 import xyz.scootaloo.console.app.support.config.Author;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 import xyz.scootaloo.console.app.support.listener.AppListener;
 import xyz.scootaloo.console.app.support.listener.EventPublisher;
-import xyz.scootaloo.console.app.support.parser.ResolveFactory.ResultWrapper;
 import xyz.scootaloo.console.app.support.utils.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -157,6 +157,9 @@ public class AssemblyFactory {
         // 根据 type ，执行不同的装配方式
         switch (cmdAnno.type()) {
             case Cmd: {
+                // 处理解析模式
+                if (cmdAnno.mode() == Mode.DFT)
+                    actuator.setConverter(SimpleConverter.INSTANCE);
                 strategyMap.put(actuator.cmdName, actuator);
                 ALL_COMMANDS.add(actuator);
                 Cmd cmd = method.getAnnotation(Cmd.class);
@@ -274,10 +277,11 @@ public class AssemblyFactory {
      * @since 2020/12/29 11:00
      */
     public static class MethodActuator implements Actuator {
-        // 元信息，方法对象，注解，方法所在的类的实例
+        // 元信息，方法对象，注解，方法所在的类的实例，解析器
         private final Method method;
         private final Cmd cmd;
         private final Object obj;
+        private Converter converter;
 
         // 返回值类型，方法名
         private final Class<?> rtnType;
@@ -288,6 +292,7 @@ public class AssemblyFactory {
             this.cmd = c;
             this.method = m;
             this.obj = o;
+            this.converter = (argList) -> ResolveFactory.transform(this.getMethod(), argList);
 
             this.cmdName = method.getName().toLowerCase(Locale.ROOT);
             this.rtnType = method.getReturnType();
@@ -318,6 +323,8 @@ public class AssemblyFactory {
         /**
          * 初始化方法、销毁方法、前置方法，不能有参数
          * 前置方法返回值必须是bool类型
+         * Parser解析器已经交由doGetParser处理了
+         * @see #doGetParser(Method, Cmd, Object)
          * @return -
          */
         protected boolean checkMethod() {
@@ -334,6 +341,16 @@ public class AssemblyFactory {
                             return false;
                     }
                 } break;
+                case Cmd: {
+                    if (cmd.mode() == Mode.DFT) {
+                        if (method.getParameterCount() != 1)
+                            return false;
+                        if (method.getParameterTypes()[0] != String.class)
+                            return false;
+                    } else {
+                        return true;
+                    }
+                }
             }
             return true;
         }
@@ -367,18 +384,18 @@ public class AssemblyFactory {
             // 发布命令解析前事件
             EventPublisher.onResolveInput(cmdName, items);
             // 由解析工厂将字符串命令解析成Object数组供method对象调用，结果由wrapper包装
-            ResultWrapper wrapper = ResolveFactory.transform(method, items);
+            Wrapper wrapper = converter.convert(items);
             // 如果解析成功
-            if (wrapper.success) {
+            if (wrapper.isSuccess()) {
                 method.setAccessible(true);
                 try {
                     // 用解析后的参数对method进行调用
-                    Object rtnVal = method.invoke(obj, wrapper.args);
+                    Object rtnVal = method.invoke(obj, wrapper.getArgs());
                     // 得到结果填充给info对象
-                    info.finishInvoke(rtnVal, wrapper.args);
+                    info.finishInvoke(rtnVal, wrapper.getArgs());
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     // 执行方法时方法内部发生错误，或者参数不匹配，错误信息填充给info对象
-                    info.onException(e, wrapper.args);
+                    info.onException(e, wrapper.getArgs());
                 }
                 // 记录最近一次的执行信息
                 Interpreter.lastInvokeInfo = info;
@@ -386,7 +403,7 @@ public class AssemblyFactory {
             // 解析失败
             else {
                 // 将错误信息填充至info
-                info.onException(wrapper.ex, null);
+                info.onException(wrapper.getEx(), null);
             }
             // 发布输入解析完成事件
             EventPublisher.onInputResolved(cmdName, info);
@@ -410,6 +427,11 @@ public class AssemblyFactory {
                 info.onException(e, args);
                 return info;
             }
+        }
+
+        public void setConverter(Converter converter) {
+            if (converter != null)
+                this.converter = converter;
         }
 
         // getter

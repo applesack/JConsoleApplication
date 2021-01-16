@@ -28,8 +28,16 @@
 ## 更新记录
 
 - **20/1/14**  增加变量功能，增加预设命令`get`、`set`、`echo`，通过占位符使用变量，变量可以做为命令的参数，`set`可以使用命令方法的返回值做为变量的值.
+
+  `help get`  `help set` 
+
 - **20/1/15**  占位符预设随机整型和随机布尔功能。占位符能获取变量的域。
+
 - **20/1/16**  增强`echo`命令的功能，除了输出变量的实际值之外，还能输出变量的类型，`echo`命令不限制参数的数量。
+
+  查看命令 `help echo`
+
+- **20/1/16**  除了系统的参数解析方式，可以使用不经过处理的命令参数做为方法参数。
 
 
 
@@ -254,6 +262,7 @@ public @interface Cmd {
 
     CmdType type() default CmdType.Cmd;
     String name() default "";
+    Mode mode() default Mode.SYS;
     Class<?>[] targets() default {};
     String onError() default "";
     int order() default 5;
@@ -296,6 +305,8 @@ public @interface Cmd {
   
   此时调用`getTime`命令时，`12:12`这个数值以及交由`dateConvertor`方法进行处理了，这里有一点需要注意，`Parser`方法的返回值需要和`@Cmd`注解的`targets`属性一致，使得方法返回值可以转换成`targets`的类型。可以自定义基本类型的处理方式，覆盖系统的默认转换。
   
+- **mode:**  目前这个枚举支持两种类型，一个是由系统做参数解析`SYS`，另一个是什么都不做直接给方法调用`DFT`，后续可能会开放用户自定义解析实现的接口。
+
 - **tag:**  给一个命令指定标签，默认的标签是`usr`，代表用户命令的意思，可以改成别的。当系统中命令比较多的时候，要查找某一类功能的命令就比较方便，按照标签查找使用的是系统命令`find`，比如:
 
   ```bash
@@ -479,7 +490,7 @@ public boolean accept(Moment moment) {
   - dis 停用某监听器
   - en 启用某监听器
   - lis 显示系统中正在应用的监听器
-- echo 输出变量对象的属性
+- echo 输出变量的实际内容
 - set 设置变量
 - get 获取变量
 - app 应用信息

@@ -10,9 +10,7 @@ import java.util.*;
 
 /**
  * 解析工厂
- * 将字符串的命令转换成Object数组
- * 将字符串格式的参数转换成方法的参数
- * 这里支持由方法参数注解中标记的可选参数和必选参数。
+ * 将字符串的命令转换成方法参数的Object数组
  *
  * 例如:
  * add 12 13
@@ -20,7 +18,7 @@ import java.util.*;
  * add(int, int)
  * ;
  *
- * his -n=5 -s=hp
+ * his -n 5 -s hp
  * ->
  * history(int, String)
  * ;
@@ -32,12 +30,12 @@ public class ResolveFactory {
     private static final String PLACEHOLDER = "*";
 
     /**
-     * 解析逻辑实现的入口
+     * *解析逻辑实现的入口*
      * @param method 方法对象
      * @param cmdline 调用此方法使用的命令参数
      * @return 包装的结果
      */
-    public static ResultWrapper transform(Method method, List<String> cmdline) {
+    public static Wrapper transform(Method method, List<String> cmdline) {
         if (method.getParameterCount() == 0)
             return ResultWrapper.success(null);
         Class<?>[] argTypes = method.getParameterTypes();                        // 参数类型数组
@@ -46,9 +44,9 @@ public class ResolveFactory {
         List<Object> args = new ArrayList<>();                                   // 最终可供Method对象invoke的参数
         Set<Character> shortParamsSet = doGetAllParameter(parameterAnnoArrays);  // 由注解中的简写命令参数名构成的集
 
-        List<WildcardArgument> wildcardArguments = new ArrayList<>();
+        List<WildcardArgument> wildcardArguments = new ArrayList<>();            // 未提供参数的位置
         // key=命令参数名 value=命令参数值
-        Map<String, Object> optMap = new HashMap<>(); // 参数map
+        Map<String, Object> optMap = new HashMap<>(); // 参数map                  // 命令参数中由'-'做前缀的参数以及值
         cmdline = loadArgumentFromCmdline(cmdline, optMap, shortParamsSet);
 
         Annotation anno;
@@ -202,7 +200,7 @@ public class ResolveFactory {
     // ------------------------------------POJO--------------------------------------------
 
     // 对结果进行包装
-    public static class ResultWrapper {
+    public static class ResultWrapper implements Wrapper {
 
         protected final boolean success;
         protected final Object[] args;
@@ -223,6 +221,23 @@ public class ResolveFactory {
                 this.args = argList.toArray();
             else
                 this.args = null;
+        }
+
+        // getter
+
+        @Override
+        public boolean isSuccess() {
+            return success;
+        }
+
+        @Override
+        public Object[] getArgs() {
+            return args;
+        }
+
+        @Override
+        public Exception getEx() {
+            return ex;
         }
 
     }

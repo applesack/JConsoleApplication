@@ -99,9 +99,9 @@ public class TransformFactory {
     }
 
     private static Object resolvePlaceholder(Object value, Class<?> type) {
-        if (!value.equals(PropertyManager.placeholder))
+        if (!value.equals(VariableManager.placeholder))
             return null;
-        Object placeholderObj = PropertyManager.get();
+        Object placeholderObj = VariableManager.get();
         if (placeholderObj != null && placeholderObj.getClass() == type) {
             return placeholderObj;
         }

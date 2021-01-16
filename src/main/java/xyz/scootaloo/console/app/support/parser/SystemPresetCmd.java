@@ -15,7 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static xyz.scootaloo.console.app.support.parser.PropertyManager.*;
+import static xyz.scootaloo.console.app.support.parser.VariableManager.*;
 
 /**
  * 系统预设的命令，可以使用 find -t sys 命令查看到
@@ -149,11 +149,11 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
             return;
         }
         if (key.startsWith(".")) {
-            PropertyManager.set(".", null);
+            VariableManager.set(".", null);
             return;
         }
         if (value != null) {
-            PropertyManager.set(key, value);
+            VariableManager.set(key, value);
         } else {
             setOpen = 1;
             propKey = key;
@@ -162,7 +162,7 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
 
     @Cmd(tag = SYS_TAG)
     private void get(@Opt(value = 'k', fullName = "key") String key) {
-        Object val = PropertyManager.get(key);
+        Object val = VariableManager.get(key);
         if (val == null) {
             println("没有这个键的信息");
         } else {
@@ -229,7 +229,7 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
 
     @Override
     public void onResolveInput(String cmdName, List<String> cmdItems) {
-        PropertyManager.doClear();
+        VariableManager.doClear();
         for (int i = 0; i<cmdItems.size(); i++) {
             cmdItems.set(i, resolvePlaceholders(cmdItems.get(i)));
         }
@@ -241,7 +241,7 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
             if (setOpen <= 1) {
                 if (setOpen <= 0) {
                     if (info.isSuccess() && info.getRtnType() != void.class)
-                        PropertyManager.set(propKey, info.get());
+                        VariableManager.set(propKey, info.get());
                     else
                         println("返回值无效，请重新设置 cmd:[" + info.getName() + "] " +
                                 "args:[" + String.join(",", info.getCmdArgs()) + "]");

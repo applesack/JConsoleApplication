@@ -6,12 +6,12 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 /**
- * 属性管理器，如果不需要这个功能则在设置中关闭
+ * 变量管理器，如果不需要这个功能则在设置中关闭
  * set get echo 占位符替换
  * @author flutterdash@qq.com
  * @since 2021/1/14 20:19
  */
-public class PropertyManager {
+public class VariableManager {
     // 需要启动此功能，需要在设置中开启
     protected static final String msg = "设置中已关闭此功能";
     protected static final String placeholder = "@#@";

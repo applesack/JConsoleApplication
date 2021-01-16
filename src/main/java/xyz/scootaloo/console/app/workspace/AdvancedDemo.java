@@ -33,6 +33,19 @@ import java.util.List;
 public class AdvancedDemo {
 
     /**
+     * 2020/1/16 更新
+     * 默认是由系统来实现参数解析的过程，但是你也可以选择自己来处理参数
+     * 将 mode 标记未 Mode.DFT
+     * 尝试输入 raw Far More Great and Powerful
+     * 参数原封不动地传递进来了，但是要求方法参数必须只有一个且是String
+     * @param line -
+     */
+    @Cmd(mode = Mode.DFT)
+    private void raw(String line) {
+        System.out.println("\"" + line + "\"");
+    }
+
+    /**
      * [初始化方法] type = CmdType.Init
      * 在 @Cmd 注解中修改type属性为 CmdType.Init ， 则这个方法会在系统装配完成所有命令后被调用。
      * 注意：
