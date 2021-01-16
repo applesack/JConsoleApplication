@@ -40,10 +40,10 @@ public class ResolveFactory {
     public static ResultWrapper transform(Method method, List<String> cmdline) {
         if (method.getParameterCount() == 0)
             return ResultWrapper.success(null);
-        Class<?>[] argTypes = method.getParameterTypes();                      // 参数类型数组
-        Type[] genericTypes = method.getGenericParameterTypes();               // 参数泛型类型数组
-        Annotation[][] parameterAnnoArrays = method.getParameterAnnotations(); // 参数注解数组
-        List<Object> args = new ArrayList<>();                                 // 最终可供Method对象invoke的参数
+        Class<?>[] argTypes = method.getParameterTypes();                        // 参数类型数组
+        Type[] genericTypes = method.getGenericParameterTypes();                 // 参数泛型类型数组
+        Annotation[][] parameterAnnoArrays = method.getParameterAnnotations();   // 参数注解数组
+        List<Object> args = new ArrayList<>();                                   // 最终可供Method对象invoke的参数
         Set<Character> shortParamsSet = doGetAllParameter(parameterAnnoArrays);  // 由注解中的简写命令参数名构成的集
 
         List<WildcardArgument> wildcardArguments = new ArrayList<>();

@@ -178,16 +178,30 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
     }
 
     @Cmd(tag = SYS_TAG)
-    private void echo(@Opt('v') String val) {
+    private Object echo(@Opt('v') String val) {
         if (val != null) {
             // print type
-            if (!NonStringVariable.hisPVs.isEmpty()) {
-                for (NonStringVariable nextPV : NonStringVariable.hisPVs) {
-                    println(nextPV.key + " [type: " + nextPV.value.getClass()
-                            .getSimpleName() + "] " + nextPV.value);
+            if (!KVPairs.hisKVs.isEmpty()) {
+                if (KVPairs.hisKVs.size() == 1) {
+                    echoPrint(KVPairs.hisKVs.peek());
+                    return KVPairs.hisKVs.peek().value;
+                } else {
+                    for (KVPairs nextKV : KVPairs.hisKVs) {
+                        echoPrint(nextKV);
+                    }
+                    return null;
                 }
+            } else {
+                return null;
             }
+        } else {
+            return null;
         }
+    }
+
+    private void echoPrint(KVPairs kv) {
+        println(kv.key + " [type: " + kv.value.getClass()
+                .getSimpleName() + "] " + kv.value);
     }
 
     // ---------------------------------监听器----------------------------------------
@@ -424,7 +438,13 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
 
         public String _echo() {
             return "接收一个参数，显示变量的实际值，也可以用于查看变量对象的属性\n" +
-                    "echo ${[key]}\n";
+                    "示例，这里假设这些变量是存在的\n" +
+                    "   echo ${name}\n" +
+                    "也可以同时查看多个变量的状态\n" +
+                    "   echo ${name} ${age} ${height}\n" +
+                    "查看变量的某属性，假定stu变量是一个Student类的实例，它具有age这个域，则可以这样做\n" +
+                    "   echo ${stu.age}\n" +
+                    "注意: echo 命令有返回值，可以做为变量\n";
         }
 
     }

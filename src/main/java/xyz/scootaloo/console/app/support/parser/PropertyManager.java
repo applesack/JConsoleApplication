@@ -7,12 +7,12 @@ import java.util.*;
 
 /**
  * 属性管理器，如果不需要这个功能则在设置中关闭
- * set get 占位符替换
+ * set get echo 占位符替换
  * @author flutterdash@qq.com
  * @since 2021/1/14 20:19
  */
 public class PropertyManager {
-
+    // 需要启动此功能，需要在设置中开启
     protected static final String msg = "设置中已关闭此功能";
     protected static final String placeholder = "@#@";
 
@@ -43,8 +43,8 @@ public class PropertyManager {
     }
 
     public static Object get() {
-        if (!NonStringVariable.hisPVs.isEmpty()) {
-            return NonStringVariable.hisPVs.peek().value;
+        if (!KVPairs.hisKVs.isEmpty()) {
+            return KVPairs.hisKVs.peek().value;
         }
         return null;
     }
@@ -56,7 +56,7 @@ public class PropertyManager {
     //----------------------------------------------------------------------------------------------
 
     public static void doClear() {
-        NonStringVariable.hisPVs.clear();
+        KVPairs.hisKVs.clear();
     }
 
     /**
@@ -65,7 +65,7 @@ public class PropertyManager {
      * @return 替换占位符后的文本
      */
     public static String resolvePlaceholders(String text) {
-        NonStringVariable curPV = new NonStringVariable();
+        KVPairs curKV = new KVPairs();
         StringBuilder sb = new StringBuilder();
         boolean isOpen = false;
         int lSign = -1;
@@ -90,69 +90,75 @@ public class PropertyManager {
                 if (lSign == i)
                     continue;
                 String key = String.valueOf(text.subSequence(lSign, i));
-                curPV.key = key;
-                String value = getValue(key, "${"+ key + "}", curPV);
+                curKV.key = key;
+                String value = getValue(key, "${"+ key + "}", curKV);
                 sb.append(value);
                 continue;
             }
             if (!isOpen)
                 sb.append(c);
         }
-        if (curPV.hasVar)
-            NonStringVariable.hisPVs.push(curPV);
+        if (curKV.hasVar)
+            KVPairs.hisKVs.push(curKV);
         return sb.toString();
     }
 
-    private static String getValue(String key, String defaultValue, NonStringVariable curPV) {
+    private static String getValue(String key, String defaultValue, KVPairs curKV) {
         Object value = properties.get(key);
         if (value != null) {
             if (value instanceof String) {
-                curPV.value = value;
+                curKV.value = value;
                 return value.toString();
             } else {
-                curPV.value = value;
+                curKV.value = value;
                 return placeholder;
             }
         }
         String[] fields = key.split("\\.");
         if (fields.length < 2) {
-            curPV.hasVar = false;
+            curKV.hasVar = false;
             return defaultValue;
         }
         if (fields[0].toLowerCase(Locale.ROOT).equals("rand"))
-            return doRandom(fields[1]);
+            return doRandom(fields[1], curKV);
 
         Object obj = properties.get(fields[0]);
         if (obj == null)
             return defaultValue;
         String[] res = new String[1];
-        if (dfs(obj, fields, 1, res))
+        if (dfs(obj, fields, 1, res, curKV))
             return res[0];
         else
             return defaultValue;
     }
 
-    private static String doRandom(String option) {
+    private static String doRandom(String option, KVPairs curKV) {
         option = option.toLowerCase(Locale.ROOT);
         if (option.startsWith("int")) {
             option = option.substring(3);
             if (option.isEmpty()) {
-                return String.valueOf(rand.nextInt());
+                int res = rand.nextInt();
+                return setAndReturn(res, curKV);
             } else {
                 if (option.startsWith("(") && option.endsWith(")")) {
                     option = StringUtils.trimBothEnds(option);
                     if (option.isEmpty()) {
+                        curKV.value = 0;
                         return DFT_RAND_STR;
                     } else {
                         String[] segment = option.split(",");
-                        if (segment.length == 0 || segment.length > 2)
+                        if (segment.length == 0 || segment.length > 2) {
+                            curKV.value = 0;
                             return DFT_RAND_STR;
+                        }
                         int low = Integer.parseInt(segment[0]);
                         if (segment.length == 1) {
-                            return String.valueOf((rand.nextInt() + low));
+                            int res = rand.nextInt() + low;
+                            return setAndReturn(res, curKV);
                         } else {
                             int height = Integer.parseInt(segment[1]);
-                            return String.valueOf((rand.nextInt(height - low) + low));
+                            int res = rand.nextInt(height - low) + low;
+                            return setAndReturn(res, curKV);
                         }
                     }
                 } else {
@@ -160,14 +166,21 @@ public class PropertyManager {
                 }
             }
         } else if (option.startsWith("bool")) {
-            return String.valueOf(rand.nextInt() % 2 == 0);
+            boolean res = rand.nextInt() % 2 == 0;
+            return setAndReturn(res, curKV);
         } else {
             throw new RuntimeException("不支持的随机功能");
         }
     }
 
-    private static boolean dfs(Object obj, String[] fields, int idx, String[] res) {
+    private static String setAndReturn(Object res, KVPairs curKV) {
+        curKV.value = res;
+        return String.valueOf(res);
+    }
+
+    private static boolean dfs(Object obj, String[] fields, int idx, String[] res, KVPairs curKV) {
         if (idx == fields.length) {
+            curKV.value = obj;
             res[0] = obj.toString();
             return true;
         }
@@ -177,18 +190,18 @@ public class PropertyManager {
             Field field = clazz.getDeclaredField(fields[idx]);
             field.setAccessible(true);
             Object fieldObj = field.get(obj);
-            return dfs(fieldObj, fields, idx + 1, res);
+            return dfs(fieldObj, fields, idx + 1, res, curKV);
         } catch (Exception e) {
             return false;
         }
     }
 
-    // 非字符串变量
-    protected static class NonStringVariable {
+    // 被替换的键值对
+    protected static class KVPairs {
+        // 一条命令中如果有多个占位符，那么它们按照顺序存储在这个集合中
+        public static final Stack<KVPairs> hisKVs = new Stack<>();
 
-        public static final Stack<NonStringVariable> hisPVs = new Stack<>();
-
-        // 是否有变量
+        // 是否有变量: 做为存储到集合的依据，假如占位符中包含的key没有对应的值，则为false
         private boolean hasVar;
 
         // 此变量的key
@@ -197,7 +210,7 @@ public class PropertyManager {
         // 此变量的值
         public Object value;
 
-        public NonStringVariable() {
+        public KVPairs() {
             this.hasVar = true;
         }
 
