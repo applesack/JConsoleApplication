@@ -178,7 +178,7 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
     }
 
     @Cmd(tag = SYS_TAG)
-    private Object echo(@Opt('v') String val) {
+    private Object echo(@Opt(value = 'v', fullName = "value") String val) {
         if (val != null) {
             // print type
             if (!KVPairs.hisKVs.isEmpty()) {
@@ -230,8 +230,10 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
     @Override
     public void onResolveInput(String cmdName, List<String> cmdItems) {
         VariableManager.doClear();
-        for (int i = 0; i<cmdItems.size(); i++) {
-            cmdItems.set(i, resolvePlaceholders(cmdItems.get(i)));
+        if (cmdItems != null) {
+            for (int i = 0; i<cmdItems.size(); i++) {
+                cmdItems.set(i, resolvePlaceholders(cmdItems.get(i)));
+            }
         }
     }
 

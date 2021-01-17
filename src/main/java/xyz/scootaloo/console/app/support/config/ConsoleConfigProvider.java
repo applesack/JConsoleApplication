@@ -154,11 +154,11 @@ public abstract class ConsoleConfigProvider {
     }
 
     // 简单配置的配置类
-    public static class SimpleConfig {
+    public static class SimpleConfigBuilder {
 
         private final DefaultValueConfigBuilder dvBuilder;
 
-        public SimpleConfig() {
+        public SimpleConfigBuilder() {
             dvBuilder = new DefaultValueConfigBuilder();
             dvBuilder.printWelcome(false);
         }
@@ -167,7 +167,7 @@ public abstract class ConsoleConfigProvider {
             return new CommandFactory(this.dvBuilder);
         }
 
-        public SimpleConfig printStackTrace(boolean flag) {
+        public SimpleConfigBuilder printStackTrace(boolean flag) {
             this.dvBuilder.printStackTrace(false);
             return this;
         }

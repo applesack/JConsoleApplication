@@ -2,7 +2,7 @@ package xyz.scootaloo.console.app.support.common;
 
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 import xyz.scootaloo.console.app.support.config.ConsoleConfigProvider.DefaultValueConfigBuilder;
-import xyz.scootaloo.console.app.support.config.ConsoleConfigProvider.SimpleConfig;
+import xyz.scootaloo.console.app.support.config.ConsoleConfigProvider.SimpleConfigBuilder;
 
 /**
  * 一些通用的便捷方法，实现此接口可以快捷的调用
@@ -17,8 +17,8 @@ public interface Commons {
     }
 
     // 精简的控制台配置类
-    static SimpleConfig simpleConf() {
-        return new SimpleConfig();
+    static SimpleConfigBuilder simpleConf() {
+        return new SimpleConfigBuilder();
     }
 
     // 精简的输出方式(不换行)

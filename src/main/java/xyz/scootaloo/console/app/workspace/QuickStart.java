@@ -129,9 +129,10 @@ public class QuickStart {
      * @param student 由键盘输入生成的对象
      */
     @Cmd(name = "addStu")
-    private void addStudent(Student student) {
+    private Student addStudent(Student student) {
         System.out.println("姓名： " + student.name);
         System.out.println("年龄： " + student.age);
+        return student;
     }
 
     /**

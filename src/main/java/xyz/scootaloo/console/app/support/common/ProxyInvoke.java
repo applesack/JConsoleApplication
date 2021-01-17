@@ -6,9 +6,11 @@ import java.util.function.Supplier;
 
 /**
  * 代理方法调用
+ * 貌似没什么用了
  * @author flutterdash@qq.com
  * @since 2020/12/28 13:20
  */
+@Deprecated
 public class ProxyInvoke {
     private static final Colorful cPrint = Colorful.instance;
 

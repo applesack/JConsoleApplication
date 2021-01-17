@@ -105,6 +105,7 @@ public class VariableManager {
 
     private static String getValue(String key, String defaultValue, KVPairs curKV) {
         Object value = properties.get(key);
+        curKV.hasVar = true;
         if (value != null) {
             if (value instanceof String) {
                 curKV.value = value;
@@ -209,10 +210,6 @@ public class VariableManager {
 
         // 此变量的值
         public Object value;
-
-        public KVPairs() {
-            this.hasVar = true;
-        }
 
     }
 

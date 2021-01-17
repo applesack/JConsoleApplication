@@ -33,9 +33,9 @@ public class Start {
         ApplicationRunner.consoleApplication(
                 Commons.config()
                         // 应用信息
-                        .appName("测试应用示例") // 应用的名称
-                        .printWelcome(false)  // 是否打印欢迎信息
-                        .prompt("example> ")  // 控制台输入的提示符
+                        .appName("测试应用示例")   // 应用的名称
+                        .printWelcome(false)    // 是否打印欢迎信息
+                        .prompt("example> ")    // 控制台输入的提示符
                         .printStackTrace(false) // 遇到异常时是否打印调用栈
                         .exitCmd(new String[] {"exit", "e.", "q"}) // 使用这些命令可以退出应用
                         .maxHistory(128) // 最多保存的历史记录数量
@@ -74,12 +74,13 @@ public class Start {
     @Test
     public void testInterpreter() {
         // 使用 Commons.simpleConf() 获取更精简的配置类
-        Interpreter interpreter = ApplicationRunner.getInterpreter(Commons.simpleConf()
-                .printStackTrace(false)
-                .addFactory()
-                    .add(QuickStart::new, true)
-                    .ok()
-                .build());
+        Interpreter interpreter = ApplicationRunner.getInterpreter(
+                Commons.simpleConf()
+                    .printStackTrace(false)
+                    .addFactory()
+                        .add(QuickStart::new, true)
+                        .ok()
+                    .build());
 
         // 直接运行命令，得到结果的包装类
         InvokeInfo result1 = interpreter.interpret("add 11 12");
@@ -94,7 +95,12 @@ public class Start {
 
         // result3的方式调用参数中含有对象的方法，某些场景下可能会引起线程阻塞，可以使用 invoke 方法传入对象调用
         // 或者实现自定义的类型转换器，参考 AdvancedDemo.resolveByte(Str) 方法
-        InvokeInfo result4 = interpreter.invoke("stuAdd", new Student());
+        InvokeInfo result4 = interpreter.invoke("addStu", new Student());
+        System.out.println("result4: " + result4.get());
+
+        // 在解释器中使用变量占位符
+        InvokeInfo result5 = interpreter.interpret("echo -v ${rand.int(10,15)}");
+        System.out.println("\"echo -v ${rand.int(10,15)}\"的结果是: " + result5.get());
     }
 
 }
