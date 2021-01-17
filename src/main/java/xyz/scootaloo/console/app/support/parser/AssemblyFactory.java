@@ -292,7 +292,7 @@ public class AssemblyFactory {
             this.cmd = c;
             this.method = m;
             this.obj = o;
-            this.converter = (argList) -> ResolveFactory.transform(this.getMethod(), argList);
+            this.converter = ResolveFactory::transform;
 
             this.cmdName = method.getName().toLowerCase(Locale.ROOT);
             this.rtnType = method.getReturnType();
@@ -384,7 +384,7 @@ public class AssemblyFactory {
             // 发布命令解析前事件
             EventPublisher.onResolveInput(cmdName, items);
             // 由解析工厂将字符串命令解析成Object数组供method对象调用，结果由wrapper包装
-            Wrapper wrapper = converter.convert(items);
+            Wrapper wrapper = converter.convert(method, items);
             // 如果解析成功
             if (wrapper.isSuccess()) {
                 method.setAccessible(true);

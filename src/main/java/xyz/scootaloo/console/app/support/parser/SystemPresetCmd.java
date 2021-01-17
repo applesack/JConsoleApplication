@@ -35,10 +35,11 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
     private String propKey;
 
     @Cmd(name = "app", tag = SYS_TAG)
-    private void application(@Opt('v') boolean ver) {
+    private String application(@Opt('v') boolean ver) {
         if (ver)
             println("版本: " + version);
         cPrint.println("https://github.com/applesack/JConsoleApplication.git");
+        return version;
     }
 
     @Cmd(name = "man", tag = SYS_TAG)
@@ -119,9 +120,10 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
     }
 
     @Cmd(tag = SYS_TAG)
-    private void sleep(@Opt('m') int millis) throws InterruptedException {
+    private int sleep(@Opt('m') int millis) throws InterruptedException {
         if (millis >= 0)
         Thread.sleep(millis);
+        return millis;
     }
 
     @Cmd(name = "cls", tag = SYS_TAG)
@@ -138,43 +140,45 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
     }
 
     @Cmd(tag = SYS_TAG)
-    private void set(@Opt(value = 'k', fullName = "key") String key,
+    private boolean set(@Opt(value = 'k', fullName = "key") String key,
                      @Opt(value = 'v', fullName = "value") String value) {
         if (!config.isEnableVariableFunction()) {
             println(msg);
-            return;
+            return false;
         }
         if (key == null) {
             println("未选中键");
-            return;
+            return false;
         }
         if (key.startsWith(".")) {
             VariableManager.set(".", null);
-            return;
+            return true;
         }
         if (value != null) {
             VariableManager.set(key, value);
+            return true;
         } else {
             setOpen = 1;
             propKey = key;
+            return true;
         }
     }
 
     @Cmd(tag = SYS_TAG)
-    private void get(@Opt(value = 'k', fullName = "key") String key) {
+    private Object get(@Opt(value = 'k', fullName = "key") String key) {
         Object val = VariableManager.get(key);
         if (val == null) {
             println("没有这个键的信息");
+            return null;
         } else {
             println(val);
+            return val;
         }
     }
 
     @Cmd(tag = SYS_TAG)
     private void keys() {
-        getKVs().forEach((k, v) -> {
-            println("[" + k + "]: " + v);
-        });
+        getKVs().forEach((k, v) -> println("[" + k + "]: " + v));
     }
 
     @Cmd(tag = SYS_TAG)

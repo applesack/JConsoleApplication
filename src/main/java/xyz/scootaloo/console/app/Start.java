@@ -46,7 +46,7 @@ public class Start {
                             .email("~~")
                             .comment("备注: ~~")
                             .createDate("2020/12/27")
-                            .updateDate("2021/1/11")
+                            .updateDate("2021/1/17")
                             .ok()
                         // 设置系统启动时执行的命令
                         .addInitCommands()
@@ -101,6 +101,18 @@ public class Start {
         // 在解释器中使用变量占位符
         InvokeInfo result5 = interpreter.interpret("echo -v ${rand.int(10,15)}");
         System.out.println("\"echo -v ${rand.int(10,15)}\"的结果是: " + result5.get());
+
+        System.out.println("\n----------------------------------------------------\n");
+
+        // 变量功能在解释器中的使用
+        // 将这个随机整型做为 "randNumber" 这个键的值
+        boolean flag = interpreter.set("randNumber", "echo 使用echo时两边的内容${rand.int(10,15)}都被忽略了");
+        // 检查设置情况
+        if (flag)
+            System.out.println("设置成功");
+        // 现在可以获取到这个值了，使用get (不需要占位符) 或者 echo (需要占位符)
+        InvokeInfo result6 = interpreter.interpret("get randNumber"); // else: echo ${randNumber}
+        System.out.println("randNumber is " + result6.get());
     }
 
 }

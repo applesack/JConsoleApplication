@@ -47,6 +47,17 @@ public class Interpreter {
         }
     }
 
+    /**
+     * 将一个命令方法的返回值设置到指定的key上
+     * @param key 键
+     * @param cmd 命令
+     * @return 是否设置成功
+     */
+    public boolean set(String key, String cmd) {
+        interpret("set " + key);
+        return interpret(cmd).isSuccess();
+    }
+
     // 获取当前解释器的配置对象
     public ConsoleConfig getConfig() {
         return this.config;

@@ -1,5 +1,6 @@
 package xyz.scootaloo.console.app.support.parser;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 /**
@@ -16,7 +17,7 @@ public class SimpleConverter implements Converter {
     }
 
     @Override
-    public Wrapper convert(List<String> arg) {
+    public Wrapper convert(Method method, List<String> arg) {
         return new SimpleWrapper(arg);
     }
 
