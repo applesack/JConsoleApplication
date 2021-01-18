@@ -3,9 +3,12 @@ package xyz.scootaloo.console.app.support.config;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import xyz.scootaloo.console.app.support.parser.ParameterParser;
 import xyz.scootaloo.console.app.support.utils.ClassUtils;
 
+import java.rmi.MarshalledObject;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -31,6 +34,7 @@ public class ConsoleConfig {
     private List<String> initCommands;
     private Set<Object> helpFactories;
     private boolean enableVariableFunction;
+    private Map<String, ParameterParser> parserMap;
 
     // 扫描的基础包路径
     private String basePack;

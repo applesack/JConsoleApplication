@@ -9,7 +9,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 /**
- * 解析工厂
+ * 系统默认参数解析器
  * 将字符串的命令转换成方法参数的Object数组
  *
  * 例如:
@@ -25,7 +25,7 @@ import java.util.*;
  * @author flutterdash@qq.com
  * @since 2020/12/29 11:21
  */
-public class ResolveFactory {
+public abstract class SysParameterParser {
     // 临时占位符
     private static final String PLACEHOLDER = "*";
 

@@ -39,6 +39,8 @@
 
 - **20/1/16**  除了系统的参数解析方式，可以使用不经过处理的命令参数做为方法参数。
 
+- **20/1/18**  开放参数解析器接口，允许使用者实现接口并注册到系统中，这样每个方法都可以有不同的参数解析逻辑
+
 
 
 ## 基本功能
@@ -231,7 +233,21 @@ InvokeInfo result = interpreter.interpret("add 11 12");
 InvokeInfo result = interpreter.invoke("stuAdd", new Student());
 ```
 
+在解释器中使用对象做为变量值，关于变量的使用在**扩展功能**部分
 
+```java
+boolean flag = interpreter.set("randNumber", "echo ${rand.int(10,15)}");
+```
+
+这里使用解释器的`set`方法，第一个参数是变量名，第二个参数是一段命令，这个命令对应的方法如果有返回值就会设置到这个变量上。这里用于演示的`echo`就是一个含有返回值的命令，这条命令会返回一个`10~15`的随机整型，这个随机数设置到了名为`randNumber`这个变量上了。这个`set`方法返回一个布尔值，表示是否设置成功。
+
+在解释器中使用变量仍然需要使用占位符;
+
+```java
+InvokeInfo result6 = interpreter.interpret("echo ${randNumber}");
+```
+
+这里假设刚才产生的随机值是`12`，那么`result6`就相当于调用`echo(12)`得到的结果。
 
 
 

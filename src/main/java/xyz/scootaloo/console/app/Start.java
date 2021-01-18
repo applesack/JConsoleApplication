@@ -6,6 +6,7 @@ import xyz.scootaloo.console.app.support.common.Commons;
 import xyz.scootaloo.console.app.support.component.Boot;
 import xyz.scootaloo.console.app.support.parser.Interpreter;
 import xyz.scootaloo.console.app.support.parser.InvokeInfo;
+import xyz.scootaloo.console.app.support.parser.SimpleParameterParser;
 import xyz.scootaloo.console.app.workspace.*;
 import xyz.scootaloo.console.app.workspace.QuickStart.Student;
 
@@ -46,7 +47,7 @@ public class Start {
                             .email("~~")
                             .comment("备注: ~~")
                             .createDate("2020/12/27")
-                            .updateDate("2021/1/17")
+                            .updateDate("2021/1/18")
                             .ok()
                         // 设置系统启动时执行的命令
                         .addInitCommands()
@@ -58,9 +59,13 @@ public class Start {
                         // 但是为了方便功能演示，建议测试以下几个类的时候，每次只有一个工厂类enable为true
                         .addCommandFactories()
                             .add(QuickStart.class, true) // 使用Class对象，可以实例化private的无参构造器，但是可能会导致系统中存在多个实例
-                            .add(AdvancedDemo::new, false) // 构造器引用，同样存在导致系统中多例的问题
+                            .add(AdvancedDemo::new, true) // 构造器引用，同样存在导致系统中多例的问题
                             .add(ListenerDemo.INSTANCE, false) // 使用已存在的对象做为命令工厂，单例
                             .add(LoginDemo.class, false)
+                            .ok()
+                        // 添加自定义的解析器实现
+                        .addParameterParser()
+                            .addParser("raw", SimpleParameterParser.INSTANCE) // 现在可以用"raw"这个解析器了
                             .ok()
                         .addHelpFactory(HelpForDemo.INSTANCE) // 加入命令帮助
                         // 设置完成，应用启动

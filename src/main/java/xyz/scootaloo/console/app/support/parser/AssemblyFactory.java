@@ -4,7 +4,6 @@ import xyz.scootaloo.console.app.support.common.Colorful;
 import xyz.scootaloo.console.app.support.common.ResourceManager;
 import xyz.scootaloo.console.app.support.component.Cmd;
 import xyz.scootaloo.console.app.support.component.CmdType;
-import xyz.scootaloo.console.app.support.component.Mode;
 import xyz.scootaloo.console.app.support.config.Author;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 import xyz.scootaloo.console.app.support.listener.AppListener;
@@ -24,13 +23,14 @@ import java.util.stream.Stream;
  * @author flutterdash@qq.com
  * @since 2020/12/28 10:05
  */
-public class AssemblyFactory {
+public abstract class AssemblyFactory {
     // resources
     private static final Colorful cPrint = ResourceManager.cPrint;
     protected static final Map<String, Actuator> strategyMap = new HashMap<>();
     protected static final List<MethodActuator> initActuators = new ArrayList<>();
     protected static final List<MethodActuator> preActuators = new ArrayList<>();
     protected static final List<MethodActuator> destroyActuators = new ArrayList<>();
+    protected static Map<String, ParameterParser> parserMap = new HashMap<>();
 
     // 所有可调用的命令
     private static final List<MethodActuator> ALL_COMMANDS = new ArrayList<>();
@@ -97,6 +97,10 @@ public class AssemblyFactory {
         hasInit = true;
         welcome();
 
+        // 将自定义解析器注入进来
+        parserMap.putAll(config.getParserMap());
+        parserMap.put(SimpleParameterParser.INSTANCE.name(), SimpleParameterParser.INSTANCE);
+
         // 处理命令工厂
         Set<Supplier<Object>> cmdFactories = new LinkedHashSet<>(config.getFactories());
         cmdFactories.add(SystemPresetCmd::new);
@@ -129,7 +133,7 @@ public class AssemblyFactory {
         // 执行初始化方法，遇到异常则退出应用
         try {
             for (MethodActuator actuator : initActuators) {
-                actuator.invoke0(null);
+                actuator.invokeCore(null);
             }
         } catch (Exception e) {
             cPrint.onException(config, e, "初始化失败, msg: " + e.getMessage() + "\n", true);
@@ -158,8 +162,9 @@ public class AssemblyFactory {
         switch (cmdAnno.type()) {
             case Cmd: {
                 // 处理解析模式
-                if (cmdAnno.mode() == Mode.DFT)
-                    actuator.setConverter(SimpleConverter.INSTANCE);
+                ParameterParser parser = parserMap.get(cmdAnno.parser());
+                if (parser != null)
+                    actuator.setParser(parser);
                 strategyMap.put(actuator.cmdName, actuator);
                 ALL_COMMANDS.add(actuator);
                 Cmd cmd = method.getAnnotation(Cmd.class);
@@ -281,7 +286,7 @@ public class AssemblyFactory {
         private final Method method;
         private final Cmd cmd;
         private final Object obj;
-        private Converter converter;
+        private ParameterParser parser;
 
         // 返回值类型，方法名
         private final Class<?> rtnType;
@@ -292,7 +297,7 @@ public class AssemblyFactory {
             this.cmd = c;
             this.method = m;
             this.obj = o;
-            this.converter = ResolveFactory::transform;
+            this.parser = SysParameterParser::transform;
 
             this.cmdName = method.getName().toLowerCase(Locale.ROOT);
             this.rtnType = method.getReturnType();
@@ -305,13 +310,13 @@ public class AssemblyFactory {
                 case Destroy:
                 case Pre:
                 case Init: {
-                    return invoke0(items);
+                    return invokeCore(items);
                 }
                 // 普通方法，需要由前置方法执行完成后才能执行(前置方法不抛异常且不返回false)
                 default: {
                     InvokeInfo info = doInvokePreProcess();
                     if (info.isSuccess()) {
-                        return invoke0(items);
+                        return invokeCore(items);
                     } else {
                         cPrint.onException(config, info.getException(), info.getExMsg());
                         return InvokeInfo.simpleSuccess();
@@ -342,13 +347,8 @@ public class AssemblyFactory {
                     }
                 } break;
                 case Cmd: {
-                    if (cmd.mode() == Mode.DFT) {
-                        if (method.getParameterCount() != 1)
-                            return false;
-                        if (method.getParameterTypes()[0] != String.class)
-                            return false;
-                    } else {
-                        return true;
+                    if (!parser.check(method)) {
+                        throw new RuntimeException("规范检查不通过");
                     }
                 }
             }
@@ -359,7 +359,7 @@ public class AssemblyFactory {
         protected InvokeInfo doInvokePreProcess() {
             for (MethodActuator actuator : preActuators) {
                 // 方法执行结果
-                InvokeInfo info = actuator.invoke0(null);
+                InvokeInfo info = actuator.invokeCore(null);
                 // 方法执行错误
                 if (!info.isSuccess()) {
                     return info;
@@ -378,13 +378,13 @@ public class AssemblyFactory {
          * @param items 执行命令时使用的参数，以按照空格分割成列表
          * @return 执行结果信息
          */
-        protected InvokeInfo invoke0(List<String> items) {
+        protected InvokeInfo invokeCore(List<String> items) {
             // 在方法执行之前先获取此方法的一些信息
             InvokeInfo info = InvokeInfo.beforeInvoke(cmdName, rtnType, items);
             // 发布命令解析前事件
             EventPublisher.onResolveInput(cmdName, items);
             // 由解析工厂将字符串命令解析成Object数组供method对象调用，结果由wrapper包装
-            Wrapper wrapper = converter.convert(method, items);
+            Wrapper wrapper = parser.convert(method, items);
             // 如果解析成功
             if (wrapper.isSuccess()) {
                 method.setAccessible(true);
@@ -429,9 +429,10 @@ public class AssemblyFactory {
             }
         }
 
-        public void setConverter(Converter converter) {
-            if (converter != null)
-                this.converter = converter;
+        // 设置解析器
+        public void setParser(ParameterParser parser) {
+            if (parser != null)
+                this.parser = parser;
         }
 
         // getter

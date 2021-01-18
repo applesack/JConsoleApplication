@@ -11,7 +11,7 @@ import java.util.List;
  * @since 2021/1/16 22:59
  */
 @FunctionalInterface
-public interface Converter {
+public interface ParameterParser {
 
     /**
      *
@@ -20,5 +20,14 @@ public interface Converter {
      * @return 一个包装类，包含处理的结果
      */
     Wrapper convert(Method method, List<String> arg);
+
+    /**
+     * 编写自定义参数解析器实现的时候，可以重写这个方法，检查方法参数是否符合要求，以便在运行之初抛出异常方便检查
+     * @param method 方法
+     * @return 是否符合所需的规范
+     */
+    default boolean check(Method method) {
+        return true;
+    }
 
 }

@@ -12,7 +12,7 @@ import java.util.function.Function;
  * @author flutterdash@qq.com
  * @since 2020/12/29 21:47
  */
-public class TransformFactory {
+public abstract class TransformFactory {
 
     private static final Map<Class<?>, Object> DEFAULT_VALUE_MAP = new HashMap<>(16);
     private static final Map<Class<?>, Function<String , Object>> STR_RESOLVE_MAP = new HashMap<>(16);

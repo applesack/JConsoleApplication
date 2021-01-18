@@ -2,12 +2,10 @@ package xyz.scootaloo.console.app.support.config;
 
 import xyz.scootaloo.console.app.support.common.Colorful;
 import xyz.scootaloo.console.app.support.common.ResourceManager;
+import xyz.scootaloo.console.app.support.parser.ParameterParser;
 import xyz.scootaloo.console.app.support.utils.ClassUtils;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 
 /**
@@ -55,6 +53,7 @@ public abstract class ConsoleConfigProvider {
         private Set<Supplier<Object>> factories = new LinkedHashSet<>();
         private Set<Object> helpFactories = new LinkedHashSet<>();
         private boolean enableVariableFunction = true;
+        private Map<String, ParameterParser> parserMap;
 
         // 作者信息
         private Author author;
@@ -129,6 +128,14 @@ public abstract class ConsoleConfigProvider {
                 this.helpFactories.add(helpFac);
             }
             return this;
+        }
+
+        public CustomizeParser addParameterParser() {
+            return new CustomizeParser(this);
+        }
+
+        protected void setParserMap(CustomizeParser parser) {
+            this.parserMap = parser.parserMap;
         }
 
         protected void setInitCommands(StringCommands commands) {

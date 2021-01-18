@@ -9,16 +9,28 @@ import java.util.List;
  * @author flutterdash@qq.com
  * @since 2021/1/16 23:03
  */
-public class SimpleConverter implements Converter {
+public class SimpleParameterParser implements NameableParameterParser {
     // 单例
-    protected static final SimpleConverter INSTANCE = new SimpleConverter();
+    public static final SimpleParameterParser INSTANCE = new SimpleParameterParser();
 
-    private SimpleConverter() {
+    private SimpleParameterParser() {
     }
 
     @Override
     public Wrapper convert(Method method, List<String> arg) {
         return new SimpleWrapper(arg);
+    }
+
+    @Override
+    public String name() {
+        return "raw";
+    }
+
+    @Override
+    public boolean check(Method method) {
+        if (method.getParameterCount() != 1)
+            return false;
+        return method.getParameterTypes()[0] == String.class;
     }
 
     protected static class SimpleWrapper implements Wrapper {

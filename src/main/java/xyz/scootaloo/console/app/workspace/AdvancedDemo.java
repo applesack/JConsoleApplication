@@ -35,12 +35,14 @@ public class AdvancedDemo {
     /**
      * 2020/1/16 更新
      * 默认是由系统来实现参数解析的过程，但是你也可以选择自己来处理参数
-     * 将 mode 标记未 Mode.DFT
+     * 将 parser 标记为raw ，这是在设置中注入的一个解析逻辑实现，什么都不做
      * 尝试输入 raw Far More Great and Powerful
      * 参数原封不动地传递进来了，但是要求方法参数必须只有一个且是String
+     *
+     * 可以自己实现一个ParameterParser并注入到设置中，标记parser来选择参数解析器
      * @param line -
      */
-    @Cmd(mode = Mode.DFT)
+    @Cmd(parser = "raw")
     private void raw(String line) {
         System.out.println("\"" + line + "\"");
     }
