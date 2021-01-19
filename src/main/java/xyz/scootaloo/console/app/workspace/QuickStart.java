@@ -1,5 +1,6 @@
 package xyz.scootaloo.console.app.workspace;
 
+import xyz.scootaloo.console.app.support.common.ResourceManager;
 import xyz.scootaloo.console.app.support.component.Cmd;
 import xyz.scootaloo.console.app.support.component.Form;
 import xyz.scootaloo.console.app.support.component.Prop;

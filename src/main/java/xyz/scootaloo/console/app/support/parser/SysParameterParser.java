@@ -57,7 +57,8 @@ public abstract class SysParameterParser {
             // 当前这个参数没有注解，尝试将一个无名参数转换到这里
             if (anno == null) {
                 if (cmdline.isEmpty())
-                    return ResultWrapper.fail(new RuntimeException("命令不完整"));
+                    return ResultWrapper.fail(new RuntimeException("命令不完整，在第" + i + "个参数，" +
+                            "参数类型: " + curArgType.getSimpleName()));
                 args.add(resolveArgument(cmdline.remove(0), argTypes[i], genericTypes[i]));
                 continue;
             }

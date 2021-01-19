@@ -22,9 +22,8 @@ import static xyz.scootaloo.console.app.support.parser.VariableManager.*;
  * @author flutterdash@qq.com
  * @since 2020/12/29 19:43
  */
-public class SystemPresetCmd implements Colorful, AppListenerAdapter {
+public class SystemPresetCmd extends Colorful implements AppListenerAdapter {
 
-    private static final Colorful cPrint = instance;
     private static ConsoleConfig config;
 
     private static final String version = "v0.1";
@@ -38,7 +37,7 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
     private String application(@Opt('v') boolean ver) {
         if (ver)
             println("版本: " + version);
-        cPrint.println("https://github.com/applesack/JConsoleApplication.git");
+        println("https://github.com/applesack/JConsoleApplication.git");
         return version;
     }
 
@@ -135,7 +134,7 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
         if (actuator instanceof MethodActuator) {
             ((MethodActuator) actuator).printInfo();
         } else {
-            cPrint.println("系统中没有这个命令.");
+            println("系统中没有这个命令.");
         }
     }
 
@@ -335,7 +334,7 @@ public class SystemPresetCmd implements Colorful, AppListenerAdapter {
             // 返回值
             if (isAll || rtnVal)
                 sb.append("[rtn: ").append(info.getRtnVal()).append(']');
-            cPrint.println(sb);
+            INSTANCE.println(sb);
         }
 
     }

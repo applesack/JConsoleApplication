@@ -5,39 +5,39 @@ package xyz.scootaloo.console.app.support.common;
  * @author flutterdash@qq.com
  * @since 2020/12/27 16:25
  */
-public interface Colorful extends Commons {
+public class Colorful extends DefaultConsole {
     // 单例
-    Colorful instance = new Colorful() {};
+    protected static final Colorful INSTANCE = new Colorful() {};
 
-    default String green(Object line) {
+    public String green(Object line) {
         return ConsoleColor.GREEN + line;
     }
 
-    default String white(Object line) {
+    public String white(Object line) {
         return ConsoleColor.WHITE + line;
     }
 
-    default String red(Object line) {
+    public String red(Object line) {
         return ConsoleColor.RED + line;
     }
 
-    default String yellow(Object line) {
+    public String yellow(Object line) {
         return ConsoleColor.YELLOW + line;
     }
 
-    default String blue(Object line) {
+    public String blue(Object line) {
         return ConsoleColor.BLUE + line;
     }
 
-    default String purple(Object line) {
+    public String purple(Object line) {
         return ConsoleColor.PURPLE + line;
     }
 
-    default String grey(Object line) {
+    public String grey(Object line) {
         return ConsoleColor.GRAY + line;
     }
 
-    default String cyanogen(Object line) {
+    public String cyanogen(Object line) {
         return ConsoleColor.CYANOGEN + line;
     }
 

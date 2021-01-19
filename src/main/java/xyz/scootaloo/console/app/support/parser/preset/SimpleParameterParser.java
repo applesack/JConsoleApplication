@@ -1,4 +1,7 @@
-package xyz.scootaloo.console.app.support.parser;
+package xyz.scootaloo.console.app.support.parser.preset;
+
+import xyz.scootaloo.console.app.support.parser.NameableParameterParser;
+import xyz.scootaloo.console.app.support.parser.Wrapper;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -17,7 +20,7 @@ public class SimpleParameterParser implements NameableParameterParser {
     }
 
     @Override
-    public Wrapper convert(Method method, List<String> arg) {
+    public Wrapper parse(Method method, List<String> arg) {
         return new SimpleWrapper(arg);
     }
 

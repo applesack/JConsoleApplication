@@ -2,11 +2,11 @@ package xyz.scootaloo.console.app;
 
 import org.testng.annotations.Test;
 import xyz.scootaloo.console.app.support.application.ApplicationRunner;
-import xyz.scootaloo.console.app.support.common.Commons;
+import xyz.scootaloo.console.app.support.common.Console;
 import xyz.scootaloo.console.app.support.component.Boot;
 import xyz.scootaloo.console.app.support.parser.Interpreter;
 import xyz.scootaloo.console.app.support.parser.InvokeInfo;
-import xyz.scootaloo.console.app.support.parser.SimpleParameterParser;
+import xyz.scootaloo.console.app.support.parser.preset.SimpleParameterParser;
 import xyz.scootaloo.console.app.workspace.*;
 import xyz.scootaloo.console.app.workspace.QuickStart.Student;
 
@@ -32,7 +32,7 @@ public class Start {
      */
     public static void main(String[] args) {
         ApplicationRunner.consoleApplication(
-                Commons.config()
+                Console.config()
                         // 应用信息
                         .appName("测试应用示例")   // 应用的名称
                         .printWelcome(false)    // 是否打印欢迎信息
@@ -59,11 +59,11 @@ public class Start {
                         // 但是为了方便功能演示，建议测试以下几个类的时候，每次只有一个工厂类enable为true
                         .addCommandFactories()
                             .add(QuickStart.class, true) // 使用Class对象，可以实例化private的无参构造器，但是可能会导致系统中存在多个实例
-                            .add(AdvancedDemo::new, true) // 构造器引用，同样存在导致系统中多例的问题
+                            .add(AdvancedDemo::new, false) // 构造器引用，同样存在导致系统中多例的问题
                             .add(ListenerDemo.INSTANCE, false) // 使用已存在的对象做为命令工厂，单例
                             .add(LoginDemo.class, false)
                             .ok()
-                        // 添加自定义的解析器实现
+                        // 添加自定义的解析器实现，注意，下面这条 "raw" 无论是否设置，都会被载入系统，这里只是演示如何扩展解析器功能
                         .addParameterParser()
                             .addParser("raw", SimpleParameterParser.INSTANCE) // 现在可以用"raw"这个解析器了
                             .ok()
@@ -80,7 +80,7 @@ public class Start {
     public void testInterpreter() {
         // 使用 Commons.simpleConf() 获取更精简的配置类
         Interpreter interpreter = ApplicationRunner.getInterpreter(
-                Commons.simpleConf()
+                Console.simpleConf()
                     .printStackTrace(false)
                     .addFactory()
                         .add(QuickStart::new, true)

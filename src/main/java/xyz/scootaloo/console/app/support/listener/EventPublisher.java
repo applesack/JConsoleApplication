@@ -1,6 +1,7 @@
 package xyz.scootaloo.console.app.support.listener;
 
 import xyz.scootaloo.console.app.support.common.Colorful;
+import xyz.scootaloo.console.app.support.common.ResourceManager;
 import xyz.scootaloo.console.app.support.component.Moment;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 import xyz.scootaloo.console.app.support.parser.InvokeInfo;
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
  */
 public class EventPublisher {
 
-    private static final Colorful cPrint = Colorful.instance;
+    private static final Colorful cPrint = ResourceManager.getColorfulPrinter();
     private static final Map<String, AppListener> LISTENER_MAP = new LinkedHashMap<>();
     private static final Map<String, AppListener> CANDIDATE_MAP = new HashMap<>();
 

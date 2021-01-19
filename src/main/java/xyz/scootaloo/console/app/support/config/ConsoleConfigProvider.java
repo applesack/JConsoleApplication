@@ -1,6 +1,7 @@
 package xyz.scootaloo.console.app.support.config;
 
 import xyz.scootaloo.console.app.support.common.Colorful;
+import xyz.scootaloo.console.app.support.common.Console;
 import xyz.scootaloo.console.app.support.common.ResourceManager;
 import xyz.scootaloo.console.app.support.parser.ParameterParser;
 import xyz.scootaloo.console.app.support.utils.ClassUtils;
@@ -15,7 +16,7 @@ import java.util.function.Supplier;
  */
 public abstract class ConsoleConfigProvider {
 
-    private static final Colorful cPrint = ResourceManager.cPrint;
+    private static final Console printer = ResourceManager.getConsole();
 
     /**
      * 获取调用此方法的调用者，并实创建调用者的实例
@@ -29,10 +30,10 @@ public abstract class ConsoleConfigProvider {
             Class<?> BOOT_CLAZZ = Class.forName(invoker);
             Object bootObj = BOOT_CLAZZ.newInstance();
             if (!ClassUtils.isExtendForm(bootObj, ConsoleConfigProvider.class))
-                cPrint.exit0("启动类没有继承自配置提供者类，无法加载配置");
+                printer.exit0("启动类没有继承自配置提供者类，无法加载配置");
             return (ConsoleConfigProvider) bootObj;
         } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
-            cPrint.exit0("解析异常，无法实例化类: " + invoker);
+            printer.exit0("解析异常，无法实例化类: " + invoker);
             return null;
         }
     }
@@ -53,7 +54,7 @@ public abstract class ConsoleConfigProvider {
         private Set<Supplier<Object>> factories = new LinkedHashSet<>();
         private Set<Object> helpFactories = new LinkedHashSet<>();
         private boolean enableVariableFunction = true;
-        private Map<String, ParameterParser> parserMap;
+        private Map<String, ParameterParser> parserMap = new HashMap<>();
 
         // 作者信息
         private Author author;
@@ -135,7 +136,7 @@ public abstract class ConsoleConfigProvider {
         }
 
         protected void setParserMap(CustomizeParser parser) {
-            this.parserMap = parser.parserMap;
+            this.parserMap.putAll(parser.parserMap);
         }
 
         protected void setInitCommands(StringCommands commands) {

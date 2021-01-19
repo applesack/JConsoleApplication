@@ -3,9 +3,9 @@ package xyz.scootaloo.console.app.support.application;
 import xyz.scootaloo.console.app.support.common.Colorful;
 import xyz.scootaloo.console.app.support.common.ResourceManager;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
+import xyz.scootaloo.console.app.support.listener.EventPublisher;
 import xyz.scootaloo.console.app.support.parser.Interpreter;
 import xyz.scootaloo.console.app.support.parser.InvokeInfo;
-import xyz.scootaloo.console.app.support.listener.EventPublisher;
 import xyz.scootaloo.console.app.support.utils.StringUtils;
 
 import java.util.List;
@@ -17,9 +17,10 @@ import java.util.Scanner;
  * @author flutterdash@qq.com
  * @since 2020/12/27 23:44
  */
-public class ConsoleApplication extends AbstractApplication implements Colorful {
+public class ConsoleApplication extends AbstractApplication {
     // resources
-    private final Scanner scanner = ResourceManager.scanner;
+    private final Scanner scanner = ResourceManager.getScanner();
+    private final Colorful console = ResourceManager.getColorfulPrinter();
     private final ConsoleConfig config;
     private final Interpreter interpreter;
 
@@ -34,7 +35,7 @@ public class ConsoleApplication extends AbstractApplication implements Colorful 
         this.interpreter = interpreter;
 
         // 设置默认的异常处理方式
-        setExceptionHandle((e) -> onException(config, e));
+        setExceptionHandle((e) -> console.onException(config, e));
         // 执行初始化命令
         doInit(config.getInitCommands());
     }
@@ -49,7 +50,7 @@ public class ConsoleApplication extends AbstractApplication implements Colorful 
                 simpleRunCommand(cmd);
             }
         } catch (Exception e) {
-            onException(config, e, "初始化遇到异常", true);
+            console.onException(config, e, "初始化遇到异常", true);
         }
     }
 
@@ -62,7 +63,7 @@ public class ConsoleApplication extends AbstractApplication implements Colorful 
 
     @Override // 提示符从配置中获取
     protected void printPrompt() {
-        print(grey(this.config.getPrompt()));
+        console.print(console.grey(this.config.getPrompt()));
     }
 
     @Override // 从配置中判断是否是退出命令
@@ -95,7 +96,7 @@ public class ConsoleApplication extends AbstractApplication implements Colorful 
             if (config.isPrintStackTraceOnException()) {
                 info.getException().printStackTrace();
             } else {
-                println(info.getExMsg());
+                console.println(info.getExMsg());
             }
         }
         return false;

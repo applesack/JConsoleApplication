@@ -80,44 +80,12 @@ public class InvokeInfo {
      * 获取返回值
      * 建议在获取返回值之前检查 success 属性是否为 true，对方法执行失败的情况做一定处理。
      * 否则方法执行失败时 get() 方法返回null，会与正常结果混淆。
-     * @return -
+     * @param <T> 免除手动类型转换
+     * @return 命令方法的返回值
      */
-    public Object get() {
-        return rtnVal;
-    }
-
-    // 以基本类型的方式获取方法返回值
-
-    public long longValue() {
-        return (long) rtnVal;
-    }
-
-    public double doubleValue() {
-        return (double) rtnVal;
-    }
-
-    public float floatValue() {
-        return (float) rtnVal;
-    }
-
-    public int intValue() {
-        return (int) rtnVal;
-    }
-
-    public short shortValue() {
-        return (short) rtnVal;
-    }
-
-    public byte byteValue() {
-        return (byte) rtnVal;
-    }
-
-    public boolean boolValue() {
-        return (boolean) rtnVal;
-    }
-
-    public String strValue() {
-        return (String) rtnVal;
+    @SuppressWarnings("unchecked")
+    public <T> T get() {
+        return (T) rtnVal;
     }
 
 }

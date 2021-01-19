@@ -23,8 +23,7 @@ import java.util.Set;
  * @author flutterdash@qq.com
  * @since 2020/12/30 23:06
  */
-public class LoginDemo implements AppListenerAdapter,
-        Colorful { // 本系统可以使用实现接口的方式，简洁的调用工具类的方法，目前支持的接口有ResourceManager和Colorful
+public class LoginDemo extends Colorful implements AppListenerAdapter {
 
     private final Map<String, User> userMap; // 用户map, key=用户名, value=密码
     private String curCmd; // 当前执行的命令

@@ -16,7 +16,7 @@ import java.util.stream.Stream;
  * @since 2020/12/27 17:08
  */
 public abstract class ClassUtils {
-    private static final Colorful cPrint = ResourceManager.cPrint;
+    private static final Colorful cPrint = ResourceManager.getColorfulPrinter();
     private static final String DELIMITER = ",";
 
     /**
@@ -98,7 +98,7 @@ public abstract class ClassUtils {
     // 获取方法泛型参数的实际类型 List<Integer> => Integer
     public static Class<?> getRawType(Type type) throws ClassNotFoundException {
         return Class.forName(((ParameterizedTypeImpl) type).getActualTypeArguments()[0].getTypeName(),
-                false, ResourceManager.loader);
+                false, ResourceManager.getLoader());
     }
 
     //---------------------------------字符串向集合的转换----------------------------------------------

@@ -8,6 +8,7 @@ import xyz.scootaloo.console.app.support.config.Author;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 import xyz.scootaloo.console.app.support.listener.AppListener;
 import xyz.scootaloo.console.app.support.listener.EventPublisher;
+import xyz.scootaloo.console.app.support.parser.preset.SimpleParameterParser;
 import xyz.scootaloo.console.app.support.utils.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -25,7 +26,7 @@ import java.util.stream.Stream;
  */
 public abstract class AssemblyFactory {
     // resources
-    private static final Colorful cPrint = ResourceManager.cPrint;
+    private static final Colorful cPrint = ResourceManager.getColorfulPrinter();
     protected static final Map<String, Actuator> strategyMap = new HashMap<>();
     protected static final List<MethodActuator> initActuators = new ArrayList<>();
     protected static final List<MethodActuator> preActuators = new ArrayList<>();
@@ -41,7 +42,7 @@ public abstract class AssemblyFactory {
     private static ConsoleConfig config;
     protected static boolean hasInit = false;
 
-    // 进行初始化
+    // 根据配置进行初始化
     public static void init(ConsoleConfig conf) {
         config = conf;
         doInitStrategyFactories();
@@ -97,7 +98,7 @@ public abstract class AssemblyFactory {
         hasInit = true;
         welcome();
 
-        // 将自定义解析器注入进来
+        // 将自定义解析器注册进来
         parserMap.putAll(config.getParserMap());
         parserMap.put(SimpleParameterParser.INSTANCE.name(), SimpleParameterParser.INSTANCE);
 
@@ -364,7 +365,7 @@ public abstract class AssemblyFactory {
                 if (!info.isSuccess()) {
                     return info;
                 } else {
-                    boolean result = (boolean) info.get();
+                    boolean result = info.get();
                     if (!result)
                         return InvokeInfo.failed(rtnType, null,
                                 new RuntimeException(actuator.cmd.onError()));
@@ -384,11 +385,11 @@ public abstract class AssemblyFactory {
             // 发布命令解析前事件
             EventPublisher.onResolveInput(cmdName, items);
             // 由解析工厂将字符串命令解析成Object数组供method对象调用，结果由wrapper包装
-            Wrapper wrapper = parser.convert(method, items);
+            Wrapper wrapper = parser.parse(method, items);
             // 如果解析成功
             if (wrapper.isSuccess()) {
-                method.setAccessible(true);
                 try {
+                    method.setAccessible(true);
                     // 用解析后的参数对method进行调用
                     Object rtnVal = method.invoke(obj, wrapper.getArgs());
                     // 得到结果填充给info对象

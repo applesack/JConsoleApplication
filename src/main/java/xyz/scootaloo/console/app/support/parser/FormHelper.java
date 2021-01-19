@@ -1,9 +1,9 @@
 package xyz.scootaloo.console.app.support.parser;
 
-import xyz.scootaloo.console.app.support.common.Colorful;
+import xyz.scootaloo.console.app.support.common.Console;
+import xyz.scootaloo.console.app.support.common.ResourceManager;
 import xyz.scootaloo.console.app.support.component.Form;
 import xyz.scootaloo.console.app.support.component.Prop;
-import xyz.scootaloo.console.app.support.common.ResourceManager;
 import xyz.scootaloo.console.app.support.utils.ClassUtils;
 
 import java.lang.reflect.Field;
@@ -18,8 +18,8 @@ import java.util.Scanner;
  */
 public class FormHelper {
     // resources
-    private static final Scanner scanner = ResourceManager.scanner;
-    private static final Colorful cPrint = ResourceManager.cPrint;
+    private static final Scanner scanner = ResourceManager.getScanner();
+    private static final Console printer = ResourceManager.getConsole();
 
     /**
      * 检查输入类型是否符合表单类条件
@@ -90,7 +90,7 @@ public class FormHelper {
          *      退出命令可以退出其余输入 -1
          */
         while (true) {
-            cPrint.print(prompt);
+            printer.print(prompt);
             String input = scanner.nextLine().trim();
             if (input.equals(exitCmd)) { // break
                 if (isRequired && !isModifyMode)
@@ -106,7 +106,7 @@ public class FormHelper {
                 field.set(instance, TransformFactory.resolveArgument(input, field.getType(), field.getGenericType()));
                 return 1;
             } catch (Exception e) {
-                cPrint.println("属性值无效, 信息: " + e.getMessage());
+                printer.println("属性值无效, 信息: " + e.getMessage());
             }
         }
     }
@@ -141,7 +141,7 @@ public class FormHelper {
      * @throws IllegalAccessException -
      */
     private static void modifyMode(Object instance, Class<?> form, String extCmd) throws IllegalAccessException {
-        cPrint.println("进入编辑模式，无需改动则回车跳过，需要修改则输入新值覆盖旧值");
+        printer.println("进入编辑模式，无需改动则回车跳过，需要修改则输入新值覆盖旧值");
         StringBuilder sb = new StringBuilder();
         for (Field field : form.getDeclaredFields()) {
             sb.setLength(0);
@@ -162,7 +162,7 @@ public class FormHelper {
      * @throws IllegalAccessException -
      */
     private static boolean showProperties(Object instance, Class<?> form) throws IllegalAccessException {
-        cPrint.println("以下是当前表单中的内容:");
+        printer.println("以下是当前表单中的内容:");
         StringBuilder sb = new StringBuilder();
         for (Field field : form.getDeclaredFields()) {
             field.setAccessible(true);
@@ -172,9 +172,9 @@ public class FormHelper {
                 continue;
             sb.append("[").append(field.getName()).append(":]")
                     .append(prop.isRequired() ? "! " : "~ ").append(field.get(instance));
-            cPrint.println(sb);
+            printer.println(sb);
         }
-        cPrint.print("确认输入是否无误？Y(确认) N(需要改动，进入修改模式): ");
+        printer.print("确认输入是否无误？Y(确认) N(需要改动，进入修改模式): ");
         String input = scanner.nextLine().trim().toLowerCase(Locale.ROOT);
         return !input.startsWith("y");
     }

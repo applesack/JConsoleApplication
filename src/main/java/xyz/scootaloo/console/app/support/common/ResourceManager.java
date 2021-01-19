@@ -7,10 +7,28 @@ import java.util.Scanner;
  * @author flutterdash@qq.com
  * @since 2020/12/31 16:42
  */
-public interface ResourceManager {
+public enum ResourceManager {
 
-    Scanner scanner = new Scanner(System.in);
-    Colorful cPrint = Colorful.instance;
-    ClassLoader loader = ResourceManager.class.getClassLoader();
+    ;
+
+    static Scanner SCANNER = new Scanner(System.in);
+    static ClassLoader LOADER = ResourceManager.class.getClassLoader();
+    static Console CONSOLE = Colorful.INSTANCE;
+
+    public static Console getConsole() {
+        return CONSOLE;
+    }
+
+    public static ClassLoader getLoader() {
+        return LOADER;
+    }
+
+    public static Scanner getScanner() {
+        return SCANNER;
+    }
+
+    public static Colorful getColorfulPrinter() {
+        return Colorful.INSTANCE;
+    }
 
 }
