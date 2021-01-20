@@ -2,6 +2,7 @@ package xyz.scootaloo.console.app.support.parser;
 
 import xyz.scootaloo.console.app.support.common.Colorful;
 import xyz.scootaloo.console.app.support.component.Cmd;
+import xyz.scootaloo.console.app.support.component.HelpDoc;
 import xyz.scootaloo.console.app.support.component.Moment;
 import xyz.scootaloo.console.app.support.component.Opt;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
@@ -23,6 +24,7 @@ import static xyz.scootaloo.console.app.support.parser.VariableManager.*;
  * @since 2020/12/29 19:43
  */
 public class SystemPresetCmd extends Colorful implements AppListenerAdapter {
+    protected static final SystemPresetCmd INSTANCE = new SystemPresetCmd();
 
     private static ConsoleConfig config;
 
@@ -155,12 +157,11 @@ public class SystemPresetCmd extends Colorful implements AppListenerAdapter {
         }
         if (value != null) {
             VariableManager.set(key, value);
-            return true;
         } else {
             setOpen = 1;
             propKey = key;
-            return true;
         }
+        return true;
     }
 
     @Cmd(tag = SYS_TAG)
@@ -342,7 +343,7 @@ public class SystemPresetCmd extends Colorful implements AppListenerAdapter {
     //--------------------------------------------------------------------------------
 
     // 对于系统预置命令的描述
-    public static class Help {
+    public static class Help implements HelpDoc {
         // 单例
         public static final Help INSTANCE = new Help();
 

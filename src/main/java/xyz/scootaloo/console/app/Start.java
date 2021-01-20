@@ -26,50 +26,24 @@ public class Start {
 
     /**
      * 启动一个控制台应用
-     * 1. 使用Commons.config()进行配置
-     * 2. 在workspace目录下进行开发。
-     * 3. 回到此类运行此 main 方法，系统启动。
+     * 1. 使用Commons.factories()进行配置
+     * 2. 假如需要额外的配置，在resource目录下修改console.yml的配置内容
+     * 3. 在workspace目录下进行开发。
+     * 4. 回到此类运行此 main 方法，系统启动。
      */
     public static void main(String[] args) {
         ApplicationRunner.consoleApplication(
-                Console.config()
-                        // 应用信息
-                        .appName("测试应用示例")   // 应用的名称
-                        .printWelcome(false)    // 是否打印欢迎信息
-                        .prompt("example> ")    // 控制台输入的提示符
-                        .printStackTrace(false) // 遇到异常时是否打印调用栈
-                        .exitCmd(new String[] {"exit", "e.", "q"}) // 使用这些命令可以退出应用
-                        .maxHistory(128) // 最多保存的历史记录数量
-                        .enableVariableFunction(true) // 开启变量功能，get set命令可用，占位符功能可用
-                        // 编辑作者信息，当printWelcome设置为false时，这些信息不会被输出
-                        .editAuthorInfo()
-                            .authorName("fd")
-                            .email("~~")
-                            .comment("备注: ~~")
-                            .createDate("2020/12/27")
-                            .updateDate("2021/1/18")
-                            .ok()
-                        // 设置系统启动时执行的命令
-                        .addInitCommands()
-                            .getFromFile("init.txt") // 从文件中读取
-                            .add("find --tag usr")   // 查询所有的用户命令
-                            .add("help --name help") // 获取 help 命令的使用帮助
-                            .ok()
-                        // 增加命令工厂，enable参数决定是否启用该命令工厂，将false修改为true可以开启对应命令工厂的测试，
-                        // 但是为了方便功能演示，建议测试以下几个类的时候，每次只有一个工厂类enable为true
-                        .addCommandFactories()
-                            .add(QuickStart.class, true) // 使用Class对象，可以实例化private的无参构造器，但是可能会导致系统中存在多个实例
-                            .add(AdvancedDemo::new, false) // 构造器引用，同样存在导致系统中多例的问题
-                            .add(ListenerDemo.INSTANCE, false) // 使用已存在的对象做为命令工厂，单例
-                            .add(LoginDemo.class, false)
-                            .ok()
-                        // 添加自定义的解析器实现，注意，下面这条 "raw" 无论是否设置，都会被载入系统，这里只是演示如何扩展解析器功能
-                        .addParameterParser()
-                            .addParser("raw", SimpleParameterParser.INSTANCE) // 现在可以用"raw"这个解析器了
-                            .ok()
-                        .addHelpFactory(HelpForDemo.INSTANCE) // 加入命令帮助
-                        // 设置完成，应用启动
-                        .build()).run();
+                Console.factories()
+                    .addFactories()
+                        .add(QuickStart::new, true)
+                        .add(AdvancedDemo::new, true)
+                        .add(ListenerDemo::new, false)
+                        .add(LoginDemo::new, false)
+                        .add(HelpForDemo::new, true)
+                        .add(SimpleParameterParser.INSTANCE, true)
+                    .ok()
+                .build()
+        ).run();
     }
 
     /**
@@ -80,9 +54,8 @@ public class Start {
     public void testInterpreter() {
         // 使用 Commons.simpleConf() 获取更精简的配置类
         Interpreter interpreter = ApplicationRunner.getInterpreter(
-                Console.simpleConf()
-                    .printStackTrace(false)
-                    .addFactory()
+                Console.factories()
+                    .addFactories()
                         .add(QuickStart::new, true)
                         .ok()
                     .build());

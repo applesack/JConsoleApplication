@@ -13,7 +13,7 @@
 
 <div align = "center">** 2020-12-27  ~  2021-1-13 **</div>
 <div align = "center">flutterdash@qq.com</div>
-<div align = "center">last updated : 2021-1-15</div>  
+<div align = "center">last updated : 2021-1-20</div>  
 
 
 
@@ -21,7 +21,7 @@
 
 `Java8`、`maven`、注解、反射
 
-几乎不使用第三方库，所以框架体量非常小，所有功能都由代码实现，仅有的两个依赖其中一个是单元测试，只在演示应用启动时使用，另外一个是`lombok`插件，后续可能会移除这个依赖。
+尽量不使用第三方库，所以框架体量非常小，大部分功能都由代码实现，仅有的三个依赖其中一个是单元测试，只在演示应用启动时使用，另外一个是`lombok`插件，后续可能会移除这个依赖，还有一个解析`yml`文件用。
 
 
 
@@ -40,6 +40,8 @@
 - **20/1/16**  除了系统的参数解析方式，可以使用不经过处理的命令参数做为方法参数。
 
 - **20/1/18**  开放参数解析器接口，允许使用者实现接口并注册到系统中，这样每个方法都可以有不同的参数解析逻辑
+
+- **20/1/20**  除了java配置方式外，提供配置文件方式进行配置。
 
 
 
@@ -128,59 +130,89 @@
 
 ### 启动配置
 
-有两种开始方式，第一种启动后会在控制台等待输入，根据控制台的输入进行处理命令，将结果在控制台输出。另外一种是获取一个解释器对象，由解释器在解析字符串格式的命令。
+<div align = "right"><i>2020-1-20 扩展此功能</i></div>
+
+有两种配置方式来启动应用一种是使用java代码方式配置，这种方式是传递一个配置类的构建者，这个构建者所有属性都有默认值，所以只需要配置自己感兴趣的部分就好了，关于这种方式的配置参考附录内容。
+
+这里介绍一下第二种方式配置，
 
 - **启动控制台应用**
 
-  需要编写一个用于启动的`main`方法，然后在`main`方法中调用`ApplicationRunner.consoleApplication(conf)`这个方法，方法参数是对于控制台应用的一些配置，以下是完整的启动及配置示例:
-
+  创建一个`main`方法，代码如下，只需要在这里注册运行系统时需要的工厂就行，`addFactories()`之后，无论是帮助文档，自定义的参数解析器，还是系统监听器，都可以在这里注册进来，系统会自动进行装配。
+  
   ```java
   public static void main(String[] args) {
       ApplicationRunner.consoleApplication(
-              Commons.config()
-                      // 应用信息
-                      .appName("测试应用示例")  // 应用的名称
-                      .printWelcome(false)    // 是否打印欢迎信息
-                      .prompt("example> ")    // 控制台输入的提示符
-                      .printStackTrace(false) // 遇到异常时是否打印调用栈
-                      .exitCmd(new String[] {"exit", "e.", "q"}) // 使用这些命令可以退出应用
-                      .maxHistory(128) // 最多保存的历史记录数量
-                      .enableVariableFunction(true) // 开启变量功能，get set命令可用，占位符功能可用
-                      // 编辑作者信息，当printWelcome设置为false时，这些信息不会被输出
-                      .editAuthorInfo()
-                          .authorName("fd")
-                          .email("~~")
-                          .comment("备注: ~~")
-                          .createDate("2020/12/27")
-                          .updateDate("2021/1/11")
-                          .ok()
-                      // 设置系统启动时执行的命令
-                      .addInitCommands()
-                          .getFromFile("init.txt") // 从文件中读取
-                          .add("find --tag usr")   // 查询所有的用户命令
-                          .add("help --name help") // 获取 help 命令的使用帮助
-                          .ok()
-                      // 增加命令工厂，enable参数决定是否启用该命令工厂，将false修改为true可以开启对应命令工厂的测试，
-                      // 但是为了方便功能演示，建议测试以下几个类的时候，每次只有一个工厂类enable为true
-                      .addCommandFactories()
-                            .add(QuickStart.class, true) // 使用Class对象，可以实例化private的无参构造器，但是可能会导致系统中存在多个实例
-                            .add(AdvancedDemo::new, false) // 构造器引用，同样存在导致系统中多例的问题
-                            .add(ListenerDemo.INSTANCE, false) // 使用已存在的对象做为命令工厂，单例
-                            .add(LoginDemo.class, false)
-                            .ok()
-                      .addHelpFactory(HelpForDemo.INSTANCE) // 加入命令帮助
-                      // 设置完成，应用启动
-                      .build()).run();
+          Console.factories()
+              .addFactories()
+                  .add(QuickStart::new, true)
+                  .add(AdvancedDemo::new, false)
+                  .add(ListenerDemo::new, false)
+                  .add(LoginDemo::new, false)
+                  .add(HelpForDemo::new, true)
+                  .ok()
+          .build()
+      ).run();
   }
   ```
 
+然后对于其他的配置，需要在`resource`目录下创建一个名为`console.yml`的配置文件
+
+![配置文件](./imgs/配置文件.png)
+
+配置文件的内容
+
+```yaml
+# 控制台基本设置
+console:
+  # 应用信息: String
+  appName: example
+  # 提示符: String
+  prompt: example>
+  # 是否打印欢迎信息: boolean
+  printWelcome: true
+  # 输入这些命令可以退出应用，假如有多个命令，各个命令之间使用英文逗号分隔: String
+  exitCmd: exit,quit
+
+# 作者信息，假如 console.printWelcome 为 false，则这些信息不会被输出
+author:
+  # String
+  name: flutterwonder
+  # String
+  email: flutterdash@qq.com
+  # String
+  createDate: 2020/12/27
+  # String
+  updateDate: 2021/1/19
+  # String
+  comment: have fun!!
+
+# 开发设置
+dev:
+  # 最多历史记录数: int
+  maxHistory: 64
+  # 遇到异常时是否打印调用栈: boolean
+  printStackTraceOnException: false
+  # 是否启用变量功能: boolean
+  enableVariableFunction: true
+  # 基础包路径，目前这个配置可以忽略: String
+  basePack: xyz.scootaloo.console.app.workspace
+
+# 系统启动时执行的命令，由于是列表，所以每一项之前有一个'-'减号符号
+init:
+  - find --tag usr
+  - help help
+```
+
+
+
   启动效果
 
-  ![启动](./imgs/启动.png)  
+![启动](./imgs/启动.png)  
   `example> `上面的这些内容是配置中执行了`find --tag usr` 和`help --name help`这两个命令输出的结果，这两个命令都是系统预置的，无需编写任何额外的代码就能用的命令，像这样的命令还有好几个，后面会写。
-  
+
   先说一下，这里`find --tag usr` 是输出当前注册到系统中的用户命令，每一条是命令对应的方法原型，也就是方法所在的类，参数，和返回值。查询系统命令使用`find --tag sys`
-  
+
 - **创建命令工厂**
 
   新建一个类做为命令工厂，甚至无需新建类，任何类都可以做为命令工厂，在这个类中需要用命令来调用的**实例方法**上标记`@Cmd`注解，然后启动应用后就能在控制台上根据命令调用这些方法了
@@ -255,7 +287,106 @@ InvokeInfo result6 = interpreter.interpret("echo ${randNumber}");
 
 ## 扩展功能
 
-> 学习其他功能的使用之前，先介绍一下系统的两个常用注解
+> 学习其他功能的使用之前，先介绍一下系统的两个概念和两个常用注解
+
+
+
+### 参数解析
+
+在系统中参数解析的接口是`NameableParameterParser`，这个接口负责按照某种逻辑，把字符串的命令转化成方法的参数，同时这个接口还有一个方法，用于给这个解析器起一个名字，实现此接口的类的实例注册到系统中后，会被系统处理绑定到指定的命令方法上(下面称有`@Cmd`注解的方法称为命令方法)
+
+```java
+@FunctionalInterface
+public interface ParameterParser {
+
+    Wrapper parse(Method method, List<String> arg);
+
+    default boolean check(Method method) {
+        return true;
+    }
+
+}
+
+```
+
+这个接口是`NameableParameterParser`的父接口，它有两个方法，
+
+- `parse`  这个方法是类型解析的核心实现，由于每一条命令都要对应一个方法，所以这个方法有一个`method`对象做为参数，做为参数转换时的参考，而`arg`则是实际的命令参数。
+- `check`  这个方法用于检查一个方法是否符合某种条件，比如希望方法接受到原封不动的命令参数，而不是被空格分隔的一个个命令项，所以要求方法只有一个参数且类型是String，把这些逻辑写在这里，这样当`method`不符合条件时，返回`false`，会由系统抛出异常，终止程序。
+
+例如: 实现此接口，并注册到系统
+
+```java
+public class SimpleParameterParser implements NameableParameterParser {
+    // 单例
+    public static final SimpleParameterParser INSTANCE = new SimpleParameterParser();
+
+    private SimpleParameterParser() {
+    }
+
+    @Override
+    public Wrapper parse(Method method, List<String> arg) {
+        return new SimpleWrapper(arg);
+    }
+
+    @Override
+    public String name() {
+        return "raw";
+    }
+
+    @Override
+    public boolean check(Method method) {
+        if (method.getParameterCount() != 1)
+            return false;
+        return method.getParameterTypes()[0] == String.class;
+    }
+
+    protected static class SimpleWrapper implements Wrapper {
+
+        private final Object[] args;
+
+        public SimpleWrapper(List<String> args) {
+            this.args = new Object[]{String.join(" ", args)};
+        }
+
+        @Override
+        public boolean isSuccess() {
+            return true;
+        }
+
+        @Override
+        public Object[] getArgs() {
+            return args;
+        }
+
+        @Override
+        public Exception getEx() {
+            return null;
+        }
+
+    }
+
+}
+```
+
+```java
+ Console.factories().addFactories().add(SimpleParameterParser.INSTANCE, true)
+```
+
+```java
+@Cmd(parser = "raw")
+private void raw(String line) {
+    System.out.println("\"" + line + "\"");
+}
+```
+
+![raw](./imgs/raw.png)
+
+因为这个示例在“AdvanceeDemo”这个类中，所以会有过滤器。
+
+**提示**  这个实现是预先植入到系统的，这里为了演示使用方法。需要使用这个功能时，无需额外编写任何代码，只需要将`@Cmd`注解属性标记为`parser = "raw"`即可使用。
+
+
 
 ### 类型解析
 
@@ -278,7 +409,7 @@ public @interface Cmd {
 
     CmdType type() default CmdType.Cmd;
     String name() default "";
-    Mode mode() default Mode.SYS;
+    String parser() default "*";
     Class<?>[] targets() default {};
     String onError() default "";
     int order() default 5;
@@ -297,7 +428,7 @@ public @interface Cmd {
   
 - `Destory`  类型为Destory的方法不能被命令调用，不能有参数，这种方法被注册到了系统关闭钩子上，所以会在系统退出时被调用，可以根据`order`属性来决定Destory方法的执行顺序。同一个Destory方法在系统中只会被调用一次，假如系统进程直接被杀，这个方法不会被调用。
   
-- `Parser`  解析器。这个类型，是为了解决系统只支持基本类型的转换方式的问题，假如方法参数中要使用其他的引用类型，比如`Date`或者是自定义的类型，那系统就无能为力了，这个时候可以向系统注册自己的类型转换实现，例如这里:
+- `Parser`  类型解析器。这个类型，是为了解决系统只支持基本类型的转换方式的问题，假如方法参数中要使用其他的引用类型，比如`Date`或者是自定义的类型，那系统就无能为力了，这个时候可以向系统注册自己的类型转换实现，例如这里:
   
     ```java
     @Cmd(type = CmdType.Parser, targets = {Time.class})
@@ -321,7 +452,7 @@ public @interface Cmd {
   
   此时调用`getTime`命令时，`12:12`这个数值以及交由`dateConvertor`方法进行处理了，这里有一点需要注意，`Parser`方法的返回值需要和`@Cmd`注解的`targets`属性一致，使得方法返回值可以转换成`targets`的类型。可以自定义基本类型的处理方式，覆盖系统的默认转换。
   
-- **mode:**  目前这个枚举支持两种类型，一个是由系统做参数解析`SYS`，另一个是什么都不做直接给方法调用`DFT`，后续可能会开放用户自定义解析实现的接口。
+- **parser:**  系统会寻找这个名称的解析器，假如找到此解析器则将解析器绑定到这个方法上，默认这个功能是由系统来实现的。自定义参数解析，请参考 *参数解析*  部分
 
 - **tag:**  给一个命令指定标签，默认的标签是`usr`，代表用户命令的意思，可以改成别的。当系统中命令比较多的时候，要查找某一类功能的命令就比较方便，按照标签查找使用的是系统命令`find`，比如:
 
@@ -525,4 +656,54 @@ public boolean accept(Moment moment) {
 
 
 ----
+
+## 附
+
+### JAVA配置方式启动
+
+完整代码配置示例
+
+```java
+public static void main(String[] args) {
+    ApplicationRunner.consoleApplication(
+            Console.config()
+                    // 应用信息
+                    .appName("测试应用示例")   // 应用的名称
+                    .printWelcome(true)    // 是否打印欢迎信息
+                    .prompt("example> ")    // 控制台输入的提示符
+                    .printStackTrace(true) // 遇到异常时是否打印调用栈
+                    .exitCmd(new String[] {"exit", "e.", "q"}) // 使用这些命令可以退出应用
+                    .maxHistory(128) // 最多保存的历史记录数量
+                    .enableVariableFunction(true) // 开启变量功能，get set命令可用，占位符功能可用
+                    // 编辑作者信息，当printWelcome设置为false时，这些信息不会被输出
+                    .editAuthorInfo()
+                        .authorName("fd")
+                        .email("~~")
+                        .comment("备注: ~~")
+                        .createDate("2020/12/27")
+                        .updateDate("2021/1/18")
+                        .ok()
+                    // 设置系统启动时执行的命令
+                    .addInitCommands()
+                        .getFromFile("init.txt") // 从文件中读取
+                        .add("find --tag usr")   // 查询所有的用户命令
+                        .add("help --name help") // 获取 help 命令的使用帮助
+                        .ok()
+                    // 增加命令工厂，enable参数决定是否启用该命令工厂，将false修改为true可以开启对应命令工厂的测试，
+                    // 但是为了方便功能演示，建议测试以下几个类的时候，每次只有一个工厂类enable为true
+                    .addCommandFactories()
+                        .add(QuickStart.class, true) // 使用Class对象，可以实例化private的无参构造器，但是可能会导致系统中存在多个实例
+                        .add(AdvancedDemo::new, false) // 构造器引用，同样存在导致系统中多例的问题
+                        .add(ListenerDemo.INSTANCE, false) // 使用已存在的对象做为命令工厂，单例
+                        .add(LoginDemo.class, false)
+                        .ok()
+                    // 添加自定义的解析器实现，注意，下面这条 "raw" 无论是否设置，都会被载入系统，这里只是演示如何扩展解析器功能
+                    .addParameterParser()
+                        .addParser("raw", SimpleParameterParser.INSTANCE) // 现在可以用"raw"这个解析器了
+                        .ok()
+                    .addHelpDoc(HelpForDemo.INSTANCE)
+                    // 设置完成，应用启动
+                    .build()).run();
+}
+```
 

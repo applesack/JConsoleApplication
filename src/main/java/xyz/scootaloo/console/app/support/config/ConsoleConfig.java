@@ -32,9 +32,7 @@ public class ConsoleConfig {
     private boolean printStackTraceOnException; // 遇到异常时是否打印调用栈
     private Set<Supplier<Object>> factories;
     private List<String> initCommands;
-    private Set<Object> helpFactories;
     private boolean enableVariableFunction;
-    private Map<String, ParameterParser> parserMap;
 
     // 扫描的基础包路径
     private String basePack;

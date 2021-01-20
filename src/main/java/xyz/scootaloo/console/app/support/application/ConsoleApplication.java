@@ -21,6 +21,7 @@ public class ConsoleApplication extends AbstractApplication {
     // resources
     private final Scanner scanner = ResourceManager.getScanner();
     private final Colorful console = ResourceManager.getColorfulPrinter();
+    private final String prompt;
     private final ConsoleConfig config;
     private final Interpreter interpreter;
 
@@ -33,11 +34,20 @@ public class ConsoleApplication extends AbstractApplication {
     public ConsoleApplication(ConsoleConfig config, Interpreter interpreter) {
         this.config = config;
         this.interpreter = interpreter;
+        this.prompt = getPrompt();
 
         // 设置默认的异常处理方式
         setExceptionHandle((e) -> console.onException(config, e));
         // 执行初始化命令
         doInit(config.getInitCommands());
+    }
+
+    private String getPrompt() {
+        String prompt = config.getPrompt();
+        if (!prompt.endsWith(" ")) {
+            prompt += " ";
+        }
+        return prompt;
     }
 
     // 直接执行这些命令
@@ -63,7 +73,7 @@ public class ConsoleApplication extends AbstractApplication {
 
     @Override // 提示符从配置中获取
     protected void printPrompt() {
-        console.print(console.grey(this.config.getPrompt()));
+        console.print(console.grey(this.prompt));
     }
 
     @Override // 从配置中判断是否是退出命令

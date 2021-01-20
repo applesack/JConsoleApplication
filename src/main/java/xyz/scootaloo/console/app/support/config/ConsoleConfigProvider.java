@@ -1,10 +1,10 @@
 package xyz.scootaloo.console.app.support.config;
 
-import xyz.scootaloo.console.app.support.common.Colorful;
 import xyz.scootaloo.console.app.support.common.Console;
 import xyz.scootaloo.console.app.support.common.ResourceManager;
 import xyz.scootaloo.console.app.support.parser.ParameterParser;
 import xyz.scootaloo.console.app.support.utils.ClassUtils;
+import xyz.scootaloo.console.app.support.utils.YmlConfReader;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -46,20 +46,20 @@ public abstract class ConsoleConfigProvider {
         private String prompt  = "console> ";
         private String[] exitCmd = {"exit"};
         private boolean printWelcome = true;
+        private String configFileName = YmlConfReader.DFT_FILENAME;
 
         // 开发者配置
         private int maxHistory = 64;
         private boolean printStackTraceOnException = false;
         private List<String> initCommands = new ArrayList<>();
         private Set<Supplier<Object>> factories = new LinkedHashSet<>();
-        private Set<Object> helpFactories = new LinkedHashSet<>();
         private boolean enableVariableFunction = true;
-        private Map<String, ParameterParser> parserMap = new HashMap<>();
 
         // 作者信息
-        private Author author;
+        private Author author = new Author(this);
 
         public DefaultValueConfigBuilder() {
+            YmlConfReader.loadConf(this);
         }
 
         public DefaultValueConfigBuilder appName(String name) {
@@ -80,6 +80,15 @@ public abstract class ConsoleConfigProvider {
                 this.exitCmd = new String[] {cmd};
             }
             return this;
+        }
+
+        public DefaultValueConfigBuilder setConfigFile(String filename) {
+            this.configFileName = filename;
+            return this;
+        }
+
+        public String getConfigFileName() {
+            return this.configFileName;
         }
 
         public DefaultValueConfigBuilder printWelcome(boolean flag) {
@@ -106,8 +115,20 @@ public abstract class ConsoleConfigProvider {
             return this;
         }
 
+        protected void setParserMap(CustomizeParser customizeParser) {
+            for (Map.Entry<String, ParameterParser> entry : customizeParser.parserMap.entrySet()) {
+                this.factories.add(entry::getValue);
+            }
+        }
+
         public DefaultValueConfigBuilder enableVariableFunction(boolean flag) {
             this.enableVariableFunction = flag;
+            return this;
+        }
+
+        public DefaultValueConfigBuilder addHelpDoc(Object o) {
+            if (o != null)
+                this.factories.add(() -> o);
             return this;
         }
 
@@ -120,23 +141,12 @@ public abstract class ConsoleConfigProvider {
             return this.author;
         }
 
-        public CommandFactory addCommandFactories() {
-            return new CommandFactory(this);
-        }
-
-        public DefaultValueConfigBuilder addHelpFactory(Object helpFac) {
-            if (helpFac != null) {
-                this.helpFactories.add(helpFac);
-            }
-            return this;
+        public FactoryCollector addCommandFactories() {
+            return new FactoryCollector(this);
         }
 
         public CustomizeParser addParameterParser() {
             return new CustomizeParser(this);
-        }
-
-        protected void setParserMap(CustomizeParser parser) {
-            this.parserMap.putAll(parser.parserMap);
         }
 
         protected void setInitCommands(StringCommands commands) {
@@ -145,7 +155,7 @@ public abstract class ConsoleConfigProvider {
             }
         }
 
-        protected void setCommandFactories(CommandFactory factories) {
+        protected void setCommandFactories(FactoryCollector factories) {
             if (!factories.commandFac.isEmpty()) {
                 this.factories = factories.commandFac;
             }
@@ -171,17 +181,8 @@ public abstract class ConsoleConfigProvider {
             dvBuilder.printWelcome(false);
         }
 
-        public CommandFactory addFactory() {
-            return new CommandFactory(this.dvBuilder);
-        }
-
-        public SimpleConfigBuilder printStackTrace(boolean flag) {
-            this.dvBuilder.printStackTrace(false);
-            return this;
-        }
-
-        public ConsoleConfig build() {
-            return dvBuilder.build();
+        public FactoryCollector addFactories() {
+            return new FactoryCollector(this.dvBuilder);
         }
 
     }

@@ -1,9 +1,11 @@
 package xyz.scootaloo.console.app.support.parser;
 
 import xyz.scootaloo.console.app.support.common.Colorful;
+import xyz.scootaloo.console.app.support.common.Console;
 import xyz.scootaloo.console.app.support.common.ResourceManager;
 import xyz.scootaloo.console.app.support.component.Cmd;
 import xyz.scootaloo.console.app.support.component.CmdType;
+import xyz.scootaloo.console.app.support.component.HelpDoc;
 import xyz.scootaloo.console.app.support.config.Author;
 import xyz.scootaloo.console.app.support.config.ConsoleConfig;
 import xyz.scootaloo.console.app.support.listener.AppListener;
@@ -98,20 +100,37 @@ public abstract class AssemblyFactory {
         hasInit = true;
         welcome();
 
-        // 将自定义解析器注册进来
-        parserMap.putAll(config.getParserMap());
-        parserMap.put(SimpleParameterParser.INSTANCE.name(), SimpleParameterParser.INSTANCE);
+        // 将预置的工厂注入进来
+        config.getFactories().add(() -> SimpleParameterParser.INSTANCE);
+        config.getFactories().add(() -> SystemPresetCmd.Help.INSTANCE);
+        config.getFactories().add(() -> SystemPresetCmd.INSTANCE);
 
-        // 处理命令工厂
-        Set<Supplier<Object>> cmdFactories = new LinkedHashSet<>(config.getFactories());
-        cmdFactories.add(SystemPresetCmd::new);
-        for (Supplier<Object> factorySupplier : cmdFactories) {
-            Object factoryInstance = factorySupplier.get();
+        // 帮助工厂
+        List<HelpDoc> helpFactories = new ArrayList<>();
+
+        // 预处理: 方法解析器需要在命令方法之前装配
+        Set<Object> retainSet = new LinkedHashSet<>();
+        for (Supplier<Object> cmdFactories : config.getFactories()) {
+            Object factoryInstance = cmdFactories.get();
             if (factoryInstance == null)
                 continue;
+            if (factoryInstance instanceof NameableParameterParser) {
+                NameableParameterParser parser = (NameableParameterParser) factoryInstance;
+                parserMap.put(parser.name(), parser);
+                continue;
+            }
+            if (factoryInstance instanceof HelpDoc) {
+                helpFactories.add((HelpDoc) factoryInstance);
+            } else {
+                retainSet.add(factoryInstance);
+                if (factoryInstance instanceof AppListener)
+                    doGetListener((AppListener) factoryInstance);
+            }
+        }
+
+        // 处理命令工厂
+        for (Object factoryInstance : retainSet) {
             Class<?> factoryClass = factoryInstance.getClass();
-            if (factoryInstance instanceof AppListener)
-                doGetListener((AppListener) factoryInstance);
             Method[] methods = factoryClass.getDeclaredMethods();
             for (Method method : methods) {
                 method.setAccessible(true);
@@ -123,9 +142,9 @@ public abstract class AssemblyFactory {
         }
 
         // 处理帮助工厂
-        Set<Object> helpFactories = config.getHelpFactories();
-        helpFactories.add(SystemPresetCmd.Help.INSTANCE);
-        doGetHelpFactories(helpFactories);
+        for (Object helpDoc : helpFactories) {
+            doGetHelpFactory(helpDoc);
+        }
 
         // 发布应用启动事件
         EventPublisher.onAppStarted(config);
@@ -142,12 +161,8 @@ public abstract class AssemblyFactory {
 
         // 将销毁方法注入到系统关闭钩子中
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                for (Actuator actuator : destroyActuators) {
-                    actuator.invoke(null);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+            for (Actuator actuator : destroyActuators) {
+                Console.ex(actuator::invoke, null);
             }
         }));
     }
@@ -233,32 +248,30 @@ public abstract class AssemblyFactory {
     }
 
     // 装配Help工厂
-    private static void doGetHelpFactories(Set<Object> factories) {
-        for (Object factory : factories) {
-            Class<?> helpObjClass = factory.getClass();
-            Method[] methods = helpObjClass.getDeclaredMethods();
-            for (Method method : methods) {
-                String methodName = method.getName().toLowerCase(Locale.ROOT);
-                methodName = StringUtils.ignoreChars(methodName, '_');
+    private static void doGetHelpFactory(Object factory) {
+        Class<?> helpObjClass = factory.getClass();
+        Method[] methods = helpObjClass.getDeclaredMethods();
+        for (Method method : methods) {
+            String methodName = method.getName().toLowerCase(Locale.ROOT);
+            methodName = StringUtils.ignoreChars(methodName, '_');
 
-                // 检查方法的参数和返回值
-                if (method.getParameterCount() != 0)
-                    continue;
-                if (method.getReturnType() != String.class)
-                    continue;
+            // 检查方法的参数和返回值
+            if (method.getParameterCount() != 0)
+                continue;
+            if (method.getReturnType() != String.class)
+                continue;
 
-                method.setAccessible(true);
-                try {
-                    String helpInfo = (String) method.invoke(factory);
-                    // 已经执行成功得到了返回值，现在将结果保存到对于的位置
-                    Actuator actuator = findActuator(methodName);
-                    if (actuator instanceof MethodActuator) {
-                        HELP_MAP.put(methodName, helpInfo);
-                    }
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    cPrint.onException(config, e, "装配帮助信息时遇到异常: " + e.getMessage() + ", 类: "
-                            + helpObjClass.getSimpleName() + ", 方法名称: " + method.getName());
+            method.setAccessible(true);
+            try {
+                String helpInfo = (String) method.invoke(factory);
+                // 已经执行成功得到了返回值，现在将结果保存到对于的位置
+                Actuator actuator = findActuator(methodName);
+                if (actuator instanceof MethodActuator) {
+                    HELP_MAP.put(methodName, helpInfo);
                 }
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                cPrint.onException(config, e, "装配帮助信息时遇到异常: " + e.getMessage() + ", 类: "
+                        + helpObjClass.getSimpleName() + ", 方法名称: " + method.getName());
             }
         }
     }

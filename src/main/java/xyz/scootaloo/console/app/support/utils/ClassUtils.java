@@ -2,11 +2,14 @@ package xyz.scootaloo.console.app.support.utils;
 
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 import xyz.scootaloo.console.app.support.common.Colorful;
+import xyz.scootaloo.console.app.support.common.Console;
 import xyz.scootaloo.console.app.support.common.ResourceManager;
 import xyz.scootaloo.console.app.support.parser.TransformFactory;
 
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.Map.Entry;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -18,6 +21,15 @@ import java.util.stream.Stream;
 public abstract class ClassUtils {
     private static final Colorful cPrint = ResourceManager.getColorfulPrinter();
     private static final String DELIMITER = ",";
+
+    public static void set(Object instance, String fieldName, Object value) {
+        Class<?> clazz = instance.getClass();
+        Field field = Console.ex(clazz::getDeclaredField, fieldName);
+        if (field == null)
+            return;
+        field.setAccessible(true);
+        Console.wDbEx(field::set, instance, value);
+    }
 
     /**
      * 判断一个类是否是另一个类的子类
@@ -47,13 +59,13 @@ public abstract class ClassUtils {
             try {
                 field.setAccessible(true);
                 String fieldName = field.getName();
-                Field targetField = targetClazz.getDeclaredField(fieldName);
+                Field targetField = Console.ex(targetClazz::getDeclaredField, fieldName);
+                if (targetField == null)
+                    continue;
                 targetField.setAccessible(true);
                 if (!sameType(field, targetField))
                     throw new IllegalArgumentException("属性不一致");
-                targetField.set(target, field.get(source));
-            } catch (NoSuchFieldException e) {
-                cPrint.println(cPrint.red("拷贝属性时发生异常, 目标实例不具有此属性名: " + field.getName()));
+                targetField.set(target, Console.ex(field::get, source));
             } catch (Exception e) {
                 cPrint.println("拷贝属性时发生异常，已跳过，属性名:" + field.getName() + ". msg:" + e.getMessage());
             }
@@ -79,6 +91,48 @@ public abstract class ClassUtils {
             }
         }
         throw new RuntimeException("类 `" + clazz.getSimpleName() + "` 没有提供无参构造方法，无法实例化");
+    }
+
+    /**
+     * 从Map中获取属性并拷贝到对象
+     * @param instance 对象的实例
+     * @param map 属性集
+     * @param prop 目标实例是一个类属性，则这个参数为该类属性名，否则为null
+     * @param functionMap 在转换失败时提供一个转换器
+     */
+    public static void loadPropFromMap(Object instance, Map<String, Object> map, String prop,
+                                       Map<String, Function<Object, Object>> functionMap) {
+        Class<?> iClazz;
+        if (prop != null) {
+            iClazz = instance.getClass();
+            Field field = Console.ex(iClazz::getDeclaredField, prop);
+            if (field == null)
+                return;
+            field.setAccessible(true);
+            instance = Console.ex(field::get, instance);
+            if (instance == null)
+                return;
+        }
+        iClazz = instance.getClass();
+        for (Entry<String, Object> entry : map.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            Field field = Console.ex(iClazz::getDeclaredField, key);
+            if (field == null)
+                continue;
+            field.setAccessible(true);
+            if (field.getType() == value.getClass()) {
+                Console.wDbEx(field::set, instance, value);
+            } else {
+                if (functionMap.containsKey(key)) {
+                    try {
+                        field.set(instance, functionMap.get(key).apply(value));
+                    } catch (Exception ignore) {
+                        // 不符合转换条件时，将抛出异常，予以忽略
+                    }
+                }
+            }
+        }
     }
 
     // 判断两个类的属性是否一致

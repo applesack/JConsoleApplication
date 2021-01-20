@@ -14,17 +14,17 @@ import static xyz.scootaloo.console.app.support.config.ConsoleConfigProvider.Def
  * @author flutterdash@qq.com
  * @since 2021/1/6 22:17
  */
-public class CommandFactory {
+public class FactoryCollector {
 
     protected final Set<Supplier<Object>> commandFac;
     private final DefaultValueConfigBuilder builder;
 
-    public CommandFactory(DefaultValueConfigBuilder builder) {
+    public FactoryCollector(DefaultValueConfigBuilder builder) {
         this.commandFac = new LinkedHashSet<>();
         this.builder = builder;
     }
 
-    public CommandFactory add(Class<?> factory) {
+    public FactoryCollector add(Class<?> factory) {
         this.commandFac.add(() -> {
             try {
                 return ClassUtils.newInstance(factory);
@@ -37,19 +37,19 @@ public class CommandFactory {
         return this;
     }
 
-    public CommandFactory add(Supplier<Object> factory, boolean enable) {
+    public FactoryCollector add(Supplier<Object> factory, boolean enable) {
         if (enable)
             this.commandFac.add(factory);
         return this;
     }
 
-    public CommandFactory add(Object factory, boolean enable) {
+    public FactoryCollector add(Object factory, boolean enable) {
         if (enable)
             this.commandFac.add(() -> factory);
         return this;
     }
 
-    public CommandFactory add(Class<?> factory, boolean enable) {
+    public FactoryCollector add(Class<?> factory, boolean enable) {
         if (enable)
             this.add(factory);
         return this;
