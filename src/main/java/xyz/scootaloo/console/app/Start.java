@@ -36,7 +36,7 @@ public class Start {
                 Console.factories()
                     .addFactories()
                         .add(QuickStart::new, true)
-                        .add(AdvancedDemo::new, true)
+                        .add(AdvancedDemo::new, false)
                         .add(ListenerDemo::new, false)
                         .add(LoginDemo::new, false)
                         .add(HelpForDemo::new, true)

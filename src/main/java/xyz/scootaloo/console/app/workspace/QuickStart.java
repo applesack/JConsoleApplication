@@ -3,6 +3,7 @@ package xyz.scootaloo.console.app.workspace;
 import xyz.scootaloo.console.app.support.common.ResourceManager;
 import xyz.scootaloo.console.app.support.component.Cmd;
 import xyz.scootaloo.console.app.support.component.Form;
+import xyz.scootaloo.console.app.support.component.Opt;
 import xyz.scootaloo.console.app.support.component.Prop;
 
 import java.util.Arrays;
@@ -24,6 +25,13 @@ import java.util.Set;
  * @since 2020/12/30 20:32
  */
 public class QuickStart {
+
+    @Cmd
+    public void i(@Opt(value = 's', fullName = "name") String name,
+                  @Opt(value = 'w', joint = true) String words) {
+        System.out.println("name: " + name);
+        System.out.println("words: " + words);
+    }
 
     /**
      * 尝试在控制台输入 hello world

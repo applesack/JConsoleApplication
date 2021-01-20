@@ -42,12 +42,14 @@ public abstract class SysParameterParser {
         Type[] genericTypes = method.getGenericParameterTypes();                 // 参数泛型类型数组
         Annotation[][] parameterAnnoArrays = method.getParameterAnnotations();   // 参数注解数组
         List<Object> args = new ArrayList<>();                                   // 最终可供Method对象invoke的参数
-        Set<Character> shortParamsSet = doGetAllParameter(parameterAnnoArrays);  // 由注解中的简写命令参数名构成的集
+        Set<String> jointMarkSet = new LinkedHashSet<>();
+        Set<Character> shortParamsSet
+                = doGetAllParameter(parameterAnnoArrays, jointMarkSet);          // 由注解中的简写命令参数名构成的集
 
         List<WildcardArgument> wildcardArguments = new ArrayList<>();            // 未提供参数的位置
         // key=命令参数名 value=命令参数值
         Map<String, Object> optMap = new HashMap<>(); // 参数map                  // 命令参数中由'-'做前缀的参数以及值
-        cmdline = loadArgumentFromCmdline(cmdline, optMap, shortParamsSet);
+        cmdline = loadArgumentFromCmdline(cmdline, optMap, shortParamsSet, jointMarkSet);
 
         Annotation anno;
         for (int i = 0; i<argTypes.length; i++) {
@@ -75,7 +77,7 @@ public abstract class SysParameterParser {
                 if (option.required())
                     return ResultWrapper.fail(new RuntimeException("缺少必要的参数: -" + option.value()));
                 // 给这个位置的参数做一个标记，假如处理完还有多余的参数就填补到这个位置来
-                wildcardArguments.add(new WildcardArgument(i, curArgType, genericTypes[i]));
+                wildcardArguments.add(new WildcardArgument(i, curArgType, genericTypes[i], option.joint()));
                 // 在 getAndRemove方法中已经处理了类型默认值的情况，这里处理用户给定的自定义默认值
                 if (!option.dftVal().equals("")) {
                     args.set(args.size() - 1, TransformFactory
@@ -88,10 +90,19 @@ public abstract class SysParameterParser {
         if (!wildcardArguments.isEmpty()) {
             for (WildcardArgument wildcardArgument : wildcardArguments) {
                 // 从剩余的命令参数列表中，依次填充到这些未选中的方法参数上
+                String res;
                 if (!cmdline.isEmpty()) {
+                    if (wildcardArgument.joint) {
+                        List<String> jointList = new ArrayList<>();
+                        while (!cmdline.isEmpty()) {
+                            jointList.add(cmdline.remove(0));
+                        }
+                        res = String.join(" ", jointList);
+                    } else {
+                        res = cmdline.remove(0);
+                    }
                     args.set(wildcardArgument.idx,
-                            resolveArgument(cmdline.remove(0), wildcardArgument.type,
-                                    wildcardArgument.generic));
+                            resolveArgument(res, wildcardArgument.type, wildcardArgument.generic));
                 }
             }
         }
@@ -100,13 +111,19 @@ public abstract class SysParameterParser {
     }
 
     // 从方法参数注解中取出所有可简写的参数
-    private static Set<Character> doGetAllParameter(Annotation[][] parameterAnnoArrays) {
+    private static Set<Character> doGetAllParameter(Annotation[][] parameterAnnoArrays,
+                                                    Set<String> jointMarkSet) {
         Set<Character> parameterSet = new LinkedHashSet<>();
         for (Annotation[] pAnnoArray : parameterAnnoArrays) {
             Opt opt = (Opt) findOptFromArray(pAnnoArray);
             if (opt == null)
                 continue;
             parameterSet.add(opt.value());
+            if (opt.joint()) {
+                jointMarkSet.add(String.valueOf(opt.value()));
+                if (!opt.fullName().isEmpty())
+                    jointMarkSet.add(opt.fullName());
+            }
         }
         return parameterSet;
     }
@@ -114,7 +131,8 @@ public abstract class SysParameterParser {
     // 从命令行中取出命令参数和值
     private static List<String> loadArgumentFromCmdline(List<String> cmdline,
                                                         Map<String, Object> optMap,
-                                                        Set<Character> shortParamsSet) {
+                                                        Set<Character> shortParamsSet,
+                                                        Set<String> jointMarkSet) {
         LinkedList<String> retainList = new LinkedList<>();
         for (int i = 0; i<cmdline.size(); i++) {
             String curSegment = cmdline.get(i);
@@ -127,6 +145,15 @@ public abstract class SysParameterParser {
             curSegment = curSegment.substring(prefixCount);
             if (curSegment.isEmpty())
                 continue;
+            if (jointMarkSet.contains(curSegment)) {
+                List<String> jointList = new ArrayList<>();
+                for (i += 1; i<cmdline.size(); i++) {
+                    jointList.add(cmdline.get(i));
+                }
+                if (!jointList.isEmpty())
+                    optMap.put(curSegment, String.join(" ", jointList));
+                continue;
+            }
             String nextSeg = PLACEHOLDER;
             if (curSegment.length() > 1 && isContainsAll(curSegment, shortParamsSet)) {
                 for (char shortParam : curSegment.toCharArray()) {
@@ -249,11 +276,13 @@ public abstract class SysParameterParser {
         final int idx;       // 缺省参数位于参数数组的下标
         final Class<?> type; // 对应方法参数的类型
         final Type generic;  // 对应方法参数的泛型类型
+        final boolean joint; // 是否需要拼接参数
 
-        public WildcardArgument(int idx, Class<?> type, Type generic) {
+        public WildcardArgument(int idx, Class<?> type, Type generic, boolean joint) {
             this.idx = idx;
             this.type = type;
             this.generic = generic;
+            this.joint = joint;
         }
 
     }

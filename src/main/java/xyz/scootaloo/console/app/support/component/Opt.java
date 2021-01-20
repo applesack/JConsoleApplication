@@ -23,6 +23,9 @@ public @interface Opt {
     // 是否是必须的
     boolean required() default false;
 
+    // 假如这个参数为 true , 则对应的方法参数将拼合余下的命令参数
+    boolean joint() default false;
+
     // 当可选参数未选中时可以提供一个默认值
     String dftVal() default "";
 
