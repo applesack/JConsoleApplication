@@ -26,13 +26,6 @@ import java.util.Set;
  */
 public class QuickStart {
 
-    @Cmd
-    public void i(@Opt(value = 's', fullName = "name") String name,
-                  @Opt(value = 'w', joint = true) String words) {
-        System.out.println("name: " + name);
-        System.out.println("words: " + words);
-    }
-
     /**
      * 尝试在控制台输入 hello world
      * 然后`world`被做为了hello()方法的参数，结果输出

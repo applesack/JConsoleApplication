@@ -287,6 +287,7 @@ public abstract class AssemblyFactory {
         cPrint.println("create since: " + author.getCreateDate());
         cPrint.println("last update: " + author.getUpdateDate());
         cPrint.println(author.getComment());
+        cPrint.println("");
     }
 
     /**

@@ -21,6 +21,17 @@ import java.util.stream.Stream;
 public abstract class ClassUtils {
     private static final Colorful cPrint = ResourceManager.getColorfulPrinter();
     private static final String DELIMITER = ",";
+    private static final Set<Class<?>> BOXING_SET = new LinkedHashSet<>();
+
+    static {
+        BOXING_SET.add(Integer.class);
+        BOXING_SET.add(Double.class);
+        BOXING_SET.add(Boolean.class);
+        BOXING_SET.add(Byte.class);
+        BOXING_SET.add(Float.class);
+        BOXING_SET.add(Long.class);
+    }
+
 
     public static void set(Object instance, String fieldName, Object value) {
         Class<?> clazz = instance.getClass();
@@ -96,11 +107,11 @@ public abstract class ClassUtils {
     /**
      * 从Map中获取属性并拷贝到对象
      * @param instance 对象的实例
-     * @param map 属性集
+     * @param properties 属性集
      * @param prop 目标实例是一个类属性，则这个参数为该类属性名，否则为null
      * @param functionMap 在转换失败时提供一个转换器
      */
-    public static void loadPropFromMap(Object instance, Map<String, Object> map, String prop,
+    public static void loadPropFromMap(Object instance, Map<String, Object> properties, String prop,
                                        Map<String, Function<Object, Object>> functionMap) {
         Class<?> iClazz;
         if (prop != null) {
@@ -114,14 +125,15 @@ public abstract class ClassUtils {
                 return;
         }
         iClazz = instance.getClass();
-        for (Entry<String, Object> entry : map.entrySet()) {
+        for (Entry<String, Object> entry : properties.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
             Field field = Console.ex(iClazz::getDeclaredField, key);
             if (field == null)
                 continue;
             field.setAccessible(true);
-            if (field.getType() == value.getClass()) {
+            Class<?> propType = value.getClass();
+            if (propType == field.getType() || BOXING_SET.contains(propType)) {
                 Console.wDbEx(field::set, instance, value);
             } else {
                 if (functionMap.containsKey(key)) {

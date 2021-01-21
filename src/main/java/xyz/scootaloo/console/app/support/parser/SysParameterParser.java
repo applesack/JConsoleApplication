@@ -59,7 +59,7 @@ public abstract class SysParameterParser {
             // 当前这个参数没有注解，尝试将一个无名参数转换到这里
             if (anno == null) {
                 if (cmdline.isEmpty())
-                    return ResultWrapper.fail(new RuntimeException("命令不完整，在第" + i + "个参数，" +
+                    return ResultWrapper.fail(new RuntimeException("命令不完整，在第" + (i + 1) + "个参数，" +
                             "参数类型: " + curArgType.getSimpleName()));
                 args.add(resolveArgument(cmdline.remove(0), argTypes[i], genericTypes[i]));
                 continue;
@@ -78,7 +78,7 @@ public abstract class SysParameterParser {
                     return ResultWrapper.fail(new RuntimeException("缺少必要的参数: -" + option.value()));
                 // 给这个位置的参数做一个标记，假如处理完还有多余的参数就填补到这个位置来
                 wildcardArguments.add(new WildcardArgument(i, curArgType, genericTypes[i], option.joint()));
-                // 在 getAndRemove方法中已经处理了类型默认值的情况，这里处理用户给定的自定义默认值
+                // 在getAndRemove()方法中已经处理了类型默认值的情况，这里处理用户给定的自定义默认值
                 if (!option.dftVal().equals("")) {
                     args.set(args.size() - 1, TransformFactory
                             .simpleTrans(option.dftVal(), curArgType));
