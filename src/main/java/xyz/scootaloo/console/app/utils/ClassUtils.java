@@ -1,8 +1,8 @@
 package xyz.scootaloo.console.app.utils;
 
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
-import xyz.scootaloo.console.app.common.Colorful;
 import xyz.scootaloo.console.app.Console;
+import xyz.scootaloo.console.app.common.Colorful;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.parser.TransformFactory;
 
@@ -40,6 +40,25 @@ public abstract class ClassUtils {
             return;
         field.setAccessible(true);
         Console.wDbEx(field::set, instance, value);
+    }
+
+    /**
+     * 获取调用者的实例
+     * @param self true 自身所在类的实例， false 调用此方法的调用者的实例
+     * @return 实例
+     */
+    public static Object instance(boolean self) {
+        StackTraceElement[] callStack = Thread.currentThread().getStackTrace();
+        int depth = self ? 2 : 3;
+        String invoker = callStack[depth].getClassName();
+        try {
+            Class<?> BOOT_CLAZZ = Class.forName(invoker);
+            return newInstance(BOOT_CLAZZ);
+        } catch (ClassNotFoundException | IllegalAccessException |
+                InstantiationException | InvocationTargetException e) {
+            cPrint.exit0("解析异常，无法实例化类: " + invoker);
+            return null;
+        }
     }
 
     /**

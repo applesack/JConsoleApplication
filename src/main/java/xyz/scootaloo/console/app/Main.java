@@ -1,7 +1,7 @@
 package xyz.scootaloo.console.app;
 
-import xyz.scootaloo.console.app.application.ApplicationRunner;
 import xyz.scootaloo.console.app.anno.Boot;
+import xyz.scootaloo.console.app.application.ApplicationRunner;
 
 /**
  * @author flutterdash@qq.com
@@ -11,12 +11,7 @@ import xyz.scootaloo.console.app.anno.Boot;
 public class Main {
 
     public static void main(String[] args) {
-        ApplicationRunner.consoleApplication(
-                Console.factories()
-                        .addFactories()
-                        .ok()
-                .build()
-        ).run();
+        ApplicationRunner.consoleApplication().run();
     }
 
 }

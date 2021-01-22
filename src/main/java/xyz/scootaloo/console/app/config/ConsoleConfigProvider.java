@@ -16,28 +16,6 @@ import java.util.function.Supplier;
  */
 public abstract class ConsoleConfigProvider {
 
-    private static final Console printer = ResourceManager.getConsole();
-
-    /**
-     * 获取调用此方法的调用者，并实创建调用者的实例
-     * @return 调用者的实例
-     */
-    @Deprecated
-    public static ConsoleConfigProvider instance() {
-        StackTraceElement[] callStack = Thread.currentThread().getStackTrace();
-        String invoker = callStack[2].getClassName();
-        try {
-            Class<?> BOOT_CLAZZ = Class.forName(invoker);
-            Object bootObj = BOOT_CLAZZ.newInstance();
-            if (!ClassUtils.isExtendForm(bootObj, ConsoleConfigProvider.class))
-                printer.exit0("启动类没有继承自配置提供者类，无法加载配置");
-            return (ConsoleConfigProvider) bootObj;
-        } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
-            printer.exit0("解析异常，无法实例化类: " + invoker);
-            return null;
-        }
-    }
-
     // 所有域都有默认值的默认值构建者
     public static class DefaultValueConfigBuilder {
 
