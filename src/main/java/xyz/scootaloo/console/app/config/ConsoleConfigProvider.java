@@ -1,9 +1,6 @@
 package xyz.scootaloo.console.app.config;
 
-import xyz.scootaloo.console.app.Console;
-import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.ParameterParser;
-import xyz.scootaloo.console.app.utils.ClassUtils;
 import xyz.scootaloo.console.app.utils.YmlConfReader;
 
 import java.util.*;

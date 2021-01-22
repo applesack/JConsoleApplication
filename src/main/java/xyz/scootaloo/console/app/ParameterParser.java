@@ -1,7 +1,5 @@
 package xyz.scootaloo.console.app;
 
-import xyz.scootaloo.console.app.Wrapper;
-
 import java.lang.reflect.Method;
 import java.util.List;
 

@@ -32,7 +32,6 @@ public abstract class ClassUtils {
         BOXING_SET.add(Long.class);
     }
 
-
     public static void set(Object instance, String fieldName, Object value) {
         Class<?> clazz = instance.getClass();
         Field field = Console.ex(clazz::getDeclaredField, fieldName);
@@ -171,6 +170,7 @@ public abstract class ClassUtils {
         return f1.getGenericType().getTypeName().equals(f2.getGenericType().getTypeName());
     }
 
+    // 返回方法的信息，方法名(参数):返回值
     public static String getMethodInfo(Method method) {
         return method.getName() + '(' +
                 Stream.of(method.getParameterTypes())
@@ -206,6 +206,7 @@ public abstract class ClassUtils {
         return list;
     }
 
+    // 生成泛型集
     public static <T> Set<T> genSet(Class<T> type, String rSet) {
         Set<T> set = new LinkedHashSet<>();
         transEach(set, type, rSet);

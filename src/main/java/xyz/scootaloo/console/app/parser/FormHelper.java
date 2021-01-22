@@ -1,9 +1,9 @@
 package xyz.scootaloo.console.app.parser;
 
 import xyz.scootaloo.console.app.Console;
-import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.anno.Form;
 import xyz.scootaloo.console.app.anno.Prop;
+import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.utils.ClassUtils;
 
 import java.lang.reflect.Field;

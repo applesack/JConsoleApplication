@@ -45,6 +45,8 @@
 
 - **20/1/21**  默认命令参数是按照空格将命令行分隔得到的，现在支持将多个参数拼接成一个参数。
 
+- **20/1/22**  此项目已经发布到了Maven中央仓库，Maven坐标见文档底部。
+
 
 
 ## 基本功能
@@ -665,10 +667,21 @@ public boolean accept(Moment moment) {
 
 ### 使用方式
 
-目前暂时没有打算发布到maven中央仓库去，所以就现在这样有两种方式使用这个项目。
-
 1. 从github上下载此项目的源码，在原项目的基础上进行二次开发。
+
 2. 项目的跟目录下有一个已经打包好了的jar包，只需要将这个jar包放到目标项目的classpath下就能使用这些注解的功能了。
+
+3. **20/1/22** 更新， 现在项目已经发布到Maven中央仓库去了，坐标
+
+   ```xml
+   <dependency>
+   	<groupId>xyz.scootaloo</groupId>
+       <artifactId>JConsoleApplication</artifactId>
+       <version>0.2</version>
+   </dependency>
+   ```
+
+   目前最新版本 0.2 , 后续慢慢更新。
 
 
 

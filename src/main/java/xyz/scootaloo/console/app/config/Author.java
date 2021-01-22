@@ -1,6 +1,5 @@
 package xyz.scootaloo.console.app.config;
 
-import lombok.Getter;
 import xyz.scootaloo.console.app.config.ConsoleConfigProvider.DefaultValueConfigBuilder;
 
 /**
@@ -8,7 +7,6 @@ import xyz.scootaloo.console.app.config.ConsoleConfigProvider.DefaultValueConfig
  * @author flutterdash@qq.com
  * @since 2021/1/1 12:30
  */
-@Getter
 public class Author {
 
     private final DefaultValueConfigBuilder dvBuilder;
@@ -61,4 +59,27 @@ public class Author {
         return this.dvBuilder;
     }
 
+    public DefaultValueConfigBuilder getDvBuilder() {
+        return this.dvBuilder;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public String getEmail() {
+        return this.email;
+    }
+
+    public String getCreateDate() {
+        return this.createDate;
+    }
+
+    public String getUpdateDate() {
+        return this.updateDate;
+    }
+
+    public String getComment() {
+        return this.comment;
+    }
 }

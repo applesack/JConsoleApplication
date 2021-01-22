@@ -1,8 +1,8 @@
 package xyz.scootaloo.console.app.config;
 
-import xyz.scootaloo.console.app.config.ConsoleConfigProvider.DefaultValueConfigBuilder;
-import xyz.scootaloo.console.app.ParameterParser;
 import xyz.scootaloo.console.app.NameableParameterParser;
+import xyz.scootaloo.console.app.ParameterParser;
+import xyz.scootaloo.console.app.config.ConsoleConfigProvider.DefaultValueConfigBuilder;
 
 import java.util.HashMap;
 import java.util.Map;

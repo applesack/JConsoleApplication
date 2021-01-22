@@ -1,10 +1,10 @@
 package xyz.scootaloo.console.app.parser;
 
 import xyz.scootaloo.console.app.*;
-import xyz.scootaloo.console.app.common.Colorful;
-import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.anno.Cmd;
 import xyz.scootaloo.console.app.anno.CmdType;
+import xyz.scootaloo.console.app.common.Colorful;
+import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.config.Author;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.listener.EventPublisher;

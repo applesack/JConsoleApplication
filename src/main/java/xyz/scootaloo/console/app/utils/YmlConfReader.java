@@ -5,10 +5,10 @@ import xyz.scootaloo.console.app.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.config.ConsoleConfigProvider.DefaultValueConfigBuilder;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -20,7 +20,6 @@ import java.util.function.Function;
 public class YmlConfReader {
 
     public static final String DFT_FILENAME = "console.yml";
-    private static final Console console = ResourceManager.getConsole();
     private static final Map<String, Function<Object, Object>> converterMap = new HashMap<>();
 
     static {
@@ -38,13 +37,10 @@ public class YmlConfReader {
         String filename = builder.getConfigFileName();
         if (filename == null)
             return;
-        File configFile = new File(Objects.requireNonNull(ResourceManager
-                .getLoader().getResource(filename)).getFile());
-        if (!configFile.exists())
-            return;
         try {
-            loadConf(builder, new Yaml().load(new FileInputStream(configFile.getAbsolutePath())));
-        } catch (FileNotFoundException ignored) {
+            loadConf(builder, new Yaml().load(ResourceManager.getLoader()
+                    .getResourceAsStream(builder.getConfigFileName())));
+        } catch (Exception ignore) {
             // ignore
         }
     }
@@ -63,7 +59,7 @@ public class YmlConfReader {
             doGetInitCommands(configBuilder, inits);
         }
         // 暂时不支持这个功能, 不做处理
-        List<Object> factories = Console.dbEx(YmlConfReader::getFrom, map, "factories");
+//        List<Object> factories = Console.dbEx(YmlConfReader::getFrom, map, "factories");
     }
 
     private static void doGetInitCommands(DefaultValueConfigBuilder builder, List<Object> cmd) {

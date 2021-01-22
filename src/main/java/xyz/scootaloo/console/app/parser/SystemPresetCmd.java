@@ -1,11 +1,11 @@
 package xyz.scootaloo.console.app.parser;
 
 import xyz.scootaloo.console.app.Actuator;
-import xyz.scootaloo.console.app.common.Colorful;
-import xyz.scootaloo.console.app.anno.Cmd;
 import xyz.scootaloo.console.app.HelpDoc;
+import xyz.scootaloo.console.app.anno.Cmd;
 import xyz.scootaloo.console.app.anno.Moment;
 import xyz.scootaloo.console.app.anno.Opt;
+import xyz.scootaloo.console.app.common.Colorful;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.listener.AppListenerAdapter;
 import xyz.scootaloo.console.app.listener.EventPublisher;
@@ -13,6 +13,7 @@ import xyz.scootaloo.console.app.parser.AssemblyFactory.MethodActuator;
 import xyz.scootaloo.console.app.utils.ClassUtils;
 import xyz.scootaloo.console.app.utils.StringUtils;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -129,8 +130,18 @@ public class SystemPresetCmd extends Colorful implements AppListenerAdapter {
     }
 
     @Cmd(name = "cls", tag = SYS_TAG)
-    private void clear() {
-        println("清屏功能用java代码实现比较繁琐，目前暂时不考虑实现这个功能");
+    private void clear() throws IOException, InterruptedException {
+        // 新建一个 ProcessBuilder，其要执行的命令是 cmd.exe，参数是 /c 和 cls
+        new ProcessBuilder("cmd", "/c", "cls")
+                // 将 ProcessBuilder 对象的输出管道和 Java 的进程进行关联，这个函数的返回值也是一个
+                // ProcessBuilder
+                .inheritIO()
+                // 开始执行 ProcessBuilder 中的命令
+                .start()
+                // 等待 ProcessBuilder 中的清屏命令执行完毕
+                // 如果不等待则会出现清屏代码后面的输出被清掉的情况
+                .waitFor(); // 清屏命令
+
     }
 
     private void printInfo(Actuator actuator) {
@@ -370,6 +381,12 @@ public class SystemPresetCmd extends Colorful implements AppListenerAdapter {
                     "       find -s history\n" +
                     "示例，查找sys标签的命令\n" +
                     "       find -t sys\n";
+        }
+
+        public String _cls() {
+            return "清空控制台\n" +
+                    "无需参数\n" +
+                    "这个功能目前只在windows下且是cmd环境才有用\n";
         }
 
         public String _enable() {

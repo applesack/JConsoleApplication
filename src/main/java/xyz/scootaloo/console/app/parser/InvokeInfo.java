@@ -1,7 +1,5 @@
 package xyz.scootaloo.console.app.parser;
 
-import lombok.Getter;
-
 import java.util.List;
 
 /**
@@ -9,7 +7,6 @@ import java.util.List;
  * @author flutterdash@qq.com
  * @since 2021/1/7 9:32
  */
-@Getter
 public class InvokeInfo {
 
     private String name;           // 被执行的方法名，或者命令名
@@ -88,4 +85,43 @@ public class InvokeInfo {
         return (T) rtnVal;
     }
 
+    public String getName() {
+        return this.name;
+    }
+
+    public boolean isSuccess() {
+        return this.success;
+    }
+
+    public Object getRtnVal() {
+        return this.rtnVal;
+    }
+
+    public Class<?> getRtnType() {
+        return this.rtnType;
+    }
+
+    public List<String> getCmdArgs() {
+        return this.cmdArgs;
+    }
+
+    public Object[] getMethodArgs() {
+        return this.methodArgs;
+    }
+
+    public Exception getException() {
+        return this.exception;
+    }
+
+    public String getExMsg() {
+        return this.exMsg;
+    }
+
+    public long getInterval() {
+        return this.interval;
+    }
+
+    public long getInvokeAt() {
+        return this.invokeAt;
+    }
 }
