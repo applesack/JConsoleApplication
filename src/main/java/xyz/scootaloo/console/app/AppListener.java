@@ -7,7 +7,7 @@ import xyz.scootaloo.console.app.parser.InvokeInfo;
 import java.util.List;
 
 /**
- * 应用监听器接口
+ * 应用事件监听器接口
  * @author flutterdash@qq.com
  * @since 2020/12/30 9:30
  */

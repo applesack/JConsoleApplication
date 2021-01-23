@@ -18,7 +18,7 @@ import java.util.function.Function;
  * @since 2021/1/19 13:57
  */
 public class YmlConfReader {
-
+    // 默认的配置文件名
     public static final String DFT_FILENAME = "console.yml";
     private static final Map<String, Function<Object, Object>> converterMap = new HashMap<>();
 

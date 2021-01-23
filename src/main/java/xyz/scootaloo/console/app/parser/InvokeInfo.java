@@ -85,6 +85,8 @@ public class InvokeInfo {
         return (T) rtnVal;
     }
 
+    // getter
+
     public String getName() {
         return this.name;
     }
@@ -124,4 +126,5 @@ public class InvokeInfo {
     public long getInvokeAt() {
         return this.invokeAt;
     }
+
 }

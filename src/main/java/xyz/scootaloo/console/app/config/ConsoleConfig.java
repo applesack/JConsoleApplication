@@ -36,6 +36,8 @@ public class ConsoleConfig {
         ClassUtils.copyProperties(builder, this);
     }
 
+    // getter
+
     public String getAppName() {
         return this.appName;
     }
@@ -141,4 +143,5 @@ public class ConsoleConfig {
     public String toString() {
         return "ConsoleConfig(appName=" + this.getAppName() + ", prompt=" + this.getPrompt() + ", printWelcome=" + this.isPrintWelcome() + ", exitCmd=" + java.util.Arrays.deepToString(this.getExitCmd()) + ", maxHistory=" + this.getMaxHistory() + ", printStackTraceOnException=" + this.isPrintStackTraceOnException() + ", factories=" + this.getFactories() + ", initCommands=" + this.getInitCommands() + ", enableVariableFunction=" + this.isEnableVariableFunction() + ", basePack=" + this.getBasePack() + ", author=" + this.getAuthor() + ")";
     }
+
 }

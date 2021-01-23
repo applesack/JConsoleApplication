@@ -117,12 +117,15 @@ public interface Console {
     @FunctionalInterface
     interface DbExProvider<T1, T2, R> {
 
+        // 有返回值，两个参数，有可能抛出异常的方法
         R get(T1 t1, T2 t2) throws Exception;
 
     }
 
+    @FunctionalInterface
     interface WithoutReturnVar_DB_Provider<T1, T2> {
 
+        // 有两个参数，无返回值，有可能抛出异常的方法
         void set(T1 t1, T2 t2) throws Exception;
 
     }

@@ -7,6 +7,10 @@ import xyz.scootaloo.console.app.parser.Interpreter;
 import xyz.scootaloo.console.app.utils.ClassUtils;
 
 /**
+ * 应用运行器
+ * 目前支持两种开始方式
+ * 1. 启动一个控制台应用
+ * 2. 获得一个解释器对象
  * @author flutterdash@qq.com
  * @since 2020/12/27 15:04
  */
