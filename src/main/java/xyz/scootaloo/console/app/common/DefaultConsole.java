@@ -1,7 +1,5 @@
 package xyz.scootaloo.console.app.common;
 
-import xyz.scootaloo.console.app.Console;
-
 /**
  * 一些通用的便捷方法，实现此接口可以快捷的调用
  * @author flutterdash@qq.com

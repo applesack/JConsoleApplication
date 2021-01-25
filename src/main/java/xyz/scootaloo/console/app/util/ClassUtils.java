@@ -1,7 +1,7 @@
-package xyz.scootaloo.console.app.utils;
+package xyz.scootaloo.console.app.util;
 
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
-import xyz.scootaloo.console.app.Console;
+import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.Colorful;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.parser.TransformFactory;

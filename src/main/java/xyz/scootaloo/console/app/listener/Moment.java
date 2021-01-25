@@ -1,6 +1,7 @@
-package xyz.scootaloo.console.app.anno;
+package xyz.scootaloo.console.app.listener;
 
 /**
+ * 系统中可被监听的事件，枚举
  * @author flutterdash@qq.com
  * @since 2020/12/30 9:32
  */

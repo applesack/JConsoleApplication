@@ -1,6 +1,6 @@
 package xyz.scootaloo.console.app.config;
 
-import xyz.scootaloo.console.app.utils.ClassUtils;
+import xyz.scootaloo.console.app.util.ClassUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedHashSet;

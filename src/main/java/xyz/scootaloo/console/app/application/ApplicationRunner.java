@@ -1,10 +1,10 @@
 package xyz.scootaloo.console.app.application;
 
-import xyz.scootaloo.console.app.Console;
+import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.parser.AssemblyFactory;
 import xyz.scootaloo.console.app.parser.Interpreter;
-import xyz.scootaloo.console.app.utils.ClassUtils;
+import xyz.scootaloo.console.app.util.ClassUtils;
 
 /**
  * 应用运行器

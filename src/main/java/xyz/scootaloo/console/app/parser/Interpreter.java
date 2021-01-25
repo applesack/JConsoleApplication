@@ -1,9 +1,8 @@
 package xyz.scootaloo.console.app.parser;
 
-import xyz.scootaloo.console.app.Actuator;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.parser.AssemblyFactory.MethodActuator;
-import xyz.scootaloo.console.app.utils.StringUtils;
+import xyz.scootaloo.console.app.util.StringUtils;
 
 import java.util.List;
 

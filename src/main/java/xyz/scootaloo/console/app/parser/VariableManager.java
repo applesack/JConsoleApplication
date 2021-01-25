@@ -1,6 +1,6 @@
 package xyz.scootaloo.console.app.parser;
 
-import xyz.scootaloo.console.app.utils.StringUtils;
+import xyz.scootaloo.console.app.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.util.*;

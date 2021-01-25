@@ -1,4 +1,4 @@
-package xyz.scootaloo.console.app.utils;
+package xyz.scootaloo.console.app.util;
 
 import java.util.Arrays;
 import java.util.List;

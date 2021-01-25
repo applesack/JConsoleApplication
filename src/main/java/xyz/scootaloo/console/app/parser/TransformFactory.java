@@ -1,6 +1,6 @@
 package xyz.scootaloo.console.app.parser;
 
-import xyz.scootaloo.console.app.utils.ClassUtils;
+import xyz.scootaloo.console.app.util.ClassUtils;
 
 import java.lang.reflect.Type;
 import java.util.*;

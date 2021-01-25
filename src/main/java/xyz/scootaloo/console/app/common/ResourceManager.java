@@ -1,7 +1,5 @@
 package xyz.scootaloo.console.app.common;
 
-import xyz.scootaloo.console.app.Console;
-
 import java.util.Scanner;
 
 /**

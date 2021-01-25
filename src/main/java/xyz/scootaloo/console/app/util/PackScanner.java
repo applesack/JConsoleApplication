@@ -1,4 +1,4 @@
-package xyz.scootaloo.console.app.utils;
+package xyz.scootaloo.console.app.util;
 
 import java.io.File;
 import java.io.IOException;

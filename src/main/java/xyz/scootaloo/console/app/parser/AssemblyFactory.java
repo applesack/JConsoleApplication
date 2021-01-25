@@ -1,15 +1,16 @@
 package xyz.scootaloo.console.app.parser;
 
-import xyz.scootaloo.console.app.*;
 import xyz.scootaloo.console.app.anno.Cmd;
 import xyz.scootaloo.console.app.anno.CmdType;
 import xyz.scootaloo.console.app.common.Colorful;
+import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.config.Author;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
+import xyz.scootaloo.console.app.listener.AppListener;
 import xyz.scootaloo.console.app.listener.EventPublisher;
 import xyz.scootaloo.console.app.parser.preset.SimpleParameterParser;
-import xyz.scootaloo.console.app.utils.StringUtils;
+import xyz.scootaloo.console.app.util.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

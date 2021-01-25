@@ -1,7 +1,7 @@
-package xyz.scootaloo.console.app.utils;
+package xyz.scootaloo.console.app.util;
 
 import org.yaml.snakeyaml.Yaml;
-import xyz.scootaloo.console.app.Console;
+import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.config.ConsoleConfigProvider.DefaultValueConfigBuilder;
 

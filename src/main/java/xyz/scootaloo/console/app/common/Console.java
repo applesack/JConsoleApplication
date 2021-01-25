@@ -1,6 +1,5 @@
-package xyz.scootaloo.console.app;
+package xyz.scootaloo.console.app.common;
 
-import xyz.scootaloo.console.app.common.DefaultConsole;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.config.ConsoleConfigProvider;
 
@@ -61,6 +60,8 @@ public interface Console {
         println("应用退出");
         System.exit(0);
     }
+
+    //---------------------------------------便捷的异常处理------------------------------------------------
 
     // 使用lambda表达式 的方式调用 会抛出异常的方法
     static <T, R> R ex(ExProvider<T, R> provider, T input) {

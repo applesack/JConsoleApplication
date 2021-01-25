@@ -6,7 +6,7 @@ import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.listener.EventPublisher;
 import xyz.scootaloo.console.app.parser.Interpreter;
 import xyz.scootaloo.console.app.parser.InvokeInfo;
-import xyz.scootaloo.console.app.utils.StringUtils;
+import xyz.scootaloo.console.app.util.StringUtils;
 
 import java.util.List;
 import java.util.Scanner;

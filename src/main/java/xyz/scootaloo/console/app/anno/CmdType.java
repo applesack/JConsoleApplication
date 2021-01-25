@@ -1,5 +1,7 @@
 package xyz.scootaloo.console.app.anno;
 
+import xyz.scootaloo.console.app.listener.Moment;
+
 /**
  * 命令类型，
  * @see Moment

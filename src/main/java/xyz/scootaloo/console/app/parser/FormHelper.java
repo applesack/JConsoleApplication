@@ -1,10 +1,10 @@
 package xyz.scootaloo.console.app.parser;
 
-import xyz.scootaloo.console.app.Console;
+import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.anno.Form;
 import xyz.scootaloo.console.app.anno.Prop;
 import xyz.scootaloo.console.app.common.ResourceManager;
-import xyz.scootaloo.console.app.utils.ClassUtils;
+import xyz.scootaloo.console.app.util.ClassUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

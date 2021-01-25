@@ -1,6 +1,4 @@
-package xyz.scootaloo.console.app;
-
-import xyz.scootaloo.console.app.parser.InvokeInfo;
+package xyz.scootaloo.console.app.parser;
 
 import java.util.List;
 

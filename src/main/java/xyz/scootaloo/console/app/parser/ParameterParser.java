@@ -1,4 +1,4 @@
-package xyz.scootaloo.console.app;
+package xyz.scootaloo.console.app.parser;
 
 import java.lang.reflect.Method;
 import java.util.List;

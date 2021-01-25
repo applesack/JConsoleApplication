@@ -1,4 +1,4 @@
-package xyz.scootaloo.console.app;
+package xyz.scootaloo.console.app.parser;
 
 /**
  * 标记此接口 并注册到系统后，系统将会扫描其中的方法并处理

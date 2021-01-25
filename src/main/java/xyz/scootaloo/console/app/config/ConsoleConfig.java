@@ -1,6 +1,6 @@
 package xyz.scootaloo.console.app.config;
 
-import xyz.scootaloo.console.app.utils.ClassUtils;
+import xyz.scootaloo.console.app.util.ClassUtils;
 
 import java.util.List;
 import java.util.Objects;

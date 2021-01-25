@@ -1,4 +1,4 @@
-package xyz.scootaloo.console.app;
+package xyz.scootaloo.console.app.parser;
 
 /**
  * 给参数解析器起个名字

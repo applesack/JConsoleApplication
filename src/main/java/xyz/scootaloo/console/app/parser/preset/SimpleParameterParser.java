@@ -1,7 +1,7 @@
 package xyz.scootaloo.console.app.parser.preset;
 
-import xyz.scootaloo.console.app.NameableParameterParser;
-import xyz.scootaloo.console.app.Wrapper;
+import xyz.scootaloo.console.app.parser.NameableParameterParser;
+import xyz.scootaloo.console.app.parser.Wrapper;
 
 import java.lang.reflect.Method;
 import java.util.List;
