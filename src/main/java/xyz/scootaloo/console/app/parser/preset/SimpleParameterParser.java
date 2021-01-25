@@ -1,9 +1,11 @@
 package xyz.scootaloo.console.app.parser.preset;
 
 import xyz.scootaloo.console.app.parser.NameableParameterParser;
+import xyz.scootaloo.console.app.parser.ParameterWrapper;
 import xyz.scootaloo.console.app.parser.Wrapper;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,19 +16,23 @@ import java.util.List;
  */
 public class SimpleParameterParser implements NameableParameterParser {
     // 单例
-    public static final SimpleParameterParser INSTANCE = new SimpleParameterParser();
+    protected static final SimpleParameterParser INSTANCE = new SimpleParameterParser();
+
+    private static final String NAME = "raw";
 
     private SimpleParameterParser() {
     }
 
     @Override
-    public Wrapper parse(Method method, List<String> arg) {
-        return new SimpleWrapper(arg);
+    public Wrapper parse(Method method, List<String> args) {
+        ArrayList<Object> list = new ArrayList<>();
+        list.add(String.join(" ", args));
+        return ParameterWrapper.success(list);
     }
 
     @Override
     public String name() {
-        return "raw";
+        return NAME;
     }
 
     @Override
@@ -34,31 +40,6 @@ public class SimpleParameterParser implements NameableParameterParser {
         if (method.getParameterCount() != 1)
             return false;
         return method.getParameterTypes()[0] == String.class;
-    }
-
-    protected static class SimpleWrapper implements Wrapper {
-
-        private final Object[] args;
-
-        public SimpleWrapper(List<String> args) {
-            this.args = new Object[]{String.join(" ", args)};
-        }
-
-        @Override
-        public boolean isSuccess() {
-            return true;
-        }
-
-        @Override
-        public Object[] getArgs() {
-            return args;
-        }
-
-        @Override
-        public Exception getEx() {
-            return null;
-        }
-
     }
 
 }

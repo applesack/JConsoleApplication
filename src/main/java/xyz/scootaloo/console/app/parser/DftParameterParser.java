@@ -9,23 +9,17 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 /**
- * 系统默认参数解析器
- * 将字符串的命令转换成方法参数的Object数组
+ * 系统默认参数解析器实现
+ * 支持:
+ *      按照顺序填充方法参数
+ *      按照方法参数的注解来填充参数
+ *      参数默认值
+ *      简化布尔类型参数的写法
  *
- * 例如:
- * add 12 13
- * ->
- * add(int, int)
- * ;
- *
- * his -n 5 -s hp
- * ->
- * history(int, String)
- * ;
  * @author flutterdash@qq.com
  * @since 2020/12/29 11:21
  */
-public abstract class SysParameterParser {
+public abstract class DftParameterParser {
     // 临时占位符
     private static final String PLACEHOLDER = "*";
 
@@ -37,7 +31,7 @@ public abstract class SysParameterParser {
      */
     public static Wrapper transform(Method method, List<String> cmdline) {
         if (method.getParameterCount() == 0)
-            return ResultWrapper.success(null);
+            return ParameterWrapper.success(null);
         Class<?>[] argTypes = method.getParameterTypes();                        // 参数类型数组
         Type[] genericTypes = method.getGenericParameterTypes();                 // 参数泛型类型数组
         Annotation[][] parameterAnnoArrays = method.getParameterAnnotations();   // 参数注解数组
@@ -59,7 +53,7 @@ public abstract class SysParameterParser {
             // 当前这个参数没有注解，尝试将一个无名参数转换到这里
             if (anno == null) {
                 if (cmdline.isEmpty())
-                    return ResultWrapper.fail(new RuntimeException("命令不完整，在第" + (i + 1) + "个参数，" +
+                    return ParameterWrapper.fail(new RuntimeException("命令不完整，在第" + (i + 1) + "个参数，" +
                             "参数类型: " + curArgType.getSimpleName()));
                 args.add(resolveArgument(cmdline.remove(0), argTypes[i], genericTypes[i]));
                 continue;
@@ -75,7 +69,7 @@ public abstract class SysParameterParser {
             // 没有此参数
             if (getAndRemove(args, paramsSet, curArgType, genericTypes[i], optMap)) {
                 if (option.required())
-                    return ResultWrapper.fail(new RuntimeException("缺少必要的参数: -" + option.value()));
+                    return ParameterWrapper.fail(new RuntimeException("缺少必要的参数: -" + option.value()));
                 // 给这个位置的参数做一个标记，假如处理完还有多余的参数就填补到这个位置来
                 wildcardArguments.add(new WildcardArgument(i, curArgType, genericTypes[i], option.joint()));
                 // 在getAndRemove()方法中已经处理了类型默认值的情况，这里处理用户给定的自定义默认值
@@ -107,7 +101,7 @@ public abstract class SysParameterParser {
             }
         }
 
-        return ResultWrapper.success(args);
+        return ParameterWrapper.success(args);
     }
 
     // 从方法参数注解中取出所有可简写的参数
@@ -226,49 +220,6 @@ public abstract class SysParameterParser {
     }
 
     // ------------------------------------POJO--------------------------------------------
-
-    // 对结果进行包装
-    public static class ResultWrapper implements Wrapper {
-
-        protected final boolean success;
-        protected final Object[] args;
-        protected final Exception ex;
-
-        public static ResultWrapper success(List<Object> argList) {
-            return new ResultWrapper(true, argList, null);
-        }
-
-        public static ResultWrapper fail(Exception e) {
-            return new ResultWrapper(false, null, e);
-        }
-
-        private ResultWrapper(boolean success, List<Object> argList, Exception ex) {
-            this.ex = ex;
-            this.success = success;
-            if (argList != null)
-                this.args = argList.toArray();
-            else
-                this.args = null;
-        }
-
-        // getter
-
-        @Override
-        public boolean isSuccess() {
-            return success;
-        }
-
-        @Override
-        public Object[] getArgs() {
-            return args;
-        }
-
-        @Override
-        public Exception getEx() {
-            return ex;
-        }
-
-    }
 
     // 用于处理可选参数缺省的情况
     private static class WildcardArgument {

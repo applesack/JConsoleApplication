@@ -1,4 +1,4 @@
-package xyz.scootaloo.console.app.parser;
+package xyz.scootaloo.console.app.parser.preset;
 
 import xyz.scootaloo.console.app.anno.Cmd;
 import xyz.scootaloo.console.app.listener.Moment;
@@ -7,6 +7,7 @@ import xyz.scootaloo.console.app.common.Colorful;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.listener.AppListenerAdapter;
 import xyz.scootaloo.console.app.listener.EventPublisher;
+import xyz.scootaloo.console.app.parser.*;
 import xyz.scootaloo.console.app.parser.AssemblyFactory.MethodActuator;
 import xyz.scootaloo.console.app.util.ClassUtils;
 import xyz.scootaloo.console.app.util.StringUtils;
@@ -24,16 +25,19 @@ import static xyz.scootaloo.console.app.parser.VariableManager.*;
  * @since 2020/12/29 19:43
  */
 public class SystemPresetCmd extends Colorful implements AppListenerAdapter {
+    // 单例
     protected static final SystemPresetCmd INSTANCE = new SystemPresetCmd();
-
     private static ConsoleConfig config;
 
     private static final String version = "v0.1";
-    protected static final String SYS_TAG = "sys";
+    public static final String SYS_TAG = "sys";
 
     // 使用方法返回值做为属性资源
     private byte setOpen = 2;
     private String propKey;
+
+    private SystemPresetCmd() {
+    }
 
     @Cmd(name = "app", tag = SYS_TAG)
     private String application(@Opt('v') boolean ver) {
@@ -355,16 +359,18 @@ public class SystemPresetCmd extends Colorful implements AppListenerAdapter {
     // 对于系统预置命令的描述
     public static class Help implements HelpDoc {
         // 单例
-        public static final Help INSTANCE = new Help();
+        protected static final Help INSTANCE = new Help();
 
         public String _app() {
             return "应用信息\n" +
-                    "[-v][--version] 查看应用的版本信息\n";
+                    "app [-v/--version]\n" +
+                    "-v/--version 查看应用的版本信息\n";
         }
 
         public String _help() {
             return "帮助信息\n" +
-                    "[-s][--name] 查询某命令的用法\n" +
+                    "help [-s/--name] \n" +
+                    "查询某命令的用法\n" +
                     "示例，查询history这个命令的用法: \n" +
                     "       help -s history\n" +
                     "提示: 这里的`[-s]`和`[--name]`在同一行，表示同一个参数的不同写法，一个是简写一个是全称\n" +
@@ -373,8 +379,9 @@ public class SystemPresetCmd extends Colorful implements AppListenerAdapter {
 
         public String _find() {
             return "查找某命令的信息\n" +
-                    "[-s][--name] 根据名称查找命令\n" +
-                    "[-t][--tag]  根据标签查找命令\n" +
+                    "find [-s/--name] [-t/--tag]\n" +
+                    "-s/--name 根据名称查找命令\n" +
+                    "-t/--tag  根据标签查找命令\n" +
                     "示例，查找history命令的信息\n" +
                     "       find -s history\n" +
                     "示例，查找sys标签的命令\n" +
@@ -389,12 +396,14 @@ public class SystemPresetCmd extends Colorful implements AppListenerAdapter {
 
         public String _enable() {
             return "启用监听器\n" +
+                    "en <lisName>\n" +
                     "示例，启用名为sys的监听器\n" +
                     "       en sys\n";
         }
 
         public String _disable() {
             return "移除某正在监听的监听器\n" +
+                    "dis <lisName>" +
                     "示例，移除名为sys的监听器\n" +
                     "       dis sys";
         }
@@ -406,7 +415,8 @@ public class SystemPresetCmd extends Colorful implements AppListenerAdapter {
 
         public String _sleep() {
             return "休眠当前程序一段时间\n" +
-                    "[-m] 单位毫秒\n" +
+                    "sleep <-m <millisecond>>\n" +
+                    "-m 单位毫秒\n" +
                     "示例，休眠当前程序100毫秒\n" +
                     "       sleep -m 100\n" +
                     "或者\n" +
@@ -415,14 +425,15 @@ public class SystemPresetCmd extends Colorful implements AppListenerAdapter {
 
         public String _history() {
             return "查询历史记录\n" +
-                    "[-n][--size]     需要展示历史记录的数量，显示最近的记录\n" +
-                    "[-s][--name]     查找指定的命令调用记录\n" +
-                    "[-a][--all]      显示命令调用的所有信息\n" +
-                    "[-u][--success]  显示命令调用是否成功\n" +
-                    "[-r][--rtnVal]   显示命令调用时的返回值\n" +
-                    "[-g][--args]     显示调用此命令时使用的参数\n" +
-                    "[-t][--invokeAt] 显示何时调用的此命令\n" +
-                    "[-i][--interval] 显示执行此命令所花费的时间\n" +
+                    "his [-n/--size] [-s/--name] [-a/--all] [-u/--success] [-r/--rtnVal] [-g/--args] [-t/--invokeAt] [-i/--interval]\n" +
+                    "-n/--size     需要展示历史记录的数量，显示最近的记录\n" +
+                    "-s/--name     查找指定的命令调用记录\n" +
+                    "-a/--all      显示命令调用的所有信息\n" +
+                    "-u/--success  显示命令调用是否成功\n" +
+                    "-r/--rtnVal   显示命令调用时的返回值\n" +
+                    "-g/--args     显示调用此命令时使用的参数\n" +
+                    "-t/--invokeAt 显示何时调用的此命令\n" +
+                    "-i/--interval 显示执行此命令所花费的时间\n" +
                     "\n" +
                     "提示: -a 参数表示 u r g t i 这几个参数全部选中\n" +
                     "示例，查询最近调用history命令的所有信息\n" +
@@ -435,15 +446,15 @@ public class SystemPresetCmd extends Colorful implements AppListenerAdapter {
 
         public String _set() {
             return "设置变量\n" +
-                    "set [key] [value]\n" +
+                    "set <key> <value>\n" +
                     "向系统中放置一个键值对\n" +
                     "\n" +
                     "可以用命令方法的返回值做为key的value\n" +
-                    "set [key]\n" +
+                    "set <key>\n" +
                     "a command which has return value\n" +
                     "\n" +
                     "清除某个key\n" +
-                    "set [key] .\n" +
+                    "set <key> .\n" +
                     "\n" +
                     "清除所有key\n" +
                     "set .\n";
@@ -451,7 +462,7 @@ public class SystemPresetCmd extends Colorful implements AppListenerAdapter {
 
         public String _get() {
             return "获取键的值，并输出\n" +
-                    "get [key]\n";
+                    "get <key>\n";
         }
 
         public String _keys() {
@@ -459,7 +470,8 @@ public class SystemPresetCmd extends Colorful implements AppListenerAdapter {
         }
 
         public String _echo() {
-            return "接收一个参数，显示变量的实际值，也可以用于查看变量对象的属性\n" +
+            return "echo <${val}>\n" +
+                    "接收一个参数，显示变量的实际值，也可以用于查看变量对象的属性\n" +
                     "示例，这里假设这些变量是存在的\n" +
                     "   echo ${name}\n" +
                     "也可以同时查看多个变量的状态\n" +
@@ -467,6 +479,10 @@ public class SystemPresetCmd extends Colorful implements AppListenerAdapter {
                     "查看变量的某属性，假定stu变量是一个Student类的实例，它具有age这个域，则可以这样做\n" +
                     "   echo ${stu.age}\n" +
                     "注意: echo 命令有返回值，可以做为变量\n";
+        }
+
+        public String _hello() {
+            return "hello world!!\n";
         }
 
     }

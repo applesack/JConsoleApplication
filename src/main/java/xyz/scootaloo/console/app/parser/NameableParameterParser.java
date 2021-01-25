@@ -7,6 +7,7 @@ package xyz.scootaloo.console.app.parser;
  */
 public interface NameableParameterParser extends ParameterParser {
 
+    // 解析器的名称，这样可用按照字符串来找到对应的解析器
     String name();
 
 }

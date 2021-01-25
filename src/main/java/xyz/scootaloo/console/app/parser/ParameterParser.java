@@ -16,10 +16,10 @@ public interface ParameterParser {
     /**
      *
      * @param method 需要提供参数的方法对象
-     * @param arg 命令参数每段都用空格分隔，这里已经预先分隔成了列表
+     * @param args 命令参数每段都用空格分隔，这里已经预先分隔成了列表
      * @return 一个包装类，包含处理的结果
      */
-    Wrapper parse(Method method, List<String> arg);
+    Wrapper parse(Method method, List<String> args);
 
     /**
      * 编写自定义参数解析器实现的时候，可以重写这个方法，检查方法参数是否符合要求，以便在运行之初抛出异常方便检查

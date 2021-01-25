@@ -13,8 +13,8 @@ import java.util.*;
  */
 public abstract class VariableManager {
     // 需要启动此功能，需要在设置中开启
-    protected static final String msg = "设置中已关闭此功能";
-    protected static final String placeholder = "@#@";
+    public static final String msg = "设置中已关闭此功能";
+    public static final String placeholder = "@#@";
 
     /**
      * 属性集，假如value是一个对象，那么key应该用符合拼写习惯的小驼峰写法，
@@ -197,8 +197,9 @@ public abstract class VariableManager {
         }
     }
 
-    // 被替换的键值对
-    protected static class KVPairs {
+    // 命令行中被替换的键值对，在这里记录，每次解析新的命令行的时候，之前的记录会被清除
+    public static class KVPairs {
+
         // 一条命令中如果有多个占位符，那么它们按照顺序存储在这个集合中
         public static final Stack<KVPairs> hisKVs = new Stack<>();
 

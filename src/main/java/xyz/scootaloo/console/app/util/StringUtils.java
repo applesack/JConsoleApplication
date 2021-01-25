@@ -45,7 +45,7 @@ public abstract class StringUtils {
                 .collect(Collectors.toList());
     }
 
-    public static String ignoreChars(String rawString, char igChar) {
+    public static String ignoreChar(String rawString, char igChar) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i<rawString.length(); i++) {
             char c = rawString.charAt(i);

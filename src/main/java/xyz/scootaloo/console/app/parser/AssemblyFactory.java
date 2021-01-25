@@ -9,7 +9,8 @@ import xyz.scootaloo.console.app.config.Author;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.listener.AppListener;
 import xyz.scootaloo.console.app.listener.EventPublisher;
-import xyz.scootaloo.console.app.parser.preset.SimpleParameterParser;
+import xyz.scootaloo.console.app.parser.preset.PresetManager;
+import xyz.scootaloo.console.app.parser.preset.SystemPresetCmd;
 import xyz.scootaloo.console.app.util.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -73,7 +74,10 @@ public abstract class AssemblyFactory {
         return ALL_COMMANDS;
     }
 
-    // 返回系统命令信息
+    /**
+     * 返回可调用的系统命令集
+     * @return -
+     */
     public static Set<String> getSysCommands() {
         return getAllCommands().stream()
                 .filter(methodActuator -> methodActuator.getCmd().tag().equals(SystemPresetCmd.SYS_TAG))
@@ -95,22 +99,21 @@ public abstract class AssemblyFactory {
         if (config == null) {
             cPrint.exit0("未加载到配置");
             return;
+        } else {
+            hasInit = true;
+            welcome();
         }
-        hasInit = true;
-        welcome();
 
         // 将预置的工厂注入进来
-        config.getFactories().add(() -> SimpleParameterParser.INSTANCE);
-        config.getFactories().add(() -> SystemPresetCmd.Help.INSTANCE);
-        config.getFactories().add(() -> SystemPresetCmd.INSTANCE);
+        Set<Supplier<Object>> factories = PresetManager.getFactories(config);
 
         // 帮助工厂
         List<HelpDoc> helpFactories = new ArrayList<>();
 
-        // 预处理: 方法解析器需要在命令方法之前装配
+        // 预处理: 优先装配参数解析器
         Set<Object> retainSet = new LinkedHashSet<>();
-        for (Supplier<Object> cmdFactories : config.getFactories()) {
-            Object factoryInstance = cmdFactories.get();
+        for (Supplier<Object> factory : factories) {
+            Object factoryInstance = factory.get();
             if (factoryInstance == null)
                 continue;
             if (factoryInstance instanceof NameableParameterParser) {
@@ -252,7 +255,7 @@ public abstract class AssemblyFactory {
         Method[] methods = helpObjClass.getDeclaredMethods();
         for (Method method : methods) {
             String methodName = method.getName().toLowerCase(Locale.ROOT);
-            methodName = StringUtils.ignoreChars(methodName, '_');
+            methodName = StringUtils.ignoreChar(methodName, '_');
 
             // 检查方法的参数和返回值
             if (method.getParameterCount() != 0)
@@ -266,7 +269,8 @@ public abstract class AssemblyFactory {
                 // 已经执行成功得到了返回值，现在将结果保存到对于的位置
                 Actuator actuator = findActuator(methodName);
                 if (actuator instanceof MethodActuator) {
-                    HELP_MAP.put(methodName, helpInfo);
+                    MethodActuator methodActuator = (MethodActuator) actuator;
+                    HELP_MAP.put(methodActuator.getCmdName(), helpInfo);
                 }
             } catch (IllegalAccessException | InvocationTargetException e) {
                 cPrint.onException(config, e, "装配帮助信息时遇到异常: " + e.getMessage() + ", 类: "
@@ -311,7 +315,7 @@ public abstract class AssemblyFactory {
             this.cmd = c;
             this.method = m;
             this.obj = o;
-            this.parser = SysParameterParser::transform;
+            this.parser = DftParameterParser::transform;
 
             this.cmdName = method.getName().toLowerCase(Locale.ROOT);
             this.rtnType = method.getReturnType();
