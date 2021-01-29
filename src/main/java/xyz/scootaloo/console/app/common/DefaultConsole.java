@@ -5,15 +5,15 @@ package xyz.scootaloo.console.app.common;
  * @author flutterdash@qq.com
  * @since 2020/12/28 15:17
  */
-public abstract class DefaultConsole implements Console {
+public interface DefaultConsole extends Console {
 
-    @Override
-    public void print(Object z) {
+    DefaultConsole INSTANCE = new DefaultConsole() {};
+
+    default void print(Object z) {
         System.out.print(z);
     }
 
-    @Override
-    public void println(Object z) {
+    default void println(Object z) {
         System.out.println(z);
     }
 

@@ -73,4 +73,23 @@ public abstract class StringUtils {
         return new String(rslChars);
     }
 
+    public static String getPack(String className) {
+        StringBuilder tmp = new StringBuilder();
+        StringBuilder res = new StringBuilder();
+        for (int i = 0; i<className.length(); i++) {
+            char c = className.charAt(i);
+            if (c == '.') {
+                res.append(tmp.toString());
+                res.append('.');
+                tmp.setLength(0);
+            } else {
+                tmp.append(c);
+            }
+        }
+        if (res.charAt(res.length() - 1) == '.') {
+            res.setLength(res.length() - 1);
+        }
+        return res.toString();
+    }
+
 }

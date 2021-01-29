@@ -153,20 +153,4 @@ public abstract class ConsoleConfigProvider {
 
     }
 
-    // 简单配置的配置类
-    public static class SimpleConfigBuilder {
-
-        private final DefaultValueConfigBuilder dvBuilder;
-
-        public SimpleConfigBuilder() {
-            dvBuilder = new DefaultValueConfigBuilder();
-            dvBuilder.printWelcome(false);
-        }
-
-        public FactoryCollector addFactories() {
-            return new FactoryCollector(this.dvBuilder);
-        }
-
-    }
-
 }

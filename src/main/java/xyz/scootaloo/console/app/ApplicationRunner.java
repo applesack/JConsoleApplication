@@ -3,6 +3,7 @@ package xyz.scootaloo.console.app;
 import xyz.scootaloo.console.app.application.AbstractApplication;
 import xyz.scootaloo.console.app.application.ConsoleApplication;
 import xyz.scootaloo.console.app.common.Console;
+import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.parser.AssemblyFactory;
 import xyz.scootaloo.console.app.parser.Interpreter;
@@ -30,10 +31,9 @@ public class ApplicationRunner {
     // 无参运行
     public static AbstractApplication consoleApplication() {
         Object instance = ClassUtils.instance(false);
-        ConsoleConfig config = Console.config()
-                .addCommandFactories()
-                    .add(instance, true)
-                    .ok().build();
+        ConsoleConfig config = Console.factories()
+                                .add(instance, true)
+                                .ok();
         AssemblyFactory.init(config);
         return new ConsoleApplication(config, getInterpreter(config));
     }
@@ -44,6 +44,14 @@ public class ApplicationRunner {
             INTERPRETER_SINGLETON = new Interpreter(config);
         }
         return INTERPRETER_SINGLETON;
+    }
+
+    // 设置输出方式
+    public static void setConsole(Console console) {
+        if (console != null)
+            ResourceManager.setConsole(console);
+        else
+            throw new NullPointerException("console 实现为空");
     }
 
 }

@@ -23,6 +23,7 @@ public abstract class TransformFactory {
         putDefVal(short.class  , Short.class  , 0, Short::parseShort);
         putDefVal(float.class  , Float.class  , 0, Float::parseFloat);
         putDefVal(double.class , Double.class , 0, Double::parseDouble);
+        putDefVal(long.class   , Long.class   , 0, Long::parseLong);
         putDefVal(byte.class   , Byte.class   , 0, Byte::parseByte);
         putDefVal(boolean.class, Boolean.class, false,
                 str -> {

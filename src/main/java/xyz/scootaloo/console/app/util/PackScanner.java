@@ -15,11 +15,9 @@ import java.util.jar.JarFile;
 /**
  * 包扫描器
  * 扫描某包路径下的所有Class文件，加载入虚拟机
- * 修改装配方式后，这个类貌似用不到了
  * @author flutterdash@qq.com
  * @since 2020/12/28 12:33
  */
-@Deprecated
 public abstract class PackScanner {
 
     public static Set<Class<?>> getClasses(String pack) {
@@ -109,7 +107,7 @@ public abstract class PackScanner {
         return classes;
     }
 
-    public static void findAndAddClassesInPackageByFile(String packageName,
+    private static void findAndAddClassesInPackageByFile(String packageName,
                                                         String packagePath,
                                                         final boolean recursive,
                                                         Set<Class<?>> classes) {

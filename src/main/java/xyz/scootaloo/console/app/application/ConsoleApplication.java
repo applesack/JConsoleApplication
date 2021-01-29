@@ -66,9 +66,15 @@ public class ConsoleApplication extends AbstractApplication {
 
     @Override // 从键盘获取输入
     protected String getInput() {
-        String cmdline = scanner.nextLine().trim();
-        cmdline = EventPublisher.onInput(cmdline);
-        return cmdline;
+        StringBuilder cmdline = new StringBuilder(scanner.nextLine().trim());
+        // 多行输入
+        while (cmdline.toString().endsWith("\\")) {
+            cmdline.setLength(cmdline.length() - 1);
+            console.print("    -> ");
+            cmdline.append(scanner.nextLine().trim());
+        }
+        cmdline = new StringBuilder(EventPublisher.onInput(cmdline.toString()));
+        return cmdline.toString();
     }
 
     @Override // 提示符从配置中获取
@@ -103,11 +109,7 @@ public class ConsoleApplication extends AbstractApplication {
             return true;
         InvokeInfo info = interpreter.interpret(command);
         if (!info.isSuccess()) {
-            if (config.isPrintStackTraceOnException()) {
-                info.getException().printStackTrace();
-            } else {
-                console.println(info.getExMsg());
-            }
+            console.onException(config, info.getException());
         }
         return false;
     }

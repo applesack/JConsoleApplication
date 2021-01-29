@@ -31,13 +31,13 @@ public class Interpreter {
     }
 
     // 根据方法名调用无参方法
-    public InvokeInfo invoke(String name) {
+    public InvokeInfo call(String name) {
         MethodActuator actuator = (MethodActuator) AssemblyFactory.findActuator(name);
         return actuator.invokeByArgs();
     }
 
     // 根据方法名调用有参方法，需要注入参数
-    public InvokeInfo invoke(String name, Object ... args) {
+    public InvokeInfo call(String name, Object ... args) {
         Actuator actuator = AssemblyFactory.findActuator(name);
         if (actuator instanceof MethodActuator) {
             MethodActuator methodActuator = (MethodActuator) AssemblyFactory.findActuator(name);

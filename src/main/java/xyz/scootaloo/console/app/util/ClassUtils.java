@@ -10,6 +10,7 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -99,6 +100,10 @@ public abstract class ClassUtils {
                 cPrint.println("拷贝属性时发生异常，已跳过，属性名:" + field.getName() + ". msg:" + e.getMessage());
             }
         }
+    }
+
+    public static Supplier<Object> facSupplier(Class<?> factory) {
+        return () -> Console.ex(ClassUtils::newInstance, factory);
     }
 
     /**

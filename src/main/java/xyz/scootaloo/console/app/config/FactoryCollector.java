@@ -1,11 +1,14 @@
 package xyz.scootaloo.console.app.config;
 
 import xyz.scootaloo.console.app.util.ClassUtils;
+import xyz.scootaloo.console.app.util.PackScanner;
+import xyz.scootaloo.console.app.util.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static xyz.scootaloo.console.app.config.ConsoleConfigProvider.DefaultValueConfigBuilder;
 
@@ -37,6 +40,19 @@ public class FactoryCollector {
         return this;
     }
 
+    public FactoryCollector scanPack() {
+        StackTraceElement caller = Thread.currentThread().getStackTrace()[2];
+        return scanPack(StringUtils.getPack(caller.getClassName()));
+    }
+
+    public FactoryCollector scanPack(String packName) {
+        commandFac.addAll(PackScanner.getClasses(packName)
+                .stream()
+                .map(ClassUtils::facSupplier)
+                .collect(Collectors.toList()));
+        return this;
+    }
+
     public FactoryCollector add(Supplier<Object> factory, boolean enable) {
         if (enable)
             this.commandFac.add(factory);
@@ -55,9 +71,16 @@ public class FactoryCollector {
         return this;
     }
 
-    public DefaultValueConfigBuilder ok() {
+    // 返回默认值构建者继续配置
+    public DefaultValueConfigBuilder then() {
         this.builder.setCommandFactories(this);
         return builder;
+    }
+
+    // 直接得到配置
+    public ConsoleConfig ok() {
+        then();
+        return builder.build();
     }
 
 }

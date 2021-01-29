@@ -13,7 +13,7 @@ public enum ResourceManager {
 
     static Scanner SCANNER = new Scanner(System.in);
     static ClassLoader LOADER = ResourceManager.class.getClassLoader();
-    static Console CONSOLE = Colorful.INSTANCE;
+    static Console CONSOLE = DefaultConsole.INSTANCE;
 
     public static Console getConsole() {
         return CONSOLE;
@@ -25,6 +25,10 @@ public enum ResourceManager {
 
     public static Scanner getScanner() {
         return SCANNER;
+    }
+
+    public static void setConsole(Console console) {
+        CONSOLE = console;
     }
 
     public static Colorful getColorfulPrinter() {

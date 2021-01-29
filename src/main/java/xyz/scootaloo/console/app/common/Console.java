@@ -2,6 +2,7 @@ package xyz.scootaloo.console.app.common;
 
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.config.ConsoleConfigProvider;
+import xyz.scootaloo.console.app.config.FactoryCollector;
 
 import java.util.function.Supplier;
 
@@ -20,8 +21,8 @@ public interface Console {
     }
 
     // 精简的控制台配置类
-    static ConsoleConfigProvider.SimpleConfigBuilder factories() {
-        return new ConsoleConfigProvider.SimpleConfigBuilder();
+    static FactoryCollector factories() {
+        return new FactoryCollector(new ConsoleConfigProvider.DefaultValueConfigBuilder());
     }
 
     void print(Object z);
