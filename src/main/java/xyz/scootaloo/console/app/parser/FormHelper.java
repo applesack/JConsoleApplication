@@ -16,7 +16,7 @@ import java.util.Scanner;
  * @author flutterdash@qq.com
  * @since 2020/12/31 16:34
  */
-public class FormHelper {
+public final class FormHelper {
     // resources
     private static final Scanner scanner = ResourceManager.getScanner();
     private static final Console printer = ResourceManager.getConsole();

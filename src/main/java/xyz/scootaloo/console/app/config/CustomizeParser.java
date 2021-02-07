@@ -12,7 +12,7 @@ import java.util.Map;
  * @author flutterdash@qq.com
  * @since 2021/1/18 11:53
  */
-public class CustomizeParser {
+public final class CustomizeParser {
 
     private final DefaultValueConfigBuilder builder;
     protected final Map<String, ParameterParser> parserMap;

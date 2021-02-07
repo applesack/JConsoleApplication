@@ -31,7 +31,7 @@ import static xyz.scootaloo.console.app.util.VariableManager.*;
  * @author flutterdash@qq.com
  * @since 2020/12/29 19:43
  */
-public class SystemPresetCmd extends Colorful implements AppListenerAdapter {
+public final class SystemPresetCmd extends Colorful implements AppListenerAdapter {
     // 单例
     protected static final SystemPresetCmd INSTANCE = new SystemPresetCmd();
     private static Console console = ResourceManager.getConsole();

@@ -10,7 +10,7 @@ import java.util.List;
  * @author flutterdash@qq.com
  * @since 2021/1/6 22:08
  */
-public class StringCommands {
+public final class StringCommands {
 
     protected final List<String> commandList;
     private final DefaultValueConfigBuilder builder;

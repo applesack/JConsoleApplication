@@ -32,7 +32,7 @@ import java.util.*;
  * @author flutterdash@qq.com
  * @since 2021/2/6 14:47
  */
-public class SubParameterParser implements NameableParameterParser {
+public final class SubParameterParser implements NameableParameterParser {
     protected static final SubParameterParser INSTANCE = new SubParameterParser();
 
     @Override

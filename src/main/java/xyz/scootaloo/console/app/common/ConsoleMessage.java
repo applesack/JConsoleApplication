@@ -9,7 +9,7 @@ import xyz.scootaloo.console.app.listener.EventPublisher;
  * @author flutterdash@qq.com
  * @since 2021/2/5 15:31
  */
-public class ConsoleMessage {
+public final class ConsoleMessage {
     // 定义了控制台消息的4个级别
     enum Type {
         NORMAL,  // 一般

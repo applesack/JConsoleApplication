@@ -11,7 +11,7 @@ import java.util.function.Supplier;
  * @author flutterdash@qq.com
  * @since 2021/1/25 17:39
  */
-public class PresetManager {
+public final class PresetManager {
 
     public static Set<Supplier<Object>> getFactories(ConsoleConfig config) {
         Set<Supplier<Object>> factories = new LinkedHashSet<>();

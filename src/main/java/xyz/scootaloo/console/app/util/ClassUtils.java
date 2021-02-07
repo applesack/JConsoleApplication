@@ -19,7 +19,7 @@ import java.util.stream.Stream;
  * @author flutterdash@qq.com
  * @since 2020/12/27 17:08
  */
-public abstract class ClassUtils {
+public final class ClassUtils {
     private static final Colorful color = ResourceManager.getColorful();
     private static final Console console = ResourceManager.getConsole();
     private static final String DELIMITER = ",";

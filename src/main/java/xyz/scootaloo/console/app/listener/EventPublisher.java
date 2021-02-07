@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
  * @author flutterdash@qq.com
  * @since 2020/12/30 9:44
  */
-public class EventPublisher {
+public final class EventPublisher {
 
     private static final Colorful cPrint = ResourceManager.getColorful();
     private static final Map<String, AppListener> LISTENER_MAP = new LinkedHashMap<>();

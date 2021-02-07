@@ -7,7 +7,7 @@ import java.util.List;
  * @author flutterdash@qq.com
  * @since 2021/1/7 9:32
  */
-public class InvokeInfo {
+public final class InvokeInfo {
 
     private String name;           // 被执行的方法名，或者命令名
     private boolean success;       // 是否执行成功

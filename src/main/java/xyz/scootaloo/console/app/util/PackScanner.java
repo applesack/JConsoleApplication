@@ -18,7 +18,7 @@ import java.util.jar.JarFile;
  * @author flutterdash@qq.com
  * @since 2020/12/28 12:33
  */
-public abstract class PackScanner {
+public final class PackScanner {
 
     public static Set<Class<?>> getClasses(String pack) {
 

@@ -11,7 +11,7 @@ import java.util.List;
  * @author flutterdash@qq.com
  * @since 2021/2/5 21:13
  */
-public class BackstageTask implements OptionHandle {
+public final class BackstageTask implements OptionHandle {
     // 单例
     protected static final BackstageTask INSTANCE = new BackstageTask();
 

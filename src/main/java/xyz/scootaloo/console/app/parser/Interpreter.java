@@ -7,10 +7,11 @@ import xyz.scootaloo.console.app.util.StringUtils;
 import java.util.List;
 
 /**
+ * 解释器
  * @author flutterdash@qq.com
  * @since 2021/1/6 23:00
  */
-public class Interpreter {
+public final class Interpreter {
     private final ConsoleConfig config;
     protected static InvokeInfo lastInvokeInfo;
 

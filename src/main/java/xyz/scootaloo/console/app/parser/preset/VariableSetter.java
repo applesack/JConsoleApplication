@@ -10,10 +10,11 @@ import xyz.scootaloo.console.app.util.VariableManager;
 import java.util.List;
 
 /**
+ * 变量设置器
  * @author flutterdash@qq.com
  * @since 2021/2/7 9:40
  */
-public class VariableSetter implements OptionHandle {
+public final class VariableSetter implements OptionHandle {
     // 单例
     protected static final VariableSetter INSTANCE = new VariableSetter();
     private static final Console console = ResourceManager.getConsole();

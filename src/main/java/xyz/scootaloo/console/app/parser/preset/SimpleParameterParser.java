@@ -14,7 +14,7 @@ import java.util.List;
  * @author flutterdash@qq.com
  * @since 2021/1/16 23:03
  */
-public class SimpleParameterParser implements NameableParameterParser {
+public final class SimpleParameterParser implements NameableParameterParser {
     // 单例
     protected static final SimpleParameterParser INSTANCE = new SimpleParameterParser();
 

@@ -11,7 +11,7 @@ import java.util.*;
  * @author flutterdash@qq.com
  * @since 2021/1/14 20:19
  */
-public abstract class VariableManager {
+public final class VariableManager {
     // 需要启动此功能，需要在设置中开启
     public static final String msg = "设置中已关闭此功能";
     public static final String placeholder = "@#@";

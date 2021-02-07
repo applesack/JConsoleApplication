@@ -17,7 +17,7 @@ import static xyz.scootaloo.console.app.config.ConsoleConfigProvider.DefaultValu
  * @author flutterdash@qq.com
  * @since 2021/1/6 22:17
  */
-public class FactoryCollector {
+public final class FactoryCollector {
 
     protected final Set<Supplier<Object>> commandFac;
     private final DefaultValueConfigBuilder builder;

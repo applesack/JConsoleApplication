@@ -19,7 +19,7 @@ import java.util.Scanner;
  * @author flutterdash@qq.com
  * @since 2020/12/27 23:44
  */
-public class ConsoleApplication extends AbstractApplication {
+public final class ConsoleApplication extends AbstractApplication {
     // resources
     private final Scanner scanner = ResourceManager.getScanner();
     private final Console console = ResourceManager.getConsole();
