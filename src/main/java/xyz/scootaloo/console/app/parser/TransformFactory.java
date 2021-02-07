@@ -1,10 +1,15 @@
 package xyz.scootaloo.console.app.parser;
 
+import xyz.scootaloo.console.app.common.OutPrinter;
+import xyz.scootaloo.console.app.common.ResourceManager;
+import xyz.scootaloo.console.app.util.BackstageTaskManager;
 import xyz.scootaloo.console.app.util.ClassUtils;
+import xyz.scootaloo.console.app.util.VariableManager;
 
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * 转换工厂
@@ -13,11 +18,14 @@ import java.util.function.Function;
  * @since 2020/12/29 21:47
  */
 public abstract class TransformFactory {
-
     private static final Map<Class<?>, Object> DEFAULT_VALUE_MAP = new HashMap<>(16);
     private static final Map<Class<?>, Function<String , Object>> STR_RESOLVE_MAP = new HashMap<>(16);
+    private static final Map<Class<?>, Supplier<Object>> PRESET_VALUES_MAP = new HashMap<>();
+
+    private static final Random random = ResourceManager.getRandom();
 
     static {
+        // 设置各种基本类型的默认值 转换方式
         putDefVal(str -> str);
         putDefVal(int.class    , Integer.class, 0, Integer::parseInt);
         putDefVal(short.class  , Short.class  , 0, Short::parseShort);
@@ -33,11 +41,22 @@ public abstract class TransformFactory {
                     return str.startsWith("t");
                 }
         );
+
+        // 设置系统预设的一些实例
+        PRESET_VALUES_MAP.put(Random.class, () -> random);
+        PRESET_VALUES_MAP.put(OutPrinter.class, TransformFactory::getPrinter);
     }
 
     // 获取此类型的默认值
     public static Object getDefVal(Class<?> type) {
         return DEFAULT_VALUE_MAP.getOrDefault(type, null);
+    }
+
+    // 获取系统预设的值
+    public static Object getPresetVal(Class<?> type) {
+        if (PRESET_VALUES_MAP.containsKey(type))
+            return PRESET_VALUES_MAP.get(type).get();
+        return null;
     }
 
     // 将value转换为type的类型
@@ -107,6 +126,10 @@ public abstract class TransformFactory {
             return placeholderObj;
         }
         return null;
+    }
+
+    private static OutPrinter getPrinter() {
+        return BackstageTaskManager.getPrinter();
     }
 
     private static void putDefVal(Function<String, Object> convertor) {

@@ -1,6 +1,6 @@
-package xyz.scootaloo.console.app.parser;
+package xyz.scootaloo.console.app.util;
 
-import xyz.scootaloo.console.app.util.StringUtils;
+import xyz.scootaloo.console.app.common.ResourceManager;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -23,7 +23,7 @@ public abstract class VariableManager {
      */
     private static final Map<String, Object> properties = new HashMap<>(16);
     private static final String DFT_RAND_STR = "0";
-    private static final Random rand = new Random();
+    private static final Random rand = ResourceManager.getRandom();
 
     // getter and setter ---------------------------------------------------------------------------
 

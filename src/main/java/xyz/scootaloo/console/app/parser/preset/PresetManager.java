@@ -19,6 +19,9 @@ public class PresetManager {
         factories.add(() -> SimpleParameterParser.INSTANCE);
         factories.add(() -> SystemPresetCmd.INSTANCE);
         factories.add(() -> SystemPresetCmd.Help.INSTANCE);
+        factories.add(() -> BackstageTask.INSTANCE);
+        factories.add(() -> SubParameterParser.INSTANCE);
+        factories.add(() -> VariableSetter.INSTANCE);
 
         factories.addAll(config.getFactories());
         return factories;

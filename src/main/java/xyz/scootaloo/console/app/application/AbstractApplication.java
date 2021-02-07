@@ -1,7 +1,8 @@
 package xyz.scootaloo.console.app.application;
 
+import xyz.scootaloo.console.app.util.StringUtils;
+
 import java.util.List;
-import java.util.Locale;
 import java.util.function.Consumer;
 
 /**
@@ -76,7 +77,7 @@ public abstract class AbstractApplication {
         if (items.isEmpty())
             return "";
         String cmdName = items.get(0).trim();
-        return cmdName.toLowerCase(Locale.ROOT);
+        return StringUtils.customizeToLowerCase0(cmdName);
     }
 
 }

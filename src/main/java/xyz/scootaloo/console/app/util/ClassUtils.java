@@ -20,7 +20,8 @@ import java.util.stream.Stream;
  * @since 2020/12/27 17:08
  */
 public abstract class ClassUtils {
-    private static final Colorful cPrint = ResourceManager.getColorfulPrinter();
+    private static final Colorful color = ResourceManager.getColorful();
+    private static final Console console = ResourceManager.getConsole();
     private static final String DELIMITER = ",";
     private static final Set<Class<?>> BOXING_SET = new LinkedHashSet<>();
 
@@ -56,7 +57,7 @@ public abstract class ClassUtils {
             return newInstance(BOOT_CLAZZ);
         } catch (ClassNotFoundException | IllegalAccessException |
                 InstantiationException | InvocationTargetException e) {
-            cPrint.exit0("解析异常，无法实例化类: " + invoker);
+            console.exit0("解析异常，无法实例化类: " + invoker);
             return null;
         }
     }
@@ -97,7 +98,7 @@ public abstract class ClassUtils {
                     throw new IllegalArgumentException("属性不一致");
                 targetField.set(target, Console.ex(field::get, source));
             } catch (Exception e) {
-                cPrint.println("拷贝属性时发生异常，已跳过，属性名:" + field.getName() + ". msg:" + e.getMessage());
+                color.println("拷贝属性时发生异常，已跳过，属性名:" + field.getName() + ". msg:" + e.getMessage());
             }
         }
     }

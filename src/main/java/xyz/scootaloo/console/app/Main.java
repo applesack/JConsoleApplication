@@ -2,6 +2,7 @@ package xyz.scootaloo.console.app;
 
 import xyz.scootaloo.console.app.anno.Boot;
 import xyz.scootaloo.console.app.anno.Cmd;
+import xyz.scootaloo.console.app.common.OutPrinter;
 
 /**
  * 默认的启动
@@ -19,6 +20,13 @@ public class Main {
     @Cmd
     private void hello() {
         System.out.println("hello world");
+    }
+
+    @Cmd
+    public void test(OutPrinter outPrinter) throws InterruptedException {
+        outPrinter.println("方法开始");
+        Thread.sleep(2000);
+        outPrinter.println("方法结束");
     }
 
 }

@@ -6,6 +6,7 @@ import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.parser.AssemblyFactory;
+import xyz.scootaloo.console.app.parser.ExtraOptionHandle;
 import xyz.scootaloo.console.app.parser.Interpreter;
 import xyz.scootaloo.console.app.util.ClassUtils;
 
@@ -42,6 +43,7 @@ public class ApplicationRunner {
     public static Interpreter getInterpreter(ConsoleConfig config) {
         if (INTERPRETER_SINGLETON == null) {
             INTERPRETER_SINGLETON = new Interpreter(config);
+            ExtraOptionHandle.setInterpreter(INTERPRETER_SINGLETON);
         }
         return INTERPRETER_SINGLETON;
     }

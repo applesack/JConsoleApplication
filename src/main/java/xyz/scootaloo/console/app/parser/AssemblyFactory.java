@@ -28,7 +28,8 @@ import java.util.stream.Stream;
  */
 public abstract class AssemblyFactory {
     // resources
-    private static final Colorful cPrint = ResourceManager.getColorfulPrinter();
+    private static final Colorful color = ResourceManager.getColorful();
+    private static final Console console = ResourceManager.getConsole();
     protected static final Map<String, Actuator> strategyMap = new HashMap<>();
     protected static final List<MethodActuator> initActuators = new ArrayList<>();
     protected static final List<MethodActuator> preActuators = new ArrayList<>();
@@ -62,7 +63,7 @@ public abstract class AssemblyFactory {
         if (actuator != null)
             return actuator;
         if (!cmdName.equals(""))
-            cPrint.println(cPrint.blue("没有这个命令`" + cmdName + "`"));
+            color.println(color.blue("没有这个命令`" + cmdName + "`"));
         return cmd -> {
             // do nothing ...
             return InvokeInfo.simpleSuccess();
@@ -97,7 +98,7 @@ public abstract class AssemblyFactory {
      */
     private static void doInitStrategyFactories() {
         if (config == null) {
-            cPrint.exit0("未加载到配置");
+            console.exit0("未加载到配置");
             return;
         } else {
             hasInit = true;
@@ -116,11 +117,18 @@ public abstract class AssemblyFactory {
             Object factoryInstance = factory.get();
             if (factoryInstance == null)
                 continue;
+            // 装配参数解析器
             if (factoryInstance instanceof NameableParameterParser) {
                 NameableParameterParser parser = (NameableParameterParser) factoryInstance;
                 parserMap.put(parser.name(), parser);
                 continue;
             }
+            // 装配操作处理器
+            if (factoryInstance instanceof OptionHandle) {
+                ExtraOptionHandle.addExtraOption((OptionHandle) factoryInstance);
+                continue;
+            }
+            // 收集帮助文档
             if (factoryInstance instanceof HelpDoc) {
                 helpFactories.add((HelpDoc) factoryInstance);
             } else {
@@ -158,7 +166,7 @@ public abstract class AssemblyFactory {
                 actuator.invokeCore(null);
             }
         } catch (Exception e) {
-            cPrint.onException(config, e, "初始化失败, msg: " + e.getMessage() + "\n", true);
+            console.onException(config, e, "初始化失败, msg: " + e.getMessage() + "\n", true);
         }
 
         // 将销毁方法注入到系统关闭钩子中
@@ -243,7 +251,7 @@ public abstract class AssemblyFactory {
                 method.setAccessible(true);
                 return method.invoke(o, str);
             } catch (IllegalAccessException | InvocationTargetException e) {
-                cPrint.onException(config, e);
+                console.onException(config, e);
                 return null;
             }
         }, types);
@@ -273,7 +281,7 @@ public abstract class AssemblyFactory {
                     HELP_MAP.put(methodActuator.getCmdName(), helpInfo);
                 }
             } catch (IllegalAccessException | InvocationTargetException e) {
-                cPrint.onException(config, e, "装配帮助信息时遇到异常: " + e.getMessage() + ", 类: "
+                console.onException(config, e, "装配帮助信息时遇到异常: " + e.getMessage() + ", 类: "
                         + helpObjClass.getSimpleName() + ", 方法名称: " + method.getName());
             }
         }
@@ -284,13 +292,13 @@ public abstract class AssemblyFactory {
         if (!config.isPrintWelcome())
             return;
         Author author = config.getAuthor();
-        cPrint.println(":: " + config.getAppName() + " ::");
-        cPrint.println("author: " + author.getName());
-        cPrint.println("email: " + author.getEmail());
-        cPrint.println("create since: " + author.getCreateDate());
-        cPrint.println("last update: " + author.getUpdateDate());
-        cPrint.println(author.getComment());
-        cPrint.println("");
+        color.println(":: " + config.getAppName() + " ::");
+        color.println("author: " + author.getName());
+        color.println("email: " + author.getEmail());
+        color.println("create since: " + author.getCreateDate());
+        color.println("last update: " + author.getUpdateDate());
+        color.println(author.getComment());
+        color.println("");
     }
 
     /**
@@ -336,7 +344,7 @@ public abstract class AssemblyFactory {
                     if (info.isSuccess()) {
                         return invokeCore(items);
                     } else {
-                        cPrint.onException(config, info.getException(), info.getExMsg());
+                        console.onException(config, info.getException(), info.getExMsg());
                         return InvokeInfo.simpleSuccess();
                     }
                 }
@@ -484,13 +492,13 @@ public abstract class AssemblyFactory {
         public void printInfo() {
             String helpInfo = HELP_MAP.get(this.cmdName);
             if (helpInfo == null) {
-                cPrint.println("没有此命令的帮助信息");
+                color.println("没有此命令的帮助信息");
             } else {
                 String title = "\n[" + cmdName;
                 title += !cmd.name().equals("") ? ", " + cmd.name() : "";
                 title += "]";
-                cPrint.println(title);
-                cPrint.println(helpInfo);
+                color.println(title);
+                color.println(helpInfo);
             }
         }
 

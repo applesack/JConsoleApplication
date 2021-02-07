@@ -1,5 +1,6 @@
 package xyz.scootaloo.console.app.listener;
 
+import xyz.scootaloo.console.app.common.ConsoleMessage;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.parser.InvokeInfo;
 
@@ -63,6 +64,12 @@ public interface AppListener {
      * @param info 命令执行执行的返回值包装，假如命令无返回值或者命令执行过程中抛出异常，则得到的值是null
      */
     void onInputResolved(String cmdName, InvokeInfo info);
+
+    /**
+     *
+     * @param message 控制台消息
+     */
+    void onMessage(ConsoleMessage message);
 
     /**
      *

@@ -1,6 +1,8 @@
 package xyz.scootaloo.console.app.util;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -13,6 +15,50 @@ import java.util.stream.Stream;
 public abstract class StringUtils {
 
     private static final String[] BOX = {"0", "00", "000"};
+
+    // 日期格式化
+    private static final SimpleDateFormat HH_MM_SS = new SimpleDateFormat("HH:mm:ss");   // 时:分:秒
+    private static final SimpleDateFormat SS_MS = new SimpleDateFormat("ss_SSS+");       // 秒:毫秒
+
+    // 获取时间的时分秒格式，并加入到 stringBuilder
+    public static StringBuilder getHourMinuteSecond(long timestamp, StringBuilder sb) {
+        sb.append(HH_MM_SS.format(new Date(timestamp)));
+        return sb;
+    }
+
+    public static void getIntervalBySS_MS(long interval, StringBuilder sb) {
+        StringBuilder tmp = new StringBuilder();
+        tmp.append(SS_MS.format(new Date(interval)));
+        for (int i = 0; i<tmp.length(); i++) {
+            char c = tmp.charAt(i);
+            if (c == '_') {
+                sb.append('s');
+            } else if (c == '+') {
+                sb.append("ms");
+            } else {
+                sb.append(c);
+            }
+        }
+    }
+
+    // 对于 word 中，'-'符号之前的内容进行小写处理
+    public static String customizeToLowerCase0(String word) {
+        StringBuilder stringBuilder = new StringBuilder();
+        int len = word.length();
+        for (int i = 0; i<len; i++) {
+            char c = word.charAt(i);
+            if (c == '-') {
+                for (; i<len; i++) {
+                    c = word.charAt(i);
+                    stringBuilder.append(c);
+                }
+                break;
+            } else {
+                stringBuilder.append(Character.toLowerCase(c));
+            }
+        }
+        return stringBuilder.toString();
+    }
 
     public static String trimNumberSizeTo4(long num) {
         String nStr = String.valueOf(num);

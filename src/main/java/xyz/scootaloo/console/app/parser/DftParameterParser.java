@@ -19,7 +19,7 @@ import java.util.*;
  * @author flutterdash@qq.com
  * @since 2020/12/29 11:21
  */
-public abstract class DftParameterParser {
+public final class DftParameterParser {
     // 临时占位符
     private static final String PLACEHOLDER = "*";
 
@@ -52,6 +52,11 @@ public abstract class DftParameterParser {
             anno = findOptFromArray(curAnnoArr);
             // 当前这个参数没有注解，尝试将一个无名参数转换到这里
             if (anno == null) {
+                Object presetObj = TransformFactory.getPresetVal(curArgType);
+                if (presetObj != null) {
+                    args.add(presetObj);
+                    continue;
+                }
                 if (cmdline.isEmpty())
                     return ParameterWrapper.fail(new RuntimeException("命令不完整，在第" + (i + 1) + "个参数，" +
                             "参数类型: " + curArgType.getSimpleName()));
@@ -191,7 +196,7 @@ public abstract class DftParameterParser {
             else
                 return TransformFactory.resolveArgument(value, classType, genericType);
         } catch (Exception e) {
-            throw new RuntimeException("格式解析时异常: " + e.getMessage());
+            throw new RuntimeException("类型解析时异常: " + e.getMessage());
         }
     }
 

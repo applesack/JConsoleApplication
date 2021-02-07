@@ -14,7 +14,12 @@ public interface DefaultConsole extends Console {
     }
 
     default void println(Object z) {
+        z.toString();
         System.out.println(z);
+    }
+
+    default void err(Object z) {
+        System.err.println(z);
     }
 
 }

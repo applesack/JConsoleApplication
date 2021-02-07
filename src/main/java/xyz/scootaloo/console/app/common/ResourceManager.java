@@ -1,5 +1,6 @@
 package xyz.scootaloo.console.app.common;
 
+import java.util.Random;
 import java.util.Scanner;
 
 /**
@@ -14,6 +15,7 @@ public enum ResourceManager {
     static Scanner SCANNER = new Scanner(System.in);
     static ClassLoader LOADER = ResourceManager.class.getClassLoader();
     static Console CONSOLE = DefaultConsole.INSTANCE;
+    static Random random = new Random();
 
     public static Console getConsole() {
         return CONSOLE;
@@ -31,8 +33,12 @@ public enum ResourceManager {
         CONSOLE = console;
     }
 
-    public static Colorful getColorfulPrinter() {
+    public static Colorful getColorful() {
         return Colorful.INSTANCE;
+    }
+
+    public static Random getRandom() {
+        return random;
     }
 
 }

@@ -1,23 +1,30 @@
 package xyz.scootaloo.console.app.parser.preset;
 
 import xyz.scootaloo.console.app.anno.Cmd;
-import xyz.scootaloo.console.app.listener.Moment;
 import xyz.scootaloo.console.app.anno.Opt;
 import xyz.scootaloo.console.app.common.Colorful;
+import xyz.scootaloo.console.app.common.Console;
+import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.listener.AppListenerAdapter;
 import xyz.scootaloo.console.app.listener.EventPublisher;
-import xyz.scootaloo.console.app.parser.*;
+import xyz.scootaloo.console.app.listener.Moment;
+import xyz.scootaloo.console.app.parser.Actuator;
+import xyz.scootaloo.console.app.parser.AssemblyFactory;
 import xyz.scootaloo.console.app.parser.AssemblyFactory.MethodActuator;
+import xyz.scootaloo.console.app.parser.HelpDoc;
+import xyz.scootaloo.console.app.parser.InvokeInfo;
+import xyz.scootaloo.console.app.util.BackstageTaskManager;
 import xyz.scootaloo.console.app.util.ClassUtils;
 import xyz.scootaloo.console.app.util.StringUtils;
+import xyz.scootaloo.console.app.util.VariableManager;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static xyz.scootaloo.console.app.parser.VariableManager.*;
+import static xyz.scootaloo.console.app.util.VariableManager.*;
 
 /**
  * 系统预设的命令，可以使用 find -t sys 命令查看到
@@ -27,6 +34,7 @@ import static xyz.scootaloo.console.app.parser.VariableManager.*;
 public class SystemPresetCmd extends Colorful implements AppListenerAdapter {
     // 单例
     protected static final SystemPresetCmd INSTANCE = new SystemPresetCmd();
+    private static Console console = ResourceManager.getConsole();
     private static ConsoleConfig config;
 
     private static final String version = "v0.1";
@@ -55,6 +63,32 @@ public class SystemPresetCmd extends Colorful implements AppListenerAdapter {
         else
             actuator = AssemblyFactory.findActuator(cmdName);
         printInfo(actuator);
+    }
+
+    @Cmd(name = "tks", tag = SYS_TAG)
+    public void tasks() {
+        try {
+            BackstageTaskManager.list();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Cmd(tag = SYS_TAG, parser = "sub")
+    public void task(@Opt(value = 's', fullName = "name", dftVal = "*") String taskName,
+                     @Opt(value = 'n', fullName = "size", dftVal = "-1") int size,
+                     @Opt(value = 'c', fullName = "clear", dftVal = "*") String clear) {
+        if (!clear.equals("*")) {
+            BackstageTaskManager
+                    .clearHistory(clear.toLowerCase(Locale.ROOT).startsWith("a"));
+        } else {
+            if (taskName.equals("*")) {
+                console.println("没有输入任务名");
+                return;
+            }
+            BackstageTaskManager.showLogs(taskName, size);
+        }
     }
 
     @Cmd(name = "fd", tag = SYS_TAG)

@@ -1,6 +1,7 @@
 package xyz.scootaloo.console.app.listener;
 
 import xyz.scootaloo.console.app.common.Colorful;
+import xyz.scootaloo.console.app.common.ConsoleMessage;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.parser.InvokeInfo;
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
  */
 public class EventPublisher {
 
-    private static final Colorful cPrint = ResourceManager.getColorfulPrinter();
+    private static final Colorful cPrint = ResourceManager.getColorful();
     private static final Map<String, AppListener> LISTENER_MAP = new LinkedHashMap<>();
     private static final Map<String, AppListener> CANDIDATE_MAP = new HashMap<>();
 
@@ -90,6 +91,11 @@ public class EventPublisher {
         LISTENER_MAP.values().stream()
                 .filter(listener -> listener.accept(Moment.OnInputResolved))
                 .forEach(listener -> listener.onInputResolved(cmdName, info));
+    }
+
+    // 产生消息时
+    public static void onMessage(ConsoleMessage message) {
+        LISTENER_MAP.values().forEach(listener -> listener.onMessage(message));
     }
 
 }
