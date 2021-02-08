@@ -17,7 +17,7 @@ import java.util.function.Supplier;
  * @author flutterdash@qq.com
  * @since 2020/12/29 21:47
  */
-public abstract class TransformFactory {
+public final class TransformFactory {
     private static final Map<Class<?>, Object> DEFAULT_VALUE_MAP = new HashMap<>(16);
     private static final Map<Class<?>, Function<String , Object>> STR_RESOLVE_MAP = new HashMap<>(16);
     private static final Map<Class<?>, Supplier<Object>> PRESET_VALUES_MAP = new HashMap<>();

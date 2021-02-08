@@ -2,13 +2,8 @@ package xyz.scootaloo.console.app.parser.preset;
 
 import xyz.scootaloo.console.app.anno.Opt;
 import xyz.scootaloo.console.app.common.Console;
-import xyz.scootaloo.console.app.parser.NameableParameterParser;
-import xyz.scootaloo.console.app.parser.ParameterWrapper;
-import xyz.scootaloo.console.app.parser.TransformFactory;
-import xyz.scootaloo.console.app.parser.Wrapper;
+import xyz.scootaloo.console.app.parser.*;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -41,20 +36,19 @@ public final class SubParameterParser implements NameableParameterParser {
     }
 
     @Override
-    public Wrapper parse(Method method, List<String> args) {
-        Set<String> paramSet = getParamSet(method);
+    public Wrapper parse(MethodMeta meta, List<String> args) {
+        Set<String> paramSet = meta.fullNameSet;
         List<Object> methodArgs = new ArrayList<>();
         Map<String, String> kvPairs = new HashMap<>();
         List<String> remainList = parseParameters(args, paramSet, kvPairs);
 
-        Class<?>[] methodArgTypes = method.getParameterTypes();
-        Annotation[][] anno2DArr = method.getParameterAnnotations();
+        Class<?>[] methodArgTypes = meta.parameterTypes;
+        Optional<Opt>[] optionals = meta.optionals;
         List<SimpleWildcardArgument> wildcardArguments = new ArrayList<>();
-        int size = method.getParameterCount();
+        int size = meta.size;
         for (int i = 0; i<size; i++) {
             Class<?> curParamType = methodArgTypes[i];
-            Annotation[] annoArr = anno2DArr[i];
-            Optional<Opt> optOptional = findOption(annoArr);
+            Optional<Opt> optOptional = optionals[i];
             if (optOptional.isPresent()) {
                 Opt option = optOptional.get();
                 String paramName = option.fullName();
@@ -123,28 +117,6 @@ public final class SubParameterParser implements NameableParameterParser {
             }
         }
         return remainList;
-    }
-
-    private Set<String> getParamSet(Method method) {
-        Annotation[][] annotationArr = method.getParameterAnnotations();
-        Set<String> paramSet = new LinkedHashSet<>();
-        for (Annotation[] annoArr : annotationArr) {
-            findOption(annoArr).ifPresent(option -> {
-                if (!option.fullName().equals("")) {
-                    paramSet.add(option.fullName());
-                }
-            });
-        }
-        return paramSet;
-    }
-
-    private Optional<Opt> findOption(Annotation[] annoArr) {
-        for (Annotation anno : annoArr) {
-            if (anno.annotationType() == Opt.class) {
-                return Optional.of((Opt) anno);
-            }
-        }
-        return Optional.empty();
     }
 
     private static class SimpleWildcardArgument {

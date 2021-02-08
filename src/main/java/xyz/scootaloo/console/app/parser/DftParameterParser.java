@@ -3,8 +3,6 @@ package xyz.scootaloo.console.app.parser;
 import xyz.scootaloo.console.app.anno.Opt;
 import xyz.scootaloo.console.app.util.StringUtils;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
 
@@ -25,33 +23,30 @@ public final class DftParameterParser {
 
     /**
      * *解析逻辑实现的入口*
-     * @param method 方法对象
+     * @param meta method包装
      * @param cmdline 调用此方法使用的命令参数
      * @return 包装的结果
      */
-    public static Wrapper transform(Method method, List<String> cmdline) {
-        if (method.getParameterCount() == 0)
+    public static Wrapper transform(MethodMeta meta, List<String> cmdline) {
+        if (meta.size == 0)
             return ParameterWrapper.success(null);
-        Class<?>[] argTypes = method.getParameterTypes();                        // 参数类型数组
-        Type[] genericTypes = method.getGenericParameterTypes();                 // 参数泛型类型数组
-        Annotation[][] parameterAnnoArrays = method.getParameterAnnotations();   // 参数注解数组
-        List<Object> args = new ArrayList<>();                                   // 最终可供Method对象invoke的参数
-        Set<String> jointMarkSet = new LinkedHashSet<>();
-        Set<Character> shortParamsSet
-                = doGetAllParameter(parameterAnnoArrays, jointMarkSet);          // 由注解中的简写命令参数名构成的集
+        Class<?>[] argTypes = meta.parameterTypes;       // 参数类型数组
+        Type[] genericTypes = meta.genericTypes;         // 参数泛型类型数组
+        Optional<Opt>[] optionals = meta.optionals;      // 参数注解数组
+        List<Object> args = new ArrayList<>();           // 最终可供Method对象invoke的参数
+        Set<String> jointMarkSet = meta.jointMarkSet;    // 连接标记
+        Set<Character> shortParamsSet = meta.optCharSet; // 由注解中的简写命令参数名构成的集
 
-        List<WildcardArgument> wildcardArguments = new ArrayList<>();            // 未提供参数的位置
+        List<WildcardArgument> wildcardArguments = new ArrayList<>(); // 未提供参数的位置
         // key=命令参数名 value=命令参数值
-        Map<String, Object> optMap = new HashMap<>(); // 参数map                  // 命令参数中由'-'做前缀的参数以及值
+        Map<String, Object> optMap = new HashMap<>(); // 参数map       // 命令参数中由'-'做前缀的参数以及值
         cmdline = loadArgumentFromCmdline(cmdline, optMap, shortParamsSet, jointMarkSet);
 
-        Annotation anno;
         for (int i = 0; i<argTypes.length; i++) {
-            Annotation[] curAnnoArr = parameterAnnoArrays[i];
+            Optional<Opt> curAnno = optionals[i];
             Class<?> curArgType = argTypes[i];
-            anno = findOptFromArray(curAnnoArr);
             // 当前这个参数没有注解，尝试将一个无名参数转换到这里
-            if (anno == null) {
+            if (!curAnno.isPresent()) {
                 Object presetObj = TransformFactory.getPresetVal(curArgType);
                 if (presetObj != null) {
                     args.add(presetObj);
@@ -65,7 +60,7 @@ public final class DftParameterParser {
             }
 
             // 只处理 @Opt 注解
-            Opt option = (Opt) anno;
+            Opt option = curAnno.get();
             Set<String> paramsSet = new LinkedHashSet<>();
             paramsSet.add(String.valueOf(option.value()));
             if (!option.fullName().isEmpty())
@@ -107,24 +102,6 @@ public final class DftParameterParser {
         }
 
         return ParameterWrapper.success(args);
-    }
-
-    // 从方法参数注解中取出所有可简写的参数
-    private static Set<Character> doGetAllParameter(Annotation[][] parameterAnnoArrays,
-                                                    Set<String> jointMarkSet) {
-        Set<Character> parameterSet = new LinkedHashSet<>();
-        for (Annotation[] pAnnoArray : parameterAnnoArrays) {
-            Opt opt = (Opt) findOptFromArray(pAnnoArray);
-            if (opt == null)
-                continue;
-            parameterSet.add(opt.value());
-            if (opt.joint()) {
-                jointMarkSet.add(String.valueOf(opt.value()));
-                if (!opt.fullName().isEmpty())
-                    jointMarkSet.add(opt.fullName());
-            }
-        }
-        return parameterSet;
     }
 
     // 从命令行中取出命令参数和值
@@ -176,16 +153,6 @@ public final class DftParameterParser {
                 return false;
         }
         return true;
-    }
-
-    // 找出其中的 @Opt 注解
-    private static Annotation findOptFromArray(Annotation[] annotations) {
-        for (Annotation anno : annotations) {
-            if (anno.annotationType() == Opt.class) {
-                return anno;
-            }
-        }
-        return null;
     }
 
     // 将一个对象根据类型解析成另外一个对象

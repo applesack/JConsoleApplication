@@ -6,4 +6,5 @@ package xyz.scootaloo.console.app.parser;
  * @since 2021/1/20 11:42
  */
 public interface HelpDoc {
+
 }

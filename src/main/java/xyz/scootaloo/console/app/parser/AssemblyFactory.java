@@ -26,7 +26,7 @@ import java.util.stream.Stream;
  * @author flutterdash@qq.com
  * @since 2020/12/28 10:05
  */
-public abstract class AssemblyFactory {
+public final class AssemblyFactory {
     // resources
     private static final Colorful color = ResourceManager.getColorful();
     private static final Console console = ResourceManager.getConsole();
@@ -308,11 +308,12 @@ public abstract class AssemblyFactory {
      * @since 2020/12/29 11:00
      */
     public static class MethodActuator implements Actuator {
-        // 元信息，方法对象，注解，方法所在的类的实例，解析器
+        // 元信息，方法对象，注解，方法所在的类的实例，解析器，以及已经从方法中提取出来的一些信息
         private final Method method;
         private final Cmd cmd;
         private final Object obj;
         private ParameterParser parser;
+        private final MethodMeta methodMeta;
 
         // 返回值类型，方法名
         private final Class<?> rtnType;
@@ -327,6 +328,7 @@ public abstract class AssemblyFactory {
 
             this.cmdName = method.getName().toLowerCase(Locale.ROOT);
             this.rtnType = method.getReturnType();
+            this.methodMeta = MethodMeta.getInstance(method);
         }
 
         @Override
@@ -373,7 +375,7 @@ public abstract class AssemblyFactory {
                     }
                 } break;
                 case Cmd: {
-                    if (!parser.check(method)) {
+                    if (!parser.check(methodMeta)) {
                         throw new RuntimeException("规范检查不通过");
                     }
                 }
@@ -410,7 +412,7 @@ public abstract class AssemblyFactory {
             // 发布命令解析前事件
             EventPublisher.onResolveInput(cmdName, items);
             // 由解析工厂将字符串命令解析成Object数组供method对象调用，结果由wrapper包装
-            Wrapper wrapper = parser.parse(method, items);
+            Wrapper wrapper = parser.parse(methodMeta, items);
             // 如果解析成功
             if (wrapper.isSuccess()) {
                 try {

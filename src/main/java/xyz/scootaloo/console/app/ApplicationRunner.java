@@ -1,6 +1,6 @@
 package xyz.scootaloo.console.app;
 
-import xyz.scootaloo.console.app.application.AbstractApplication;
+import xyz.scootaloo.console.app.application.AbstractConsoleApplication;
 import xyz.scootaloo.console.app.application.ConsoleApplication;
 import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
@@ -24,13 +24,13 @@ public class ApplicationRunner {
     private static Interpreter INTERPRETER_SINGLETON;
 
     // 运行一个 ConsoleApplication
-    public static AbstractApplication consoleApplication(ConsoleConfig config) {
+    public static AbstractConsoleApplication consoleApplication(ConsoleConfig config) {
         AssemblyFactory.init(config);
         return new ConsoleApplication(config, getInterpreter(config));
     }
 
     // 无参运行
-    public static AbstractApplication consoleApplication() {
+    public static AbstractConsoleApplication consoleApplication() {
         Object instance = ClassUtils.instance(false);
         ConsoleConfig config = Console.factories()
                                 .add(instance, true)

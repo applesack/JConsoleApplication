@@ -11,7 +11,7 @@ import java.util.function.Consumer;
  * @author flutterdash@qq.com
  * @since 2020/12/27 21:54
  */
-public abstract class AbstractApplication {
+public abstract class AbstractConsoleApplication {
 
     // 提供一个异常处理器
     protected Consumer<Exception> exceptionHandle;

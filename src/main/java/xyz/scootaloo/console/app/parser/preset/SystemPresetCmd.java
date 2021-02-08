@@ -34,7 +34,7 @@ import static xyz.scootaloo.console.app.util.VariableManager.*;
 public final class SystemPresetCmd extends Colorful implements AppListenerAdapter {
     // 单例
     protected static final SystemPresetCmd INSTANCE = new SystemPresetCmd();
-    private static Console console = ResourceManager.getConsole();
+    private static final Console console = ResourceManager.getConsole();
     private static ConsoleConfig config;
 
     private static final String version = "v0.1";
@@ -316,21 +316,21 @@ public final class SystemPresetCmd extends Colorful implements AppListenerAdapte
     //----------------------------------------------------------------------------------
 
     // 实现历史记录功能时使用，前提条件是sys监听器已经启用
-    private static class History {
+    public static final class History {
         // 历史记录
         private static final LinkedList<InvokeInfo> history = new LinkedList<>();
         // 日期转换器 执行时间
         private static final SimpleDateFormat time_sdf = new SimpleDateFormat("hh:mm");
 
         // 向容器增加新的命令
-        public static void add(InvokeInfo info) {
+        private static void add(InvokeInfo info) {
             if (history.size() >= config.getMaxHistory())
                 history.removeFirst();
             history.addLast(info);
         }
 
         // 筛选出符合条件的记录，并按照规则显示出来
-        public static void select(String name, int size, boolean isAll, boolean success, boolean rtnVal,
+        private static void select(String name, int size, boolean isAll, boolean success, boolean rtnVal,
                                   boolean args, boolean invokeAt, boolean interval) {
             boolean matchByName = true;
             if (name == null)
@@ -362,7 +362,7 @@ public final class SystemPresetCmd extends Colorful implements AppListenerAdapte
         }
 
         // 显示这些信息
-        public static void printInfo(InvokeInfo info, boolean isAll, boolean success,
+        private static void printInfo(InvokeInfo info, boolean isAll, boolean success,
                                      boolean rtnVal, boolean args,
                                      boolean invokeAt, boolean interval) {
             StringBuilder sb = new StringBuilder();
@@ -386,12 +386,48 @@ public final class SystemPresetCmd extends Colorful implements AppListenerAdapte
             INSTANCE.println(sb);
         }
 
+        protected static ListIterator<InvokeInfo> getCursor() {
+            return history.listIterator(history.size());
+        }
+
+    }
+
+    // 游标
+    public static final class Cursor {
+        private ListIterator<InvokeInfo> cursor;
+        private Cursor(ListIterator<InvokeInfo> cursor) {
+            this.cursor = cursor;
+        }
+
+        // 获取前一条输入的命令
+        public Optional<String> getPre() {
+            if (cursor.hasPrevious())
+                return Optional.of(getCommand(cursor.previous()));
+            return Optional.empty();
+        }
+
+        // 获取后一条输入的命令
+        public Optional<String> getNext() {
+            if (cursor.hasNext())
+                return Optional.of(getCommand(cursor.next()));
+            return Optional.empty();
+        }
+
+        // 更新输入列表
+        public void gotoEnd() {
+            this.cursor = History.getCursor();
+        }
+
+        private String getCommand(InvokeInfo info) {
+            return info.getName() + " " + String.join(" ", info.getCmdArgs());
+        }
+
     }
 
     //--------------------------------------------------------------------------------
 
     // 对于系统预置命令的描述
-    public static class Help implements HelpDoc {
+    public static final class  Help implements HelpDoc {
         // 单例
         protected static final Help INSTANCE = new Help();
 
@@ -513,6 +549,24 @@ public final class SystemPresetCmd extends Colorful implements AppListenerAdapte
                     "查看变量的某属性，假定stu变量是一个Student类的实例，它具有age这个域，则可以这样做\n" +
                     "   echo ${stu.age}\n" +
                     "注意: echo 命令有返回值，可以做为变量\n";
+        }
+
+        public String _tasks() {
+            return "无需参数\n" +
+                    "输出任务管理器中的任务信息\n";
+        }
+
+        public String _task() {
+            return "用法1\n" +
+                    "   task <taskName> <count>\n" +
+                    "   例如: task test 7\n" +
+                    "   这是查看名为test的任务最近输出的7条内容\n" +
+                    "   如果不指定count，则默认为查看全部输出\n" +
+                    "用法2\n" +
+                    "   task clear all\n" +
+                    "   清除后台全部任务\n" +
+                    "   task clear\n" +
+                    "   清除后台以完成的任务\n";
         }
 
         public String _hello() {

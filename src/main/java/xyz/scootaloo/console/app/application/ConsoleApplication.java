@@ -15,11 +15,11 @@ import java.util.Scanner;
 
 /**
  * 对AbstractApplication的具体实现和补充
- * @see xyz.scootaloo.console.app.application.AbstractApplication
+ * @see AbstractConsoleApplication
  * @author flutterdash@qq.com
  * @since 2020/12/27 23:44
  */
-public final class ConsoleApplication extends AbstractApplication {
+public final class ConsoleApplication extends AbstractConsoleApplication {
     // resources
     private final Scanner scanner = ResourceManager.getScanner();
     private final Console console = ResourceManager.getConsole();
