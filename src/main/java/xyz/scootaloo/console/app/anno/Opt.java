@@ -6,7 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 标记于方法参数，可以通过 "-参数名 参数值" 来进行引用
+ * 标记一个方法参数，配合参数解析器来实现特定的功能。
+ * 以下的描述都只针对于默认的参数解析器
  * @author flutterdash@qq.com
  * @since 2020/12/29 19:12
  */
@@ -17,7 +18,7 @@ public @interface Opt {
     // 此可选参数的标记
     char value();
 
-    // 命令的全称
+    // 命令参数的全称
     String fullName() default "";
 
     // 是否是必须的

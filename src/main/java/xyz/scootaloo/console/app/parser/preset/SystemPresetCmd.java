@@ -2,13 +2,12 @@ package xyz.scootaloo.console.app.parser.preset;
 
 import xyz.scootaloo.console.app.anno.Cmd;
 import xyz.scootaloo.console.app.anno.Opt;
-import xyz.scootaloo.console.app.common.Colorful;
 import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.listener.AppListenerAdapter;
+import xyz.scootaloo.console.app.listener.AppListenerProperty;
 import xyz.scootaloo.console.app.listener.EventPublisher;
-import xyz.scootaloo.console.app.listener.Moment;
 import xyz.scootaloo.console.app.parser.Actuator;
 import xyz.scootaloo.console.app.parser.AssemblyFactory;
 import xyz.scootaloo.console.app.parser.AssemblyFactory.MethodActuator;
@@ -31,7 +30,7 @@ import static xyz.scootaloo.console.app.util.VariableManager.*;
  * @author flutterdash@qq.com
  * @since 2020/12/29 19:43
  */
-public final class SystemPresetCmd extends Colorful implements AppListenerAdapter {
+public final class SystemPresetCmd implements AppListenerAdapter {
     // 单例
     protected static final SystemPresetCmd INSTANCE = new SystemPresetCmd();
     private static final Console console = ResourceManager.getConsole();
@@ -50,8 +49,8 @@ public final class SystemPresetCmd extends Colorful implements AppListenerAdapte
     @Cmd(name = "app", tag = SYS_TAG)
     private String application(@Opt('v') boolean ver) {
         if (ver)
-            println("版本: " + version);
-        println("https://github.com/applesack/JConsoleApplication.git");
+            console.println("版本: " + version);
+        console.println("https://github.com/applesack/JConsoleApplication.git");
         return version;
     }
 
@@ -96,7 +95,7 @@ public final class SystemPresetCmd extends Colorful implements AppListenerAdapte
                       @Opt(value = 't', fullName = "tag") String tag) {
         List<MethodActuator> actuatorList = AssemblyFactory.getAllCommands();
         if (name == null && tag == null) {
-            actuatorList.forEach(methodActuator -> println(methodActuator.getCmdName() + " " + methodActuator.getCmd().name()));
+            actuatorList.forEach(methodActuator -> console.println(methodActuator.getCmdName() + " " + methodActuator.getCmd().name()));
         } else {
             if (name != null) {
                 name = name.toLowerCase(Locale.ROOT);
@@ -105,7 +104,7 @@ public final class SystemPresetCmd extends Colorful implements AppListenerAdapte
                         .filter(act -> act.getCmdName().equals(finalName) ||
                         act.getCmd().name().equals(finalName)).collect(Collectors.toList());
                 if (retainList.isEmpty()) {
-                    println("没有这个命令的信息: `" + name + "`");
+                    console.println("没有这个命令的信息: `" + name + "`");
                     return;
                 }
                 retainList.forEach(this::find);
@@ -113,7 +112,7 @@ public final class SystemPresetCmd extends Colorful implements AppListenerAdapte
                 List<MethodActuator> retainList = actuatorList.stream()
                         .filter(act -> act.getCmd().tag().equals(tag)).collect(Collectors.toList());
                 if (retainList.isEmpty()) {
-                    println("没有这个标签的信息: `" + tag + "`");
+                    console.println("没有这个标签的信息: `" + tag + "`");
                     return;
                 }
                 retainList.forEach(this::find);
@@ -128,17 +127,7 @@ public final class SystemPresetCmd extends Colorful implements AppListenerAdapte
         sb.append('[').append(methodActuator.getCmd().tag()).append(']').append(' ')
                 .append(methodActuator.getInstance().getClass().getSimpleName()).append('.')
                 .append(ClassUtils.getMethodInfo(methodActuator.getMethod()));
-        println(sb);
-    }
-
-    @Cmd(name = "dis", tag = SYS_TAG)
-    private void disable(String lisName) {
-        EventPublisher.disableListener(lisName);
-    }
-
-    @Cmd(name = "en", tag = SYS_TAG)
-    private void enable(String lisName) {
-        EventPublisher.enableListener(lisName);
+        console.println(sb);
     }
 
     @Cmd(name = "lis", tag = SYS_TAG)
@@ -184,7 +173,7 @@ public final class SystemPresetCmd extends Colorful implements AppListenerAdapte
         if (actuator instanceof MethodActuator) {
             ((MethodActuator) actuator).printInfo();
         } else {
-            println("系统中没有这个命令.");
+            console.println("系统中没有这个命令.");
         }
     }
 
@@ -192,11 +181,11 @@ public final class SystemPresetCmd extends Colorful implements AppListenerAdapte
     private boolean set(@Opt(value = 'k', fullName = "key") String key,
                      @Opt(value = 'v', fullName = "value") String value) {
         if (!config.isEnableVariableFunction()) {
-            println(msg);
+            console.println(msg);
             return false;
         }
         if (key == null) {
-            println("未选中键");
+            console.println("未选中键");
             return false;
         }
         if (key.startsWith(".")) {
@@ -216,17 +205,17 @@ public final class SystemPresetCmd extends Colorful implements AppListenerAdapte
     private Object get(@Opt(value = 'k', fullName = "key") String key) {
         Object val = VariableManager.get(key);
         if (val == null) {
-            println("没有这个键的信息");
+            console.println("没有这个键的信息");
             return null;
         } else {
-            println(val);
+            console.println(val);
             return val;
         }
     }
 
     @Cmd(tag = SYS_TAG)
     private void keys() {
-        getKVs().forEach((k, v) -> println("[" + k + "]: " + v));
+        getKVs().forEach((k, v) -> console.println("[" + k + "]: " + v));
     }
 
     @Cmd(tag = SYS_TAG)
@@ -252,7 +241,7 @@ public final class SystemPresetCmd extends Colorful implements AppListenerAdapte
     }
 
     private void echoPrint(KVPairs kv) {
-        println(kv.key + " [type: " + kv.value.getClass()
+        console.println(kv.key + " [type: " + kv.value.getClass()
                 .getSimpleName() + "] " + kv.value);
     }
 
@@ -264,19 +253,17 @@ public final class SystemPresetCmd extends Colorful implements AppListenerAdapte
     }
 
     @Override
-    public int getOrder() {
-        return -1;
+    public void config(AppListenerProperty interestedInEvents) {
+        interestedInEvents
+                .onInput(-1)
+                .onInputResolved(-1)
+                .onAppStarted(-1)
+                .onResolveInput(-1);
     }
 
     @Override
     public void onAppStarted(ConsoleConfig conf) {
         config = conf;
-    }
-
-    @Override
-    public boolean accept(Moment moment) {
-        return moment == Moment.OnInputResolved || moment == Moment.OnAppStarted ||
-                moment == Moment.OnResolveInput;
     }
 
     @Override
@@ -297,7 +284,7 @@ public final class SystemPresetCmd extends Colorful implements AppListenerAdapte
                     if (info.isSuccess() && info.getRtnType() != void.class)
                         VariableManager.set(propKey, info.get());
                     else
-                        println("返回值无效，请重新设置 cmd:[" + info.getName() + "] " +
+                        console.println("返回值无效，请重新设置 cmd:[" + info.getName() + "] " +
                                 "args:[" + String.join(",", info.getCmdArgs()) + "]");
                     setOpen = 2;
                 } else {
@@ -383,7 +370,7 @@ public final class SystemPresetCmd extends Colorful implements AppListenerAdapte
             // 返回值
             if (isAll || rtnVal)
                 sb.append("[rtn: ").append(info.getRtnVal()).append(']');
-            INSTANCE.println(sb);
+            console.println(sb);
         }
 
         protected static ListIterator<InvokeInfo> getCursor() {
@@ -462,20 +449,6 @@ public final class SystemPresetCmd extends Colorful implements AppListenerAdapte
             return "清空控制台\n" +
                     "无需参数\n" +
                     "这个功能目前只在windows下且是cmd环境才有用\n";
-        }
-
-        public String _enable() {
-            return "启用监听器\n" +
-                    "en <lisName>\n" +
-                    "示例，启用名为sys的监听器\n" +
-                    "       en sys\n";
-        }
-
-        public String _disable() {
-            return "移除某正在监听的监听器\n" +
-                    "dis <lisName>" +
-                    "示例，移除名为sys的监听器\n" +
-                    "       dis sys";
         }
 
         public String _listeners() {

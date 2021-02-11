@@ -7,6 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * 作用于表单类的类属性上
+ * @see Form 使用此注解时，类必须标记为 @Form
  * @author flutterdash@qq.com
  * @since 2020/12/31 16:28
  */

@@ -12,7 +12,7 @@ import java.util.function.Supplier;
  * @author flutterdash@qq.com
  * @since 2020/12/27 15:37
  */
-public class ConsoleConfig {
+public final class ConsoleConfig {
     // 应用信息
     private String appName;       // 应用名称
     private String prompt;        // 控制台提示

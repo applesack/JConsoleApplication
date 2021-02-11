@@ -7,7 +7,7 @@ import xyz.scootaloo.console.app.config.ConsoleConfigProvider.DefaultValueConfig
  * @author flutterdash@qq.com
  * @since 2021/1/1 12:30
  */
-public class Author {
+public final class Author {
 
     private final DefaultValueConfigBuilder dvBuilder;
     protected String name       = "";

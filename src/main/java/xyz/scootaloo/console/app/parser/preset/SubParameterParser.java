@@ -12,22 +12,23 @@ import java.util.*;
  * 解析格式为:
  *      参数名 参数值 ...
  * 其中参数值不需要以’-‘做为前缀
- * 举个例子，这是系统预设的一个命令，拿这个命令做为演示
- *-    @Cmd(tag = SYS_TAG, parser = "sub")
- *     public void task(@Opt(value = 'c', fullName = "clear") boolean clear,
- *-                     @Opt(value = 's', fullName = "name") String taskName,
- *-                     @Opt(value = 'n', fullName = "size", dftVal = "-1") int size) {
- *     }
+ * 举个例子，这是系统预设的一个命令，这里拿这个命令做为演示
+ *-@Cmd(tag = SYS_TAG, parser = "sub")
+ * public void task(@Opt(value = 's', fullName = "name", dftVal = "*") String taskName,
+ *-                 @Opt(value = 'n', fullName = "size", dftVal = "-1") int size,
+ *-                 @Opt(value = 'c', fullName = "clear", dftVal = "*") String clear) {
+ * }
  *
  * 你可以这样输入命令行
  * task clear
  * task name nameOfTask size 9
- * task size 9
+ * task nameOfTask 9
  *
  * @author flutterdash@qq.com
  * @since 2021/2/6 14:47
  */
 public final class SubParameterParser implements NameableParameterParser {
+    // 单例
     protected static final SubParameterParser INSTANCE = new SubParameterParser();
 
     @Override
@@ -119,6 +120,7 @@ public final class SubParameterParser implements NameableParameterParser {
         return remainList;
     }
 
+    // 缺省参数标记
     private static class SimpleWildcardArgument {
         private final int idx;
         private final Class<?> type;

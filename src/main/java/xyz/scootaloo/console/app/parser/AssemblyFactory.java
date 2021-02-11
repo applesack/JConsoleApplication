@@ -9,7 +9,7 @@ import xyz.scootaloo.console.app.config.Author;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.listener.AppListener;
 import xyz.scootaloo.console.app.listener.EventPublisher;
-import xyz.scootaloo.console.app.parser.preset.PresetManager;
+import xyz.scootaloo.console.app.parser.preset.PresetFactoryManager;
 import xyz.scootaloo.console.app.parser.preset.SystemPresetCmd;
 import xyz.scootaloo.console.app.util.StringUtils;
 
@@ -21,8 +21,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * 装配工厂
- * 扫描配置中的命令工厂类，装配其中的接口实现，带有注解的方法等
+ * 系统中所有工厂的处理入口 {@link  #init(ConsoleConfig)}
+ * 管理部分接口的实现
  * @author flutterdash@qq.com
  * @since 2020/12/28 10:05
  */
@@ -106,7 +106,7 @@ public final class AssemblyFactory {
         }
 
         // 将预置的工厂注入进来
-        Set<Supplier<Object>> factories = PresetManager.getFactories(config);
+        Set<Supplier<Object>> factories = PresetFactoryManager.getFactories(config);
 
         // 帮助工厂
         List<HelpDoc> helpFactories = new ArrayList<>();
@@ -169,7 +169,7 @@ public final class AssemblyFactory {
             console.onException(config, e, "初始化失败, msg: " + e.getMessage() + "\n", true);
         }
 
-        // 将销毁方法注入到系统关闭钩子中
+        // 将销毁方法注册到系统关闭钩子中
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             for (Actuator actuator : destroyActuators) {
                 Console.ex(actuator::invoke, null);
@@ -223,7 +223,7 @@ public final class AssemblyFactory {
     // 假如 enable() 返回true，则装配至事件发布器
     private static void doGetListener(AppListener listenerObj) {
         if (listenerObj.enable())
-            EventPublisher.loadListener(listenerObj);
+            EventPublisher.regListener(listenerObj);
     }
 
     /**
@@ -332,19 +332,19 @@ public final class AssemblyFactory {
         }
 
         @Override
-        public InvokeInfo invoke(List<String> items) {
+        public InvokeInfo invoke(List<String> cmdArgs) {
             switch (cmd.type()) {
                 // 假如是销毁、前置、初始化方法，可以直接执行
                 case Destroy:
                 case Pre:
                 case Init: {
-                    return invokeCore(items);
+                    return invokeCore(cmdArgs);
                 }
                 // 普通方法，需要由前置方法执行完成后才能执行(前置方法不抛异常且不返回false)
                 default: {
                     InvokeInfo info = doInvokePreProcess();
                     if (info.isSuccess()) {
-                        return invokeCore(items);
+                        return invokeCore(cmdArgs);
                     } else {
                         console.onException(config, info.getException(), info.getExMsg());
                         return InvokeInfo.simpleSuccess();
@@ -403,16 +403,16 @@ public final class AssemblyFactory {
 
         /**
          * *字符串命令调用的核心实现入口*
-         * @param items 执行命令时使用的参数，以按照空格分割成列表
+         * @param cmdArgs 执行命令时使用的参数，以按照空格分割成列表
          * @return 执行结果信息
          */
-        protected InvokeInfo invokeCore(List<String> items) {
+        protected InvokeInfo invokeCore(List<String> cmdArgs) {
             // 在方法执行之前先获取此方法的一些信息
-            InvokeInfo info = InvokeInfo.beforeInvoke(cmdName, rtnType, items);
+            InvokeInfo info = InvokeInfo.beforeInvoke(cmdName, rtnType, cmdArgs);
             // 发布命令解析前事件
-            EventPublisher.onResolveInput(cmdName, items);
+            EventPublisher.onResolveInput(cmdName, cmdArgs);
             // 由解析工厂将字符串命令解析成Object数组供method对象调用，结果由wrapper包装
-            Wrapper wrapper = parser.parse(methodMeta, items);
+            Wrapper wrapper = parser.parse(methodMeta, cmdArgs);
             // 如果解析成功
             if (wrapper.isSuccess()) {
                 try {

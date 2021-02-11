@@ -1,13 +1,13 @@
 package xyz.scootaloo.console.app.listener;
 
-import xyz.scootaloo.console.app.common.Colorful;
+import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ConsoleMessage;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
+import xyz.scootaloo.console.app.listener.AppListenerProperty.EventProperty;
 import xyz.scootaloo.console.app.parser.InvokeInfo;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 系统事件发布器，在运行的不同节点发布事件
@@ -15,87 +15,173 @@ import java.util.stream.Collectors;
  * @since 2020/12/30 9:44
  */
 public final class EventPublisher {
+    // resources
+    private static final Console console = ResourceManager.getConsole();
+    private static final Map<Moment, List<ListenerWrapper>> LISTENERS = new HashMap<>();
+    private static final List<AppListener> WORKING_LISTENERS = new ArrayList<>();
+    private static boolean hasEnable;
 
-    private static final Colorful cPrint = ResourceManager.getColorful();
-    private static final Map<String, AppListener> LISTENER_MAP = new LinkedHashMap<>();
-    private static final Map<String, AppListener> CANDIDATE_MAP = new HashMap<>();
-
+    // private constructor
     private EventPublisher() {
     }
 
-    public static void loadListener(AppListener listener) {
-        String listenerName = listener.getName().toLowerCase(Locale.ROOT);
-        LISTENER_MAP.put(listenerName, listener);
+    /**
+     * 注册一个监听器到系统
+     * @param listener 要注册进来的监听器
+     */
+    public static void regListener(AppListener listener) {
+        hasEnable = false;
+
+        ListenerWrapper wrapper = new ListenerWrapper(listener);
+        EventProperty eventProperty = wrapper.appListenerProperty.get();
+        if (eventProperty.onAppStarted.isInterestedIn())
+            putToCollection(Moment.OnAppStarted, wrapper);
+        if (eventProperty.onInput.isInterestedIn())
+            putToCollection(Moment.OnInput, wrapper);
+        if (eventProperty.onResolveInput.isInterestedIn())
+            putToCollection(Moment.OnResolveInput, wrapper);
+        if (eventProperty.onInputResolved.isInterestedIn())
+            putToCollection(Moment.OnInputResolved, wrapper);
+        if (eventProperty.onMessage.isInterestedIn())
+            putToCollection(Moment.OnMessage, wrapper);
+
+        if (hasEnable) {
+            WORKING_LISTENERS.add(listener);
+            sortListeners();
+        }
     }
 
+    /**
+     * 查看系统中正在工作的监听器
+     */
     public static void showAllListeners() {
-        for (Map.Entry<String, AppListener> listenerEntry : LISTENER_MAP.entrySet()) {
-            cPrint.println("[" +listenerEntry.getKey() + "] " + listenerEntry.getValue().info());
+        WORKING_LISTENERS.forEach(
+                 listener -> console.println("[" + listener.getName() + "] " + listener.info())
+        );
+    }
+
+    private static void putToCollection(Moment key, ListenerWrapper value) {
+        hasEnable = true;
+        Optional<List<ListenerWrapper>> optional = Optional.ofNullable(LISTENERS.get(key));
+        if (!optional.isPresent()) {
+            List<ListenerWrapper> listeners = new ArrayList<>();
+            listeners.add(value);
+            LISTENERS.put(key, listeners);
+        } else {
+            optional.get().add(value);
         }
     }
 
-    public static void disableListener(String listenerName) {
-        listenerName = listenerName.toLowerCase(Locale.ROOT);
-        if (LISTENER_MAP.containsKey(listenerName)) {
-            AppListener listener = LISTENER_MAP.remove(listenerName);
-            CANDIDATE_MAP.put(listenerName, listener);
-            System.out.println("删除成功: [" + listenerName + "]");
-        } else {
-            System.out.println("删除失败: 系统中没有这个监听器[" + listenerName + "]");
-        }
-    }
-
-    public static void enableListener(String listenerName) {
-        listenerName = listenerName.toLowerCase(Locale.ROOT);
-        if (LISTENER_MAP.containsKey(listenerName)) {
-            System.out.println("系统中已存在此监听器: [" + listenerName + "]");
-            return;
-        }
-        if (CANDIDATE_MAP.containsKey(listenerName)) {
-            AppListener listener = CANDIDATE_MAP.remove(listenerName);
-            LISTENER_MAP.put(listenerName, listener);
-            System.out.println("启用成功: [" + listenerName + "]");
-        } else {
-            System.out.println("启用失败: 系统中没有这个监听器[" + listenerName + "]");
-        }
+    private static void sortListeners() {
+        LISTENERS.forEach((moment, listenerWrappers) -> {
+            if (!listenerWrappers.isEmpty()) {
+                listenerWrappers.sort(Comparator.comparingInt(wrap ->
+                        wrap.getProperty().get(moment).priority()));
+            }
+        });
     }
 
     //----------------------------------事件发布------------------------------------------
 
     // 系统起步时
     public static void onAppStarted(ConsoleConfig config) {
-        LISTENER_MAP.values().stream()
-                .filter(listener -> listener.accept(Moment.OnAppStarted))
-                .forEach(listener -> listener.onAppStarted(config));
+        Optional.ofNullable(LISTENERS.get(Moment.OnAppStarted))
+                .ifPresent(listenerWrappers ->
+                        listenerWrappers.forEach(wrapper ->
+                                wrapper.onAppStarted(config)));
     }
 
     // 获取控制台输入时
     public static String onInput(String cmdline) {
-        List<AppListener> listenerList = LISTENER_MAP.values().stream()
-                .filter(listener -> listener.accept(Moment.OnInput)).collect(Collectors.toList());
-        for (AppListener listener : listenerList) {
-            cmdline = listener.onInput(cmdline);
-        }
-        return cmdline;
+        final String[] modifiedCmdline = {cmdline};
+        Optional.ofNullable(LISTENERS.get(Moment.OnInput))
+                .ifPresent(listenerWrappers -> {
+                    for (AppListener listener : listenerWrappers)
+                        modifiedCmdline[0] = listener.onInput(modifiedCmdline[0]);
+                });
+        return modifiedCmdline[0];
     }
 
     // 解析输入前
     public static void onResolveInput(String cmdName, List<String> cmdItems) {
-        LISTENER_MAP.values().stream()
-                .filter(listener -> listener.accept(Moment.OnResolveInput))
-                .forEach(listener -> listener.onResolveInput(cmdName, cmdItems));
+        Optional.ofNullable(LISTENERS.get(Moment.OnResolveInput))
+                .ifPresent(listenerWrappers ->
+                        listenerWrappers.forEach(wrapper ->
+                                wrapper.onResolveInput(cmdName, cmdItems)));
     }
 
     // 解析输入后
     public static void onInputResolved(String cmdName, InvokeInfo info) {
-        LISTENER_MAP.values().stream()
-                .filter(listener -> listener.accept(Moment.OnInputResolved))
-                .forEach(listener -> listener.onInputResolved(cmdName, info));
+        Optional.ofNullable(LISTENERS.get(Moment.OnInputResolved))
+                .ifPresent(listenerWrappers ->
+                        listenerWrappers.forEach(wrapper ->
+                                wrapper.onInputResolved(cmdName, info)));
     }
 
     // 产生消息时
     public static void onMessage(ConsoleMessage message) {
-        LISTENER_MAP.values().forEach(listener -> listener.onMessage(message));
+        Optional.ofNullable(LISTENERS.get(Moment.OnMessage))
+                .ifPresent(listenerWrappers ->
+                        listenerWrappers.forEach(wrapper ->
+                                wrapper.onMessage(message)));
+    }
+
+    //--------------------------------------------------------------------------
+
+    private static class ListenerWrapper implements AppListener {
+        private final AppListener impl;
+        private final AppListenerProperty appListenerProperty;
+
+        public ListenerWrapper(AppListener impl) {
+            this.impl = impl;
+            appListenerProperty = new AppListenerProperty();
+            config(appListenerProperty);
+        }
+
+        public EventProperty getProperty() {
+            return this.appListenerProperty.get();
+        }
+
+        @Override
+        public boolean enable() {
+            return impl.enable();
+        }
+
+        @Override
+        public String getName() {
+            return impl.getName();
+        }
+
+        @Override
+        public void config(AppListenerProperty interested) {
+            impl.config(interested);
+        }
+
+        @Override
+        public void onAppStarted(ConsoleConfig config) {
+            impl.onAppStarted(config);
+        }
+
+        @Override
+        public String onInput(String cmdline) {
+            return impl.onInput(cmdline);
+        }
+
+        @Override
+        public void onResolveInput(String cmdName, List<String> cmdItems) {
+            impl.onResolveInput(cmdName, cmdItems);
+        }
+
+        @Override
+        public void onInputResolved(String cmdName, InvokeInfo info) {
+            impl.onInputResolved(cmdName, info);
+        }
+
+        @Override
+        public void onMessage(ConsoleMessage message) {
+            impl.onMessage(message);
+        }
+
     }
 
 }

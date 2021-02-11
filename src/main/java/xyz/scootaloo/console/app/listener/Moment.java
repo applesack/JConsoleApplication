@@ -1,7 +1,7 @@
 package xyz.scootaloo.console.app.listener;
 
 /**
- * 系统中可被监听的事件，枚举
+ * 系统中可被监听的事件的枚举描述
  * @author flutterdash@qq.com
  * @since 2020/12/30 9:32
  */
@@ -17,6 +17,9 @@ public enum Moment {
     OnResolveInput,
 
     // 解析之后
-    OnInputResolved
+    OnInputResolved,
+
+    // 产生消息时
+    OnMessage
 
 }

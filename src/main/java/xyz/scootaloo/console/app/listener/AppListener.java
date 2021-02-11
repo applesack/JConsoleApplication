@@ -25,19 +25,7 @@ public interface AppListener {
      */
     String getName();
 
-    /**
-     *
-     * @return 返回监听器的优先级
-     */
-    int getOrder();
-
-    /**
-     *
-     * @param moment 当前系统运行到的节点
-     * @return 是否需要监听这个事件
-     */
-    boolean accept(Moment moment);
-
+    void config(AppListenerProperty interested);
     /**
      *
      * @param config 系统装配完命令，已获取配置类，监听此事件可以获取这个配置类

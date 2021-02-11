@@ -24,12 +24,12 @@ public final class InvokeInfo {
     }
 
     // 因为某种原因，方法没有被执行
-    public static InvokeInfo failed(Class<?> rtnType, List<String> cmdItems, Exception ex) {
+    public static InvokeInfo failed(Class<?> rtnType, List<String> cmdArgs, Exception ex) {
         InvokeInfo info = new InvokeInfo();
         info.success = false;
         info.exception = ex;
         info.rtnType = rtnType;
-        info.cmdArgs = cmdItems;
+        info.cmdArgs = cmdArgs;
         info.exMsg = ex.getMessage();
         info.invokeAt = 0;
         info.interval = 0;

@@ -96,12 +96,13 @@ public final class ConsoleApplication extends AbstractConsoleApplication {
 
     /**
      * 处理字符串命令的方式
-     * 1. 将字符串命令按照空格分隔，切割成列表
+     * 1. 将字符串命令行按照空格分隔，切割成列表
      * 2. 获取命令名(列表的第一个元素)是否是退出命令
-     * 3. 交给解释器执行，解释器将返回调用结果
-     * 4. 调用如果失败则输出调用信息
+     * 3. 检查是否此命令是否携带了额外的参数
+     * 4. 交给解释器执行，解释器将返回调用结果
+     * 5. 调用如果失败则输出调用信息
      *
-     * @param command 字符串命令
+     * @param command 字符串命令行
      * @return 是否是退出命令
      */
     @Override

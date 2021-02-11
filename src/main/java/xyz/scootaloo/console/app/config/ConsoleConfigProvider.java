@@ -11,7 +11,7 @@ import java.util.function.Supplier;
  * @author flutterdash@qq.com
  * @since 2020/12/27 15:33
  */
-public abstract class ConsoleConfigProvider {
+public final class ConsoleConfigProvider {
 
     // 所有域都有默认值的默认值构建者
     public static class DefaultValueConfigBuilder {

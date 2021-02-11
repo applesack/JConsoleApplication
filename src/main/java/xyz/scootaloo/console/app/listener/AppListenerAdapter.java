@@ -7,7 +7,7 @@ import xyz.scootaloo.console.app.parser.InvokeInfo;
 import java.util.List;
 
 /**
- * 插件接口的适配器
+ * 监听器接口的适配器
  * @see AppListener
  * @author flutterdash@qq.com
  * @since 2020/12/30 10:26
@@ -20,18 +20,7 @@ public interface AppListenerAdapter extends AppListener {
     }
 
     @Override
-    default int getOrder() {
-        return 0;
-    }
-
-    @Override
-    default boolean accept(Moment moment) {
-        return false;
-    }
-
-    @Override
     default void onAppStarted(ConsoleConfig config) {
-
     }
 
     @Override
@@ -44,11 +33,11 @@ public interface AppListenerAdapter extends AppListener {
     }
 
     @Override
-    default void onMessage(ConsoleMessage message) {
+    default void onInputResolved(String cmdName, InvokeInfo info) {
     }
 
     @Override
-    default void onInputResolved(String cmdName, InvokeInfo info) {
-
+    default void onMessage(ConsoleMessage message) {
     }
+
 }
