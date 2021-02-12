@@ -15,6 +15,7 @@ public abstract class AbstractConsoleApplication {
 
     // 提供一个异常处理器
     protected Consumer<Exception> exceptionHandle;
+    protected ExitAction exitAction = () -> System.exit(0);
 
     // 获取字符串输入
     protected abstract String getInput();
@@ -44,14 +45,17 @@ public abstract class AbstractConsoleApplication {
                 exceptionHandle(e);
             }
         }
-        whenExit();
+        shutdown();
     }
 
     // 欢迎信息
     protected void welcome() {}
 
     // 退出时调用
-    protected void whenExit() {}
+    protected void shutdown() {
+        if (exitAction != null)
+            exitAction.shutdown();
+    }
 
     // 异常处理器
     protected void exceptionHandle(Exception e) {
@@ -60,9 +64,17 @@ public abstract class AbstractConsoleApplication {
         }
     }
 
+    // setter---------------------------------------------------------------
+
     public void setExceptionHandle(Consumer<Exception> exceptionHandle) {
         this.exceptionHandle = exceptionHandle;
     }
+
+    public void setExitAction(ExitAction exitAction) {
+        this.exitAction = exitAction;
+    }
+
+    // ---------------------------------------------------------------------
 
     /**
      * 运行命令的方式
@@ -78,6 +90,11 @@ public abstract class AbstractConsoleApplication {
             return "";
         String cmdName = items.get(0).trim();
         return StringUtils.customizeToLowerCase0(cmdName);
+    }
+
+    @FunctionalInterface
+    public interface ExitAction {
+        void shutdown();
     }
 
 }

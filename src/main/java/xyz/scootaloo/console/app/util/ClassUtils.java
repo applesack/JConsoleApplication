@@ -1,8 +1,8 @@
 package xyz.scootaloo.console.app.util;
 
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
-import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.Colorful;
+import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.parser.TransformFactory;
 
@@ -36,11 +36,11 @@ public final class ClassUtils {
 
     public static void set(Object instance, String fieldName, Object value) {
         Class<?> clazz = instance.getClass();
-        Field field = Console.ex(clazz::getDeclaredField, fieldName);
+        Field field = InvokeProxy.fun(clazz::getDeclaredField).call(fieldName);
         if (field == null)
             return;
         field.setAccessible(true);
-        Console.wDbEx(field::set, instance, value);
+        InvokeProxy.fun(field::set).call(instance, value);
     }
 
     /**
@@ -90,13 +90,14 @@ public final class ClassUtils {
             try {
                 field.setAccessible(true);
                 String fieldName = field.getName();
-                Field targetField = Console.ex(targetClazz::getDeclaredField, fieldName);
-                if (targetField == null)
+                Optional<Field> wrapper = InvokeProxy.fun(targetClazz::getDeclaredField).getOptional(fieldName);
+                if (!wrapper.isPresent())
                     continue;
+                Field targetField = wrapper.get();
                 targetField.setAccessible(true);
                 if (!sameType(field, targetField))
                     throw new IllegalArgumentException("属性不一致");
-                targetField.set(target, Console.ex(field::get, source));
+                targetField.set(target, InvokeProxy.fun(field::get).call(source));
             } catch (Exception e) {
                 color.println("拷贝属性时发生异常，已跳过，属性名:" + field.getName() + ". msg:" + e.getMessage());
             }
@@ -104,7 +105,7 @@ public final class ClassUtils {
     }
 
     public static Supplier<Object> facSupplier(Class<?> factory) {
-        return () -> Console.ex(ClassUtils::newInstance, factory);
+        return () -> InvokeProxy.fun(ClassUtils::newInstance).call(factory);
     }
 
     /**
@@ -140,11 +141,11 @@ public final class ClassUtils {
         Class<?> iClazz;
         if (prop != null) {
             iClazz = instance.getClass();
-            Field field = Console.ex(iClazz::getDeclaredField, prop);
+            Field field = InvokeProxy.fun(iClazz::getDeclaredField).call(prop);
             if (field == null)
                 return;
             field.setAccessible(true);
-            instance = Console.ex(field::get, instance);
+            instance = InvokeProxy.fun(field::get).call(instance);
             if (instance == null)
                 return;
         }
@@ -152,13 +153,13 @@ public final class ClassUtils {
         for (Entry<String, Object> entry : properties.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
-            Field field = Console.ex(iClazz::getDeclaredField, key);
+            Field field = InvokeProxy.fun(iClazz::getDeclaredField).call(key);
             if (field == null)
                 continue;
             field.setAccessible(true);
             Class<?> propType = value.getClass();
             if (propType == field.getType() || BOXING_SET.contains(propType)) {
-                Console.wDbEx(field::set, instance, value);
+                InvokeProxy.fun(field::set).call(instance, value);
             } else {
                 if (functionMap.containsKey(key)) {
                     try {

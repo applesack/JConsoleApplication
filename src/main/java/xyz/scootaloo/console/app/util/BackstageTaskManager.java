@@ -8,10 +8,7 @@ import xyz.scootaloo.console.app.parser.InvokeInfo;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.ListIterator;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 /**
@@ -126,10 +123,11 @@ public final class BackstageTaskManager {
             // 已完成
             if (isDone) {
                 final boolean[] hasEx = {false};
-                InvokeInfo info = Console.exSupplier(future::get, InvokeInfo::simpleSuccess, (ex) -> {
-                    hasEx[0] = true;
-                    stringBuilder.append(" error, msg:").append(ex.getMessage());
-                });
+                InvokeInfo info = InvokeProxy.fun(this::getInvokeInfo)
+                                    .addHandle((ex) -> {
+                                        hasEx[0] = true;
+                                        stringBuilder.append(" error, msg:").append(ex.getMessage());
+                                    }).call();
                 if (!hasEx[0]) {
                     if (info.isSuccess()) {
                         stringBuilder.append(" 用时:");
@@ -143,6 +141,10 @@ public final class BackstageTaskManager {
                 StringUtils.getIntervalBySS_MS(System.currentTimeMillis() - timestamp, stringBuilder);
             }
             console.println(stringBuilder);
+        }
+
+        private InvokeInfo getInvokeInfo() throws ExecutionException, InterruptedException {
+            return future.get();
         }
 
         @Override

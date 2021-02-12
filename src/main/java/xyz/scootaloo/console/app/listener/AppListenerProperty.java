@@ -58,7 +58,7 @@ public class AppListenerProperty {
         return this;
     }
 
-    public EventProperty get() {
+    protected EventProperty get() {
         return this.eventProperty;
     }
 

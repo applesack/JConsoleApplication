@@ -11,6 +11,7 @@ import xyz.scootaloo.console.app.listener.AppListener;
 import xyz.scootaloo.console.app.listener.EventPublisher;
 import xyz.scootaloo.console.app.parser.preset.PresetFactoryManager;
 import xyz.scootaloo.console.app.parser.preset.SystemPresetCmd;
+import xyz.scootaloo.console.app.util.InvokeProxy;
 import xyz.scootaloo.console.app.util.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -172,7 +173,7 @@ public final class AssemblyFactory {
         // 将销毁方法注册到系统关闭钩子中
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             for (Actuator actuator : destroyActuators) {
-                Console.ex(actuator::invoke, null);
+                InvokeProxy.fun(actuator::invoke).call();
             }
         }));
     }

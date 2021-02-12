@@ -1,14 +1,10 @@
 package xyz.scootaloo.console.app.util;
 
 import org.yaml.snakeyaml.Yaml;
-import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.config.ConsoleConfigProvider.DefaultValueConfigBuilder;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -46,18 +42,15 @@ public final class YmlConfReader {
     }
 
     private static void loadConf(DefaultValueConfigBuilder configBuilder, Map<String, Object> map) {
-        Map<String, Object> consoleConf = Console.dbEx(YmlConfReader::getFrom, map, "console");
-        if (consoleConf != null) {
-            ClassUtils.loadPropFromMap(configBuilder, consoleConf, null, converterMap);
-        }
-        Map<String, Object> authorConf = Console.dbEx(YmlConfReader::getFrom, map, "author");
-        if (authorConf != null) {
-            ClassUtils.loadPropFromMap(configBuilder, authorConf, "author", converterMap);
-        }
-        List<Object> inits = Console.dbEx(YmlConfReader::getFrom, map, "init");
-        if (inits != null) {
-            doGetInitCommands(configBuilder, inits);
-        }
+        Optional<Map<String, Object>> consoleConf = Optional.ofNullable(YmlConfReader.getFrom(map, "console"));
+        consoleConf.ifPresent(stringObjectMap ->
+                ClassUtils.loadPropFromMap(configBuilder, stringObjectMap, null, converterMap));
+        Optional<Map<String, Object>> authorConf = Optional.ofNullable(YmlConfReader.getFrom(map, "author"));
+        authorConf.ifPresent(stringObjectMap ->
+                ClassUtils.loadPropFromMap(configBuilder, stringObjectMap, "author", converterMap));
+        Optional<List<Object>> inits = Optional.ofNullable(YmlConfReader.getFrom(map, "init"));
+        inits.ifPresent(objects ->
+                doGetInitCommands(configBuilder, objects));
         // 暂时不支持这个功能, 不做处理
 //        List<Object> factories = Console.dbEx(YmlConfReader::getFrom, map, "factories");
     }

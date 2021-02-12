@@ -1,8 +1,8 @@
 package xyz.scootaloo.console.app.parser.preset;
 
 import xyz.scootaloo.console.app.anno.Opt;
-import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.parser.*;
+import xyz.scootaloo.console.app.util.InvokeProxy;
 
 import java.util.*;
 
@@ -96,7 +96,9 @@ public final class SubParameterParser implements NameableParameterParser {
 
     private Object exTransform(String source, Class<?> type) {
         Exception[] exContainer = {null};
-        Object res = Console.dbEx(TransformFactory::simpleTrans, source, type, (ex) -> exContainer[0] = ex);
+        Object res = InvokeProxy.fun(TransformFactory::simpleTrans)
+                        .addHandle((ex) -> exContainer[0] = ex)
+                        .call(source, type);
         return exContainer[0] == null ? res : exContainer[0];
     }
 
