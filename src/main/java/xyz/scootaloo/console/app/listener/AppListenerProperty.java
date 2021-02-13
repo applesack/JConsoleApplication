@@ -5,7 +5,7 @@ package xyz.scootaloo.console.app.listener;
  * @author flutterdash@qq.com
  * @since 2021/2/10 21:57
  */
-public class AppListenerProperty {
+public final class AppListenerProperty {
     protected static final int DFT_PRIORITY = 5;
     private final EventProperty eventProperty;
 
