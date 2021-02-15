@@ -27,7 +27,7 @@ public final class DftParameterParser {
      * @param cmdline 调用此方法使用的命令参数
      * @return 包装的结果
      */
-    public static Wrapper transform(MethodMeta meta, List<String> cmdline) {
+    public static ResultWrapper transform(MethodMeta meta, List<String> cmdline) {
         if (meta.size == 0)
             return ParameterWrapper.success(null);
         Class<?>[] argTypes = meta.parameterTypes;       // 参数类型数组

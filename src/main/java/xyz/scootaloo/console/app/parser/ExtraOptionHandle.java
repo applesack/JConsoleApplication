@@ -16,6 +16,7 @@ import java.util.Map;
 public final class ExtraOptionHandle {
     private static final Map<Character, OptionHandle> optionMap = new HashMap<>();
     private static final Console console = ResourceManager.getConsole();
+    private static final String DELIMITER = "-";
     private static Interpreter interpreter;
 
     /**
@@ -44,9 +45,9 @@ public final class ExtraOptionHandle {
      * @return 是否被处理过
      */
     public static boolean handle(String cmdName, List<String> args) {
-        if (!cmdName.contains("-"))
+        if (!cmdName.contains(DELIMITER))
             return false;
-        String[] segments = cmdName.split("-");
+        String[] segments = cmdName.split(DELIMITER);
         if (segments.length != 2 || segments[0].length() == 0 || segments[1].length() == 0)
             return false;
         String realCmdName = segments[0];

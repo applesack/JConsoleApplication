@@ -14,6 +14,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static xyz.scootaloo.console.app.util.InvokeProxy.fun;
+
 /**
  * 执行反射操作时的一些便捷方法
  * @author flutterdash@qq.com
@@ -36,11 +38,11 @@ public final class ClassUtils {
 
     public static void set(Object instance, String fieldName, Object value) {
         Class<?> clazz = instance.getClass();
-        Field field = InvokeProxy.fun(clazz::getDeclaredField).call(fieldName);
+        Field field = fun(clazz::getDeclaredField).call(fieldName);
         if (field == null)
             return;
         field.setAccessible(true);
-        InvokeProxy.fun(field::set).call(instance, value);
+        fun(field::set).call(instance, value);
     }
 
     /**
@@ -90,14 +92,14 @@ public final class ClassUtils {
             try {
                 field.setAccessible(true);
                 String fieldName = field.getName();
-                Optional<Field> wrapper = InvokeProxy.fun(targetClazz::getDeclaredField).getOptional(fieldName);
+                Optional<Field> wrapper = fun(targetClazz::getDeclaredField).getOptional(fieldName);
                 if (!wrapper.isPresent())
                     continue;
                 Field targetField = wrapper.get();
                 targetField.setAccessible(true);
                 if (!sameType(field, targetField))
                     throw new IllegalArgumentException("属性不一致");
-                targetField.set(target, InvokeProxy.fun(field::get).call(source));
+                targetField.set(target, fun(field::get).call(source));
             } catch (Exception e) {
                 color.println("拷贝属性时发生异常，已跳过，属性名:" + field.getName() + ". msg:" + e.getMessage());
             }
@@ -105,7 +107,7 @@ public final class ClassUtils {
     }
 
     public static Supplier<Object> facSupplier(Class<?> factory) {
-        return () -> InvokeProxy.fun(ClassUtils::newInstance).call(factory);
+        return () -> fun(ClassUtils::newInstance).call(factory);
     }
 
     /**
@@ -141,11 +143,11 @@ public final class ClassUtils {
         Class<?> iClazz;
         if (prop != null) {
             iClazz = instance.getClass();
-            Field field = InvokeProxy.fun(iClazz::getDeclaredField).call(prop);
+            Field field = fun(iClazz::getDeclaredField).call(prop);
             if (field == null)
                 return;
             field.setAccessible(true);
-            instance = InvokeProxy.fun(field::get).call(instance);
+            instance = fun(field::get).call(instance);
             if (instance == null)
                 return;
         }
@@ -153,13 +155,13 @@ public final class ClassUtils {
         for (Entry<String, Object> entry : properties.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
-            Field field = InvokeProxy.fun(iClazz::getDeclaredField).call(key);
+            Field field = fun(iClazz::getDeclaredField).call(key);
             if (field == null)
                 continue;
             field.setAccessible(true);
             Class<?> propType = value.getClass();
             if (propType == field.getType() || BOXING_SET.contains(propType)) {
-                InvokeProxy.fun(field::set).call(instance, value);
+                fun(field::set).call(instance, value);
             } else {
                 if (functionMap.containsKey(key)) {
                     try {

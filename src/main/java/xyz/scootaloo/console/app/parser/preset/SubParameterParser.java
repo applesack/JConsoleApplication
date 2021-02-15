@@ -37,7 +37,7 @@ public final class SubParameterParser implements NameableParameterParser {
     }
 
     @Override
-    public Wrapper parse(MethodMeta meta, List<String> args) {
+    public ResultWrapper parse(MethodMeta meta, List<String> args) {
         Set<String> paramSet = meta.fullNameSet;
         List<Object> methodArgs = new ArrayList<>();
         Map<String, String> kvPairs = new HashMap<>();

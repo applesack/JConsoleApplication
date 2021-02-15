@@ -413,7 +413,7 @@ public final class AssemblyFactory {
             // 发布命令解析前事件
             EventPublisher.onResolveInput(cmdName, cmdArgs);
             // 由解析工厂将字符串命令解析成Object数组供method对象调用，结果由wrapper包装
-            Wrapper wrapper = parser.parse(methodMeta, cmdArgs);
+            ResultWrapper wrapper = parser.parse(methodMeta, cmdArgs);
             // 如果解析成功
             if (wrapper.isSuccess()) {
                 try {

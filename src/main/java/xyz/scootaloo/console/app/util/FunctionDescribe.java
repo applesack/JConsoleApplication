@@ -61,4 +61,8 @@ public final class FunctionDescribe {
         void call(T1 param1, T2 Param2, T3 param3, T4 param4) throws Exception;
     }
 
+    public static InvokeProxy getInvokeProxyInstance() {
+        return InvokeProxy.getInstance();
+    }
+
 }

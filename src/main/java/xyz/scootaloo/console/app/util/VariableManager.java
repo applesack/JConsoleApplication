@@ -38,15 +38,15 @@ public final class VariableManager {
             properties.put(key, value);
     }
 
-    public static Object get(String key) {
-        return properties.get(key);
+    public static Optional<Object> get(String key) {
+        return Optional.ofNullable(properties.get(key));
     }
 
-    public static Object get() {
+    public static Optional<Object> get() {
         if (!KVPairs.hisKVs.isEmpty()) {
-            return KVPairs.hisKVs.peek().value;
+            return Optional.ofNullable(KVPairs.hisKVs.peek().value);
         }
-        return null;
+        return Optional.empty();
     }
 
     public static Map<String, Object> getKVs() {

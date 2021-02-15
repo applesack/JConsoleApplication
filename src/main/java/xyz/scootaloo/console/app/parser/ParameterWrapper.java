@@ -7,7 +7,7 @@ import java.util.List;
  * @author flutterdash@qq.com
  * @since 2021/1/25 20:01
  */
-public final class ParameterWrapper implements Wrapper {
+public final class ParameterWrapper implements ResultWrapper {
 
     private final boolean success;
     private final Object[] args;

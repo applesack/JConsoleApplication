@@ -18,7 +18,7 @@ public interface ParameterParser {
      * @param args 命令参数每段都用空格分隔，这里已经预先分隔成了列表
      * @return 一个包装类，包含处理的结果
      */
-    Wrapper parse(MethodMeta meta, List<String> args);
+    ResultWrapper parse(MethodMeta meta, List<String> args);
 
     /**
      * 编写自定义参数解析器实现的时候，可以重写这个方法，检查方法参数是否符合要求，以便在运行之初抛出异常方便检查

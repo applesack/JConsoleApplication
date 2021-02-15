@@ -86,7 +86,7 @@ public final class InvokeProxy implements AppListenerAdapter {
         });
     }
 
-    public static InvokeProxy getInstance() {
+    protected static InvokeProxy getInstance() {
         return INSTANCE;
     }
 

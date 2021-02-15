@@ -195,9 +195,9 @@ public final class BackstageTaskManager {
 
         // 显示最后 n 条输出
         public void showLog(int n) {
-            if (n < 0)
+            if (n < 0) {
                 lines.forEach(outputMode);
-            else {
+            } else {
                 int len = Math.min(n, lines.size());
                 LinkedList<String> tmp = new LinkedList<>();
                 ListIterator<String> listIterator = lines.listIterator(lines.size());

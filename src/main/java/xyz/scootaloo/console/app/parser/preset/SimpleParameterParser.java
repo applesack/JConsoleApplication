@@ -3,7 +3,7 @@ package xyz.scootaloo.console.app.parser.preset;
 import xyz.scootaloo.console.app.parser.MethodMeta;
 import xyz.scootaloo.console.app.parser.NameableParameterParser;
 import xyz.scootaloo.console.app.parser.ParameterWrapper;
-import xyz.scootaloo.console.app.parser.Wrapper;
+import xyz.scootaloo.console.app.parser.ResultWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,7 @@ public final class SimpleParameterParser implements NameableParameterParser {
     }
 
     @Override
-    public Wrapper parse(MethodMeta meta, List<String> args) {
+    public ResultWrapper parse(MethodMeta meta, List<String> args) {
         ArrayList<Object> list = new ArrayList<>();
         list.add(String.join(" ", args));
         return ParameterWrapper.success(list);

@@ -5,7 +5,7 @@ package xyz.scootaloo.console.app.parser;
  * @author flutterdash@qq.com
  * @since 2021/1/16 22:59
  */
-public interface Wrapper {
+public interface ResultWrapper {
 
     // 解析是否成功
     boolean isSuccess();

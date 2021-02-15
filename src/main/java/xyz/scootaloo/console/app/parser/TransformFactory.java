@@ -27,15 +27,15 @@ public final class TransformFactory {
     static {
         // 设置各种基本类型的默认值 转换方式
         putDefVal(str -> str);
-        putDefVal(int.class    , Integer.class, 0, Integer::parseInt);
-        putDefVal(short.class  , Short.class  , 0, Short::parseShort);
-        putDefVal(float.class  , Float.class  , 0, Float::parseFloat);
+        putDefVal(int.class    , Integer.class, 0, Integer::parseInt  );
+        putDefVal(short.class  , Short.class  , 0, Short::parseShort  );
+        putDefVal(float.class  , Float.class  , 0, Float::parseFloat  );
         putDefVal(double.class , Double.class , 0, Double::parseDouble);
-        putDefVal(long.class   , Long.class   , 0, Long::parseLong);
-        putDefVal(byte.class   , Byte.class   , 0, Byte::parseByte);
+        putDefVal(long.class   , Long.class   , 0, Long::parseLong    );
+        putDefVal(byte.class   , Byte.class   , 0, Byte::parseByte    );
         putDefVal(boolean.class, Boolean.class, false,
                 str -> {
-                    if (str == null || str.equals(""))
+                    if (str == null || str.isEmpty())
                         return false;
                     str = str.toLowerCase(Locale.ROOT);
                     return str.startsWith("t");
@@ -71,9 +71,9 @@ public final class TransformFactory {
     // 简易的转换，转换基本类型
     public static Object simpleTrans(Object value, Class<?> type) {
         // 尝试进行占位符替换
-        Object pObj = resolvePlaceholder(value, type);
-        if (pObj != null)
-            return pObj;
+        Optional<Object> pObj = resolvePlaceholder(value, type);
+        if (pObj.isPresent())
+            return pObj.get();
 
         Function<String, Object> convertor = STR_RESOLVE_MAP.get(type);
         if (convertor != null) {
@@ -93,7 +93,7 @@ public final class TransformFactory {
     }
 
     // 添加某类型的解析器，@Cmd的type=Parser的方法会被调用到这里来
-    public static void addParser(Function<String, Object> parser, Class<?> ... types) {
+    protected static void addParser(Function<String, Object> parser, Class<?> ... types) {
         if (parser == null || types == null || types.length == 0)
             return;
         for (Class<?> type : types) {
@@ -118,14 +118,14 @@ public final class TransformFactory {
         }
     }
 
-    private static Object resolvePlaceholder(Object value, Class<?> type) {
+    private static Optional<Object> resolvePlaceholder(Object value, Class<?> type) {
         if (!value.equals(VariableManager.placeholder))
-            return null;
-        Object placeholderObj = VariableManager.get();
-        if (placeholderObj != null && placeholderObj.getClass() == type) {
+            return Optional.empty();
+        Optional<Object> placeholderObj = VariableManager.get();
+        if (placeholderObj.isPresent() && placeholderObj.get().getClass() == type) {
             return placeholderObj;
         }
-        return null;
+        return Optional.empty();
     }
 
     private static OutPrinter getPrinter() {
