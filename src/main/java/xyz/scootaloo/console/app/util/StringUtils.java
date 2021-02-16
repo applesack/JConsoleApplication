@@ -1,5 +1,6 @@
 package xyz.scootaloo.console.app.util;
 
+import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -136,6 +137,54 @@ public final class StringUtils {
             res.setLength(res.length() - 1);
         }
         return res.toString();
+    }
+
+    // 反射操作，查看方法的参数和返回值信息
+
+    public static String typeSimpleView(Type type) {
+        return typeSimpleView(type.toString());
+    }
+
+    public static String typeSimpleView(String typeStr) {
+        typeStr = typeStr.replace("class ", "");
+        StringBuilder tmp = new StringBuilder();
+        for (int i = 0; i<typeStr.length(); i++) {
+            char c = typeStr.charAt(i);
+            if (c == ' ' || c == ';')
+                continue;
+            tmp.append(c);
+        }
+        typeStr = tmp.toString();
+        if (typeStr.indexOf('<') == -1) {
+            return getSimpleName(typeStr);
+        }
+        tmp.setLength(0);
+        StringBuilder rsl = new StringBuilder();
+
+        for (int i = 0; i<typeStr.length(); i++) {
+            char c = typeStr.charAt(i);
+            if (c == '<' || c == '>' || c == ',') {
+                if (tmp.length() != 0 && tmp.charAt(tmp.length() - 1) == ';')
+                    tmp.setLength(tmp.length() - 1);
+                rsl.append(getSimpleName(tmp.toString())).append(c);
+                tmp.setLength(0);
+            } else {
+                tmp.append(c);
+            }
+        }
+        if (tmp.length() > 0)
+            rsl.append(tmp);
+        return rsl.toString();
+    }
+
+    private static String getSimpleName(String str) {
+        boolean isArray = str.startsWith("[");
+        int pointIdx = str.lastIndexOf(".");
+        if (pointIdx == -1 || pointIdx == str.length() - 1) {
+            return str + (isArray ? "[]" : "");
+        } else {
+            return str.substring(pointIdx + 1) + (isArray ? "[]" : "");
+        }
     }
 
 }

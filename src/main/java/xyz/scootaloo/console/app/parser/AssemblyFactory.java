@@ -492,16 +492,15 @@ public final class AssemblyFactory {
         }
 
         // 打印此 方法/命令 的帮助信息
-        public void printInfo() {
-            String helpInfo = HELP_MAP.get(this.cmdName);
-            if (helpInfo == null) {
-                color.println("没有此命令的帮助信息");
+        public String printInfo() {
+            String body = HELP_MAP.get(this.cmdName);
+            if (body == null) {
+                return "没有此命令的帮助信息";
             } else {
                 String title = "\n[" + cmdName;
                 title += !cmd.name().equals("") ? ", " + cmd.name() : "";
                 title += "]";
-                color.println(title);
-                color.println(helpInfo);
+                return title + body;
             }
         }
 

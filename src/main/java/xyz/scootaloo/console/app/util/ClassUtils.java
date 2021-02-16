@@ -12,7 +12,6 @@ import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static xyz.scootaloo.console.app.util.InvokeProxy.fun;
 
@@ -181,12 +180,15 @@ public final class ClassUtils {
 
     // 返回方法的信息，方法名(参数):返回值
     public static String getMethodInfo(Method method) {
-        return method.getName() + '(' +
-                Stream.of(method.getParameterTypes())
-                        .map(Class::getSimpleName)
-                        .collect(Collectors.joining(",")) +
-                ')' + ':' +
-                method.getReturnType().getSimpleName();
+        StringBuilder sb = new StringBuilder();
+        sb.append(method.getName()).append('(');
+        Type rtnGeneric = method.getGenericReturnType();
+        Type[] paramGenerics = method.getGenericParameterTypes();
+        sb.append(Arrays.stream(paramGenerics)
+                .map(StringUtils::typeSimpleView)
+                .collect(Collectors.joining(","))
+        ).append(')').append(':').append(StringUtils.typeSimpleView(rtnGeneric));
+        return sb.toString();
     }
 
     // 获取方法泛型参数的实际类型 List<Integer> => Integer

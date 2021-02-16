@@ -1,5 +1,6 @@
 package xyz.scootaloo.console.app.application;
 
+import xyz.scootaloo.console.app.application.processor.PostProcessor;
 import xyz.scootaloo.console.app.common.Colorful;
 import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
@@ -10,6 +11,8 @@ import xyz.scootaloo.console.app.parser.Interpreter;
 import xyz.scootaloo.console.app.parser.InvokeInfo;
 import xyz.scootaloo.console.app.util.StringUtils;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
 
@@ -27,6 +30,8 @@ public final class ConsoleApplication extends AbstractConsoleApplication {
     private final String prompt;
     private final ConsoleConfig config;
     private final Interpreter interpreter;
+    private final List<PostProcessor> postProcessors = new ArrayList<>();
+    private volatile boolean enableProcessor = true;
 
     /**
      * 需要以一个配置类和一个解释器做为生成此实例的条件
@@ -65,6 +70,17 @@ public final class ConsoleApplication extends AbstractConsoleApplication {
         } catch (Exception e) {
             console.onException(config, e, "初始化遇到异常", true);
         }
+
+        // 注册一个后处理器
+        addPostProcessor((info) -> {
+            if (info.isSuccess() && info.get() != null) {
+                if (info.get() instanceof Collection) {
+                    if (((Collection<?>) info.get()).isEmpty())
+                        return;
+                }
+                console.println(info.get());
+            }
+        });
     }
 
     @Override // 从键盘获取输入
@@ -115,10 +131,28 @@ public final class ConsoleApplication extends AbstractConsoleApplication {
         if (ExtraOptionHandle.handle(cmdName, cmdItems))
             return false;
         InvokeInfo info = interpreter.interpret(command);
+        if (!postProcessors.isEmpty() && enableProcessor) {
+            for (PostProcessor processor : postProcessors) {
+                processor.process(info);
+            }
+        }
         if (!info.isSuccess()) {
             console.onException(config, info.getException());
         }
         return false;
+    }
+
+    @Override
+    public AbstractConsoleApplication addPostProcessor(PostProcessor postProcessor) {
+        if (postProcessor != null)
+            postProcessors.add(postProcessor);
+        return this;
+    }
+
+    @Override
+    public AbstractConsoleApplication disablePostProcessor() {
+        enableProcessor = false;
+        return this;
     }
 
 }

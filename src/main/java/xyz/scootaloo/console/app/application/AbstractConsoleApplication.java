@@ -1,5 +1,6 @@
 package xyz.scootaloo.console.app.application;
 
+import xyz.scootaloo.console.app.application.processor.PostProcessor;
 import xyz.scootaloo.console.app.util.StringUtils;
 
 import java.util.List;
@@ -66,13 +67,19 @@ public abstract class AbstractConsoleApplication {
 
     // setter---------------------------------------------------------------
 
-    public void setExceptionHandle(Consumer<Exception> exceptionHandle) {
+    public AbstractConsoleApplication setExceptionHandle(Consumer<Exception> exceptionHandle) {
         this.exceptionHandle = exceptionHandle;
+        return this;
     }
 
-    public void setExitAction(ExitAction exitAction) {
+    public AbstractConsoleApplication setExitAction(ExitAction exitAction) {
         this.exitAction = exitAction;
+        return this;
     }
+
+    public abstract AbstractConsoleApplication addPostProcessor(PostProcessor processor);
+
+    public abstract AbstractConsoleApplication disablePostProcessor();
 
     // ---------------------------------------------------------------------
 

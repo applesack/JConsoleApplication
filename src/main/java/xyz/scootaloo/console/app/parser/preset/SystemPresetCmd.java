@@ -14,6 +14,7 @@ import xyz.scootaloo.console.app.parser.AssemblyFactory.MethodActuator;
 import xyz.scootaloo.console.app.parser.HelpDoc;
 import xyz.scootaloo.console.app.parser.InvokeInfo;
 import xyz.scootaloo.console.app.util.BackstageTaskManager;
+import xyz.scootaloo.console.app.util.BackstageTaskManager.BackstageTaskInfo;
 import xyz.scootaloo.console.app.util.ClassUtils;
 import xyz.scootaloo.console.app.util.StringUtils;
 import xyz.scootaloo.console.app.util.VariableManager;
@@ -55,23 +56,28 @@ public final class SystemPresetCmd implements AppListenerAdapter {
     }
 
     @Cmd(name = "man", tag = SYS_TAG)
-    private void help(@Opt(value = 's', fullName = "name") String cmdName) {
+    private String help(@Opt(value = 's', fullName = "name") String cmdName) {
         Actuator actuator;
         if (cmdName == null)
             actuator = AssemblyFactory.findActuator("help");
         else
             actuator = AssemblyFactory.findActuator(cmdName);
-        printInfo(actuator);
+        String helpDoc = printInfo(actuator);
+        console.println(helpDoc);
+        return helpDoc;
     }
 
     @Cmd(name = "tks", tag = SYS_TAG)
-    public void tasks() {
+    public List<BackstageTaskInfo> tasks() {
         try {
-            BackstageTaskManager.list();
+            List<BackstageTaskInfo> taskLists = BackstageTaskManager.list();
+            StringBuilder stringBuilder = new StringBuilder();
+            taskLists.forEach(task -> task.showTask(stringBuilder));
+            return taskLists;
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
-
     }
 
     @Cmd(tag = SYS_TAG, parser = "sub")
@@ -136,15 +142,15 @@ public final class SystemPresetCmd implements AppListenerAdapter {
     }
 
     @Cmd(name = "his", tag = SYS_TAG)
-    private void history(@Opt(value = 'n', fullName = "size", dftVal = "-1") int size,
-                         @Opt(value = 's', fullName = "name") String name,
-                         @Opt(value = 'a', fullName = "all" ) boolean isAll,
-                         @Opt(value = 'u', fullName = "success" ) boolean success,
-                         @Opt(value = 'r', fullName = "rtnVal"  ) boolean rtnVal,
-                         @Opt(value = 'g', fullName = "args"    ) boolean args,
-                         @Opt(value = 't', fullName = "invokeAt") boolean invokeAt,
-                         @Opt(value = 'i', fullName = "interval") boolean interval) {
-        History.select(name, size, isAll, success, rtnVal, args, invokeAt, interval);
+    private List<InvokeInfo> history(@Opt(value = 'n', fullName = "size", dftVal = "-1") int size,
+                                     @Opt(value = 's', fullName = "name") String name,
+                                     @Opt(value = 'a', fullName = "all" ) boolean isAll,
+                                     @Opt(value = 'u', fullName = "success" ) boolean success,
+                                     @Opt(value = 'r', fullName = "rtnVal"  ) boolean rtnVal,
+                                     @Opt(value = 'g', fullName = "args"    ) boolean args,
+                                     @Opt(value = 't', fullName = "invokeAt") boolean invokeAt,
+                                     @Opt(value = 'i', fullName = "interval") boolean interval) {
+        return History.select(name, size, isAll, success, rtnVal, args, invokeAt, interval);
     }
 
     @Cmd(tag = SYS_TAG)
@@ -169,11 +175,21 @@ public final class SystemPresetCmd implements AppListenerAdapter {
 
     }
 
-    private void printInfo(Actuator actuator) {
-        if (actuator instanceof MethodActuator) {
-            ((MethodActuator) actuator).printInfo();
+    private static String getClearCommand() {
+        Properties prop = System.getProperties();
+        String os = prop.getProperty("os.name");
+        if (os != null && os.toLowerCase().contains("linux")) {
+            return "clear";
         } else {
-            console.println("系统中没有这个命令.");
+            return "cls";
+        }
+    }
+
+    private String printInfo(Actuator actuator) {
+        if (actuator instanceof MethodActuator) {
+            return  ((MethodActuator) actuator).printInfo();
+        } else {
+            return "系统中没有这个命令.";
         }
     }
 
@@ -214,8 +230,9 @@ public final class SystemPresetCmd implements AppListenerAdapter {
     }
 
     @Cmd(tag = SYS_TAG)
-    private void keys() {
+    private Map<String, Object> keys() {
         getKVs().forEach((k, v) -> console.println("[" + k + "]: " + v));
+        return getKVs();
     }
 
     @Cmd(tag = SYS_TAG)
@@ -317,7 +334,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
         }
 
         // 筛选出符合条件的记录，并按照规则显示出来
-        private static void select(String name, int size, boolean isAll, boolean success, boolean rtnVal,
+        private static List<InvokeInfo> select(String name, int size, boolean isAll, boolean success, boolean rtnVal,
                                   boolean args, boolean invokeAt, boolean interval) {
             boolean matchByName = true;
             if (name == null)
@@ -346,6 +363,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
             for (InvokeInfo inf : targetInfos) {
                 printInfo(inf, isAll, success, rtnVal, args, invokeAt, interval);
             }
+            return targetInfos;
         }
 
         // 显示这些信息

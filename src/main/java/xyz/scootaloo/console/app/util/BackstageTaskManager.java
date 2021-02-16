@@ -5,9 +5,7 @@ import xyz.scootaloo.console.app.common.OutPrinter;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.parser.InvokeInfo;
 
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.ListIterator;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 
@@ -58,9 +56,8 @@ public final class BackstageTaskManager {
     }
 
     // 显示所有任务
-    public static void list() {
-        StringBuilder stringBuilder = new StringBuilder();
-        taskList.forEach(backstageTaskInfo -> backstageTaskInfo.showTask(stringBuilder));
+    public static List<BackstageTaskInfo> list() {
+        return new ArrayList<>(taskList);
     }
 
     // isDone 清除已完成的任务或者清除已完成的任务
@@ -95,7 +92,7 @@ public final class BackstageTaskManager {
     //---------------------------------POJO-------------------------------------
 
     // 存放后台任务的一些信息
-    private static class BackstageTaskInfo {
+    public static class BackstageTaskInfo {
         final String taskName;
         final Future<InvokeInfo> future;
         final PrinterImpl output;
