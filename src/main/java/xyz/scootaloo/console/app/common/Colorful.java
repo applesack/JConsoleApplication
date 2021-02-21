@@ -5,11 +5,8 @@ package xyz.scootaloo.console.app.common;
  * @author flutterdash@qq.com
  * @since 2020/12/27 16:25
  */
-public class Colorful {
-    // 单例
-    protected static final Colorful INSTANCE = new Colorful() {};
-
-    private static final Console console = ResourceManager.getConsole();
+public final class Colorful {
+    protected static final Colorful INSTANCE = new Colorful();
 
     public String green(Object line) {
         return ConsoleColor.GREEN + line;
@@ -41,14 +38,6 @@ public class Colorful {
 
     public String cyanogen(Object line) {
         return ConsoleColor.CYANOGEN + line;
-    }
-
-    public void print(Object z) {
-        console.print(z);
-    }
-
-    public void println(Object z) {
-        console.println(z);
     }
 
 }

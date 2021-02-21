@@ -37,7 +37,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
     private static final Console console = ResourceManager.getConsole();
     private static ConsoleConfig config;
 
-    private static final String version = "v0.1";
+    private static final String version = "v0.3.1";
     public static final String SYS_TAG = "sys";
 
     // 使用方法返回值做为属性资源
@@ -387,8 +387,26 @@ public final class SystemPresetCmd implements AppListenerAdapter {
                 sb.append("[args: ").append(String.join(" ", info.getCmdArgs())).append("] ");
             // 返回值
             if (isAll || rtnVal)
-                sb.append("[rtn: ").append(info.getRtnVal()).append(']');
+                sb.append("[rtn = ").append(getRtnValue(info)).append(']');
             console.println(sb);
+        }
+
+        private static String getRtnValue(InvokeInfo info) {
+            Object rtn = info.get();
+            if (rtn == null)
+                return null;
+            if (!(rtn instanceof String))
+                return rtn.toString();
+            String lines = (String) rtn;
+            StringBuilder stringBuilder = new StringBuilder();
+            for (int i = 0; i<lines.length(); i++) {
+                char c = lines.charAt(i);
+                if (c == '\n')
+                    stringBuilder.append("\\n");
+                else
+                    stringBuilder.append(c);
+            }
+            return stringBuilder.toString();
         }
 
         protected static ListIterator<InvokeInfo> getCursor() {

@@ -79,8 +79,6 @@ public abstract class AbstractConsoleApplication {
 
     public abstract AbstractConsoleApplication addPostProcessor(PostProcessor processor);
 
-    public abstract AbstractConsoleApplication disablePostProcessor();
-
     // ---------------------------------------------------------------------
 
     /**

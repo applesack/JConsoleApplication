@@ -1,7 +1,6 @@
 package xyz.scootaloo.console.app.util;
 
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
-import xyz.scootaloo.console.app.common.Colorful;
 import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.parser.TransformFactory;
@@ -21,7 +20,6 @@ import static xyz.scootaloo.console.app.util.InvokeProxy.fun;
  * @since 2020/12/27 17:08
  */
 public final class ClassUtils {
-    private static final Colorful color = ResourceManager.getColorful();
     private static final Console console = ResourceManager.getConsole();
     private static final String DELIMITER = ",";
     private static final Set<Class<?>> BOXING_SET = new LinkedHashSet<>();
@@ -100,7 +98,7 @@ public final class ClassUtils {
                     throw new IllegalArgumentException("属性不一致");
                 targetField.set(target, fun(field::get).call(source));
             } catch (Exception e) {
-                color.println("拷贝属性时发生异常，已跳过，属性名:" + field.getName() + ". msg:" + e.getMessage());
+                console.println("拷贝属性时发生异常，已跳过，属性名:" + field.getName() + ". msg:" + e.getMessage());
             }
         }
     }

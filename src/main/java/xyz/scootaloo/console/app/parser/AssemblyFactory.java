@@ -64,7 +64,7 @@ public final class AssemblyFactory {
         if (actuator != null)
             return actuator;
         if (!cmdName.equals(""))
-            color.println(color.blue("没有这个命令`" + cmdName + "`"));
+            console.println(color.blue("没有这个命令`" + cmdName + "`"));
         return cmd -> {
             // do nothing ...
             return InvokeInfo.simpleSuccess();
@@ -293,13 +293,36 @@ public final class AssemblyFactory {
         if (!config.isPrintWelcome())
             return;
         Author author = config.getAuthor();
-        color.println(":: " + config.getAppName() + " ::");
-        color.println("author: " + author.getName());
-        color.println("email: " + author.getEmail());
-        color.println("create since: " + author.getCreateDate());
-        color.println("last update: " + author.getUpdateDate());
-        color.println(author.getComment());
-        color.println("");
+        console.println(":: " + config.getAppName() + " ::");
+        greetings().ifPresent(console::println);
+        Optional.ofNullable(author.getName()).ifPresent(name ->
+                console.println("author: " + name));
+        Optional.ofNullable(author.getEmail()).ifPresent(email ->
+                console.println("email: " + author.getEmail()));
+        Optional.ofNullable(author.getCreateDate()).ifPresent(date ->
+                console.println("create since: " + author.getCreateDate()));
+        Optional.ofNullable(author.getUpdateDate()).ifPresent(date ->
+                console.println("last update: " + author.getUpdateDate()));
+        Optional.ofNullable(author.getComment()).ifPresent(console::println);
+        console.println("");
+    }
+
+    private static Optional<String> greetings() {
+        Properties properties = System.getProperties();
+        String username = properties.getProperty("user.name");
+        if (username == null)
+            return Optional.empty();
+        Calendar calendar = Calendar.getInstance();
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        String greetings;
+        if (hour >= 4 && hour < 11)
+            greetings = "Good morning. ";
+        else if (hour >= 11 && hour < 13) {
+            greetings = "Good afternoon. ";
+        } else {
+            greetings = "Good evening. ";
+        }
+        return Optional.of(greetings + username);
     }
 
     /**

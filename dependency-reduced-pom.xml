@@ -10,7 +10,7 @@
   <groupId>xyz.scootaloo</groupId>
   <artifactId>JConsoleApplication</artifactId>
   <name>JConsoleApplication</name>
-  <version>0.2</version>
+  <version>0.3</version>
   <build>
     <finalName>${project.artifactId}</finalName>
     <plugins>
@@ -96,6 +96,28 @@
       <url>https://oss.sonatype.org/content/groups/staging</url>
     </repository>
   </repositories>
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>RELEASE</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>junit-jupiter-api</artifactId>
+          <groupId>org.junit.jupiter</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>junit-jupiter-params</artifactId>
+          <groupId>org.junit.jupiter</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>junit-jupiter-engine</artifactId>
+          <groupId>org.junit.jupiter</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+  </dependencies>
   <distributionManagement>
     <repository>
       <id>sonatype-nexus-staging</id>

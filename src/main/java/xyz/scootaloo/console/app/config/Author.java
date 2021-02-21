@@ -10,11 +10,11 @@ import xyz.scootaloo.console.app.config.ConsoleConfigProvider.DefaultValueConfig
 public final class Author {
 
     private final DefaultValueConfigBuilder dvBuilder;
-    protected String name       = "";
-    protected String email      = "";
-    protected String createDate = "";
-    protected String updateDate = "";
-    protected String comment    = "";
+    protected String name;
+    protected String email;
+    protected String createDate;
+    protected String updateDate;
+    protected String comment;
 
     public Author(DefaultValueConfigBuilder dvBuilder) {
         this.dvBuilder = dvBuilder;
