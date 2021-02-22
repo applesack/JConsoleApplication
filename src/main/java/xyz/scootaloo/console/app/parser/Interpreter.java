@@ -1,6 +1,7 @@
 package xyz.scootaloo.console.app.parser;
 
 import xyz.scootaloo.console.app.config.ConsoleConfig;
+import xyz.scootaloo.console.app.exception.CommandInvokeException;
 import xyz.scootaloo.console.app.parser.AssemblyFactory.MethodActuator;
 import xyz.scootaloo.console.app.util.StringUtils;
 
@@ -44,7 +45,7 @@ public final class Interpreter {
             MethodActuator methodActuator = (MethodActuator) AssemblyFactory.findActuator(name);
             return methodActuator.invokeByArgs(args);
         } else {
-            return InvokeInfo.failed(null, null, new RuntimeException("没有这个命令"));
+            return InvokeInfo.failed(null, null, new CommandInvokeException("没有这个命令"));
         }
     }
 

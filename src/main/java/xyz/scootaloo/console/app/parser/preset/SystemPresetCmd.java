@@ -132,7 +132,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
         // 输出 标签 类名.方法名(方法参数):返回值
         sb.append('[').append(methodActuator.getCmd().tag()).append(']').append(' ')
                 .append(methodActuator.getInstance().getClass().getSimpleName()).append('.')
-                .append(ClassUtils.getMethodInfo(methodActuator.getMethod()));
+                .append(ClassUtils.getMethodDescribe(methodActuator.getMethod()));
         console.println(sb);
     }
 
@@ -576,10 +576,6 @@ public final class SystemPresetCmd implements AppListenerAdapter {
                     "   清除后台全部任务\n" +
                     "   task clear\n" +
                     "   清除后台以完成的任务\n";
-        }
-
-        public String _hello() {
-            return "hello world!!\n";
         }
 
     }

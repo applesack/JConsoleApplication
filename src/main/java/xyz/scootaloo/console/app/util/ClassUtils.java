@@ -177,7 +177,9 @@ public final class ClassUtils {
     }
 
     // 返回方法的信息，方法名(参数):返回值
-    public static String getMethodInfo(Method method) {
+    public static String getMethodDescribe(Method method) {
+        if (method == null)
+            return "null():void";
         StringBuilder sb = new StringBuilder();
         sb.append(method.getName()).append('(');
         Type rtnGeneric = method.getGenericReturnType();

@@ -1,5 +1,7 @@
 package xyz.scootaloo.console.app.parser;
 
+import xyz.scootaloo.console.app.exception.ConsoleAppRuntimeException;
+
 import java.util.List;
 
 /**
@@ -11,17 +13,17 @@ public final class ParameterWrapper implements ResultWrapper {
 
     private final boolean success;
     private final Object[] args;
-    private final Exception ex;
+    private final ConsoleAppRuntimeException ex;
 
     public static ParameterWrapper success(List<Object> argList) {
         return new ParameterWrapper(true, argList, null);
     }
 
-    public static ParameterWrapper fail(Exception e) {
+    public static ParameterWrapper fail(ConsoleAppRuntimeException e) {
         return new ParameterWrapper(false, null, e);
     }
 
-    private ParameterWrapper(boolean success, List<Object> argList, Exception ex) {
+    private ParameterWrapper(boolean success, List<Object> argList, ConsoleAppRuntimeException ex) {
         this.ex = ex;
         this.success = success;
         if (argList != null)
@@ -43,7 +45,7 @@ public final class ParameterWrapper implements ResultWrapper {
     }
 
     @Override
-    public Exception getEx() {
+    public ConsoleAppRuntimeException getEx() {
         return ex;
     }
 

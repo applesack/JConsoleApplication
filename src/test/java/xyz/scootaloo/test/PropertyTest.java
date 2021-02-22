@@ -22,4 +22,10 @@ public class PropertyTest {
         System.out.println(calendar.get(Calendar.HOUR_OF_DAY));
     }
 
+    @Test
+    public void testDate() {
+        Calendar calendar = Calendar.getInstance();
+        System.out.println(calendar.get(Calendar.HOUR_OF_DAY));
+    }
+
 }

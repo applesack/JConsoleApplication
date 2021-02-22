@@ -25,9 +25,9 @@ author:
 # 开发设置
 dev:
   # 最多历史记录数: int
-  maxHistory: 64
+  maxHistory: 100
   # 遇到异常时是否打印调用栈: boolean
-  printStackTraceOnException: true
+  printStackTraceOnException: false
   # 是否启用变量功能: boolean
   enableVariableFunction: true
   # 基础包路径，目前这个配置可以忽略: String

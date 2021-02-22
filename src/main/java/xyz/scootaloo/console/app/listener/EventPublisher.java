@@ -19,7 +19,7 @@ public final class EventPublisher {
     private static final Console console = ResourceManager.getConsole();
     private static final Map<Moment, List<ListenerWrapper>> LISTENERS = new HashMap<>();
     private static final List<AppListener> WORKING_LISTENERS = new ArrayList<>();
-    private static boolean hasEnable;
+    private static volatile boolean hasEnable;
 
     // private constructor
     private EventPublisher() {

@@ -42,14 +42,15 @@ public interface Console {
     }
 
     default void onException(ConsoleConfig config, Exception e, String msg, boolean exit) {
-        if (msg != null) {
-            println(msg);
-        } else {
-            println(e.getMessage());
-        }
-
-        if (config.isPrintStackTraceOnException())
+        if (config.isPrintStackTraceOnException()) {
             e.printStackTrace();
+        } else {
+            if (msg != null) {
+                println(msg);
+            } else {
+                println(e.getMessage());
+            }
+        }
         if (exit)
             exit0();
     }

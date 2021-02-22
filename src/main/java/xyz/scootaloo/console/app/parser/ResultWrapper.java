@@ -1,5 +1,7 @@
 package xyz.scootaloo.console.app.parser;
 
+import xyz.scootaloo.console.app.exception.ConsoleAppRuntimeException;
+
 /**
  * 结果包装
  * @author flutterdash@qq.com
@@ -14,6 +16,6 @@ public interface ResultWrapper {
     Object[] getArgs();
 
     // 解析过程中遇到的异常
-    Exception getEx();
+    ConsoleAppRuntimeException getEx();
 
 }

@@ -1,6 +1,7 @@
 package xyz.scootaloo.console.app.application;
 
 import xyz.scootaloo.console.app.application.processor.PostProcessor;
+import xyz.scootaloo.console.app.exception.ConsoleAppRuntimeException;
 import xyz.scootaloo.console.app.util.StringUtils;
 
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.function.Consumer;
 public abstract class AbstractConsoleApplication {
 
     // 提供一个异常处理器
-    protected Consumer<Exception> exceptionHandle;
+    protected Consumer<ConsoleAppRuntimeException> exceptionHandle;
     protected ExitAction exitAction = () -> System.exit(0);
 
     // 获取字符串输入
@@ -42,8 +43,10 @@ public abstract class AbstractConsoleApplication {
                 printPrompt();
                 if (simpleRunCommand(getInput()))
                     break;
-            } catch (Exception e) {
+            } catch (ConsoleAppRuntimeException e) {
                 exceptionHandle(e);
+            } catch (Exception otherException) {
+                otherException.printStackTrace();
             }
         }
         shutdown();
@@ -59,7 +62,7 @@ public abstract class AbstractConsoleApplication {
     }
 
     // 异常处理器
-    protected void exceptionHandle(Exception e) {
+    protected void exceptionHandle(ConsoleAppRuntimeException e) {
         if (exceptionHandle != null) {
             exceptionHandle.accept(e);
         }
@@ -67,8 +70,9 @@ public abstract class AbstractConsoleApplication {
 
     // setter---------------------------------------------------------------
 
-    public AbstractConsoleApplication setExceptionHandle(Consumer<Exception> exceptionHandle) {
-        this.exceptionHandle = exceptionHandle;
+    public AbstractConsoleApplication setExceptionHandle(Consumer<ConsoleAppRuntimeException> exceptionHandle) {
+        if (exceptionHandle != null)
+            this.exceptionHandle = exceptionHandle;
         return this;
     }
 
@@ -85,9 +89,9 @@ public abstract class AbstractConsoleApplication {
      * 运行命令的方式
      * @param command 字符串命令
      * @return bool 是否是退出命令
-     * @throws Exception 可能抛出的异常
+     * @throws ConsoleAppRuntimeException 可能抛出的异常
      */
-    abstract boolean simpleRunCommand(String command) throws Exception;
+    abstract boolean simpleRunCommand(String command) throws ConsoleAppRuntimeException;
 
     // 仅获取第一个被空格分隔的字符段，以小写形式返回
     protected String getCmdName(List<String> items) {

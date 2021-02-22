@@ -7,6 +7,8 @@ import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.config.Author;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
+import xyz.scootaloo.console.app.exception.CommandInvokeException;
+import xyz.scootaloo.console.app.exception.ParameterResolveException;
 import xyz.scootaloo.console.app.listener.AppListener;
 import xyz.scootaloo.console.app.listener.EventPublisher;
 import xyz.scootaloo.console.app.parser.preset.PresetFactoryManager;
@@ -317,7 +319,7 @@ public final class AssemblyFactory {
         String greetings;
         if (hour >= 4 && hour < 11)
             greetings = "Good morning. ";
-        else if (hour >= 11 && hour < 13) {
+        else if (hour >= 11 && hour <= 18) {
             greetings = "Good afternoon. ";
         } else {
             greetings = "Good evening. ";
@@ -352,7 +354,7 @@ public final class AssemblyFactory {
 
             this.cmdName = method.getName().toLowerCase(Locale.ROOT);
             this.rtnType = method.getReturnType();
-            this.methodMeta = MethodMeta.getInstance(method);
+            this.methodMeta = MethodMeta.getInstance(method, obj);
         }
 
         @Override
@@ -419,7 +421,7 @@ public final class AssemblyFactory {
                     boolean result = info.get();
                     if (!result)
                         return InvokeInfo.failed(rtnType, null,
-                                new RuntimeException(actuator.cmd.onError()));
+                                new CommandInvokeException(actuator.cmd.onError()));
                 }
             }
             return InvokeInfo.simpleSuccess();
@@ -436,7 +438,14 @@ public final class AssemblyFactory {
             // 发布命令解析前事件
             EventPublisher.onResolveInput(cmdName, cmdArgs);
             // 由解析工厂将字符串命令解析成Object数组供method对象调用，结果由wrapper包装
-            ResultWrapper wrapper = parser.parse(methodMeta, cmdArgs);
+            ResultWrapper wrapper;
+            try {
+                wrapper = parser.parse(methodMeta, cmdArgs);
+            } catch (Exception paramResolveEx) {
+                // 这里一般是参数解析异常
+                return info.onException(new ParameterResolveException("不能将命令行参数映射到方法参数", paramResolveEx)
+                        .appendExData(methodMeta, obj, cmdArgs, parser.getClass()), null);
+            }
             // 如果解析成功
             if (wrapper.isSuccess()) {
                 try {
@@ -445,14 +454,16 @@ public final class AssemblyFactory {
                     Object rtnVal = method.invoke(obj, wrapper.getArgs());
                     // 得到结果填充给info对象
                     info.finishInvoke(rtnVal, wrapper.getArgs());
-                } catch (IllegalAccessException | InvocationTargetException e) {
+                } catch (Exception e) {
                     // 执行方法时方法内部发生错误，或者参数不匹配，错误信息填充给info对象
-                    info.onException(e, wrapper.getArgs());
+                    info.onException(new CommandInvokeException("方法调用异常:" + e.getMessage(), e)
+                            .appendExData(methodMeta, obj, cmdArgs, parser.getClass())
+                            , wrapper.getArgs());
                 }
                 // 记录最近一次的执行信息
                 Interpreter.lastInvokeInfo = info;
             }
-            // 解析失败
+            // 解析失败: 这里一般是命令行中缺省了必要参数，或者命令行不完整等
             else {
                 // 将错误信息填充至info
                 info.onException(wrapper.getEx(), null);
@@ -476,7 +487,8 @@ public final class AssemblyFactory {
                 info.finishInvoke(rtnVal, args);
                 return info;
             } catch (Exception e) {
-                info.onException(e, args);
+                info.onException(new CommandInvokeException("方法调用异常", e)
+                        .appendExData(methodMeta, obj, null, null), args);
                 return info;
             }
         }

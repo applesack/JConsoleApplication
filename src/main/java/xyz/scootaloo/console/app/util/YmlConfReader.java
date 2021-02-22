@@ -45,6 +45,9 @@ public final class YmlConfReader {
         Optional<Map<String, Object>> consoleConf = Optional.ofNullable(YmlConfReader.getFrom(map, "console"));
         consoleConf.ifPresent(stringObjectMap ->
                 ClassUtils.loadPropFromMap(configBuilder, stringObjectMap, null, converterMap));
+        Optional<Map<String, Object>> devConf = Optional.ofNullable(YmlConfReader.getFrom(map, "dev"));
+        devConf.ifPresent(stringObjectMap ->
+                ClassUtils.loadPropFromMap(configBuilder, stringObjectMap, null, converterMap));
         Optional<Map<String, Object>> authorConf = Optional.ofNullable(YmlConfReader.getFrom(map, "author"));
         authorConf.ifPresent(stringObjectMap ->
                 ClassUtils.loadPropFromMap(configBuilder, stringObjectMap, "author", converterMap));

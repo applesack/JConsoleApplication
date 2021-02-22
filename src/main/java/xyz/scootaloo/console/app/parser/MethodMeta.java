@@ -18,6 +18,7 @@ import java.util.stream.Stream;
  * @since 2021/2/7 21:42
  */
 public final class MethodMeta {
+    public final Object obj;                 // 此方法所属的类
     public final Method method;              // method 反射方法对象
     public final int size;                   // 方法参数个数
     public final Optional<Opt>[] optionals;  // 方法中的Opt注解数组，数组的下标代表第i个参数的注解
@@ -28,7 +29,8 @@ public final class MethodMeta {
     public final Set<String> jointMarkSet;   // 连接标记集
 
     // constructor
-    private MethodMeta(Method method) {
+    private MethodMeta(Method method, Object obj) {
+        this.obj = obj;
         this.method = method;
         this.size = method.getParameterCount();
         this.optionals = findOption();
@@ -40,8 +42,8 @@ public final class MethodMeta {
     }
 
     // 获取此方法的元数据
-    protected static MethodMeta getInstance(Method method) {
-        return new MethodMeta(method);
+    protected static MethodMeta getInstance(Method method, Object obj) {
+        return new MethodMeta(method, obj);
     }
 
     @SuppressWarnings({ "unchecked", "hiding" })

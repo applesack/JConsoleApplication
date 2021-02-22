@@ -1,6 +1,7 @@
 package xyz.scootaloo.console.app.parser;
 
 import xyz.scootaloo.console.app.anno.Opt;
+import xyz.scootaloo.console.app.exception.ParameterResolveException;
 import xyz.scootaloo.console.app.util.StringUtils;
 
 import java.lang.reflect.Type;
@@ -27,7 +28,7 @@ public final class DftParameterParser {
      * @param cmdline 调用此方法使用的命令参数
      * @return 包装的结果
      */
-    public static ResultWrapper transform(MethodMeta meta, List<String> cmdline) {
+    public static ResultWrapper transform(MethodMeta meta, List<String> cmdline) throws Exception {
         if (meta.size == 0)
             return ParameterWrapper.success(null);
         Class<?>[] argTypes = meta.parameterTypes;       // 参数类型数组
@@ -40,22 +41,22 @@ public final class DftParameterParser {
         List<WildcardArgument> wildcardArguments = new ArrayList<>(); // 未提供参数的位置
         // key=命令参数名 value=命令参数值
         Map<String, Object> optMap = new HashMap<>(); // 参数map       // 命令参数中由'-'做前缀的参数以及值
-        cmdline = loadArgumentFromCmdline(cmdline, optMap, shortParamsSet, jointMarkSet);
+        List<String> remainList = loadArgumentFromCmdline(cmdline, optMap, shortParamsSet, jointMarkSet);
 
         for (int i = 0; i<argTypes.length; i++) {
             Optional<Opt> curAnno = optionals[i];
             Class<?> curArgType = argTypes[i];
-            // 当前这个参数没有注解，尝试将一个无名参数转换到这里
+            // 当前这个参数没有注解，尝试将一个无名参数解析到这里
             if (!curAnno.isPresent()) {
                 Object presetObj = TransformFactory.getPresetVal(curArgType);
                 if (presetObj != null) {
                     args.add(presetObj);
                     continue;
                 }
-                if (cmdline.isEmpty())
-                    return ParameterWrapper.fail(new RuntimeException("命令不完整，在第" + (i + 1) + "个参数，" +
-                            "参数类型: " + curArgType.getSimpleName()));
-                args.add(resolveArgument(cmdline.remove(0), argTypes[i], genericTypes[i]));
+                if (remainList.isEmpty())
+                    return ParameterWrapper.fail(
+                            new ParameterResolveException("命令不完整，在第" + (i + 1) + "个参数，" + "参数类型: "));
+                args.add(resolveArgument(remainList.remove(0), argTypes[i], genericTypes[i]));
                 continue;
             }
 
@@ -69,7 +70,8 @@ public final class DftParameterParser {
             // 没有此参数
             if (getAndRemove(args, paramsSet, curArgType, genericTypes[i], optMap)) {
                 if (option.required())
-                    return ParameterWrapper.fail(new RuntimeException("缺少必要的参数: -" + option.value()));
+                    return ParameterWrapper.fail(
+                            new ParameterResolveException("缺少必要的参数: -" + option.value()));
                 // 给这个位置的参数做一个标记，假如处理完还有多余的参数就填补到这个位置来
                 wildcardArguments.add(new WildcardArgument(i, curArgType, genericTypes[i], option.joint()));
                 // 在getAndRemove()方法中已经处理了类型默认值的情况，这里处理用户给定的自定义默认值
@@ -85,15 +87,15 @@ public final class DftParameterParser {
             for (WildcardArgument wildcardArgument : wildcardArguments) {
                 // 从剩余的命令参数列表中，依次填充到这些未选中的方法参数上
                 String res;
-                if (!cmdline.isEmpty()) {
+                if (!remainList.isEmpty()) {
                     if (wildcardArgument.joint) {
                         List<String> jointList = new ArrayList<>();
-                        while (!cmdline.isEmpty()) {
-                            jointList.add(cmdline.remove(0));
+                        while (!remainList.isEmpty()) {
+                            jointList.add(remainList.remove(0));
                         }
                         res = String.join(" ", jointList);
                     } else {
-                        res = cmdline.remove(0);
+                        res = remainList.remove(0);
                     }
                     args.set(wildcardArgument.idx,
                             resolveArgument(res, wildcardArgument.type, wildcardArgument.generic));
@@ -156,21 +158,18 @@ public final class DftParameterParser {
     }
 
     // 将一个对象根据类型解析成另外一个对象
-    private static Object resolveArgument(Object value, Class<?> classType, Type genericType) {
-        try {
-            if ((classType == boolean.class || classType == Boolean.class) && value.equals(PLACEHOLDER))
-                return true;
-            else
-                return TransformFactory.resolveArgument(value, classType, genericType);
-        } catch (Exception e) {
-            throw new RuntimeException("类型解析时异常: " + e.getMessage());
-        }
+    private static Object resolveArgument(Object value, Class<?> classType, Type genericType) throws Exception {
+        if ((classType == boolean.class || classType == Boolean.class) && value.equals(PLACEHOLDER))
+            return true;
+        else
+            return TransformFactory.resolveArgument(value, classType, genericType);
     }
 
     // map 中包含了所需的参数，则从map中移除此key
     // return -> true: 没找到这个参数； false: 已找到，并进行了设置
     private static boolean getAndRemove(List<Object> arg, Set<String> keySet,
-                                        Class<?> classType, Type genericType, Map<?, Object> map) {
+                                        Class<?> classType, Type genericType,
+                                        Map<?, Object> map) throws Exception {
         boolean found = false;
         for (String key : keySet) {
             if (map.containsKey(String.valueOf(key))) {

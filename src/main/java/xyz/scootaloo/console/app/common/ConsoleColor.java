@@ -5,7 +5,7 @@ package xyz.scootaloo.console.app.common;
  * @author flutterdash@qq.com
  * @since 2020/12/27 16:19
  */
-public interface ConsoleColor {
+interface ConsoleColor {
 
     // 白
     String WHITE    = "\u001B[30m";

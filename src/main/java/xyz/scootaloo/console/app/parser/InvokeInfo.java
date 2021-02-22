@@ -1,5 +1,7 @@
 package xyz.scootaloo.console.app.parser;
 
+import xyz.scootaloo.console.app.exception.ConsoleAppRuntimeException;
+
 import java.util.List;
 
 /**
@@ -10,21 +12,22 @@ import java.util.List;
 public final class InvokeInfo {
 
     private String name;           // 被执行的方法名，或者命令名
-    private boolean success;       // 是否执行成功
     private Object rtnVal;         // 方法返回值
     private Class<?> rtnType;      // 返回值类型
     private List<String> cmdArgs;  // 执行此方法所使用的字符串命令
     private Object[] methodArgs;   // 经过解析后得到的方法参数数组
-    private Exception exception;   // 执行方法时遇到的异常
-    private String exMsg;          // 异常信息
     private long interval;         // 方法执行所用的时间
     private long invokeAt;         // 从何时开始执行此方法
+
+    private boolean success;       // 是否执行成功
+    private String exMsg;          // 异常信息
+    private ConsoleAppRuntimeException exception;   // 执行方法时遇到的异常
 
     private InvokeInfo() {
     }
 
     // 因为某种原因，方法没有被执行
-    public static InvokeInfo failed(Class<?> rtnType, List<String> cmdArgs, Exception ex) {
+    public static InvokeInfo failed(Class<?> rtnType, List<String> cmdArgs, ConsoleAppRuntimeException ex) {
         InvokeInfo info = new InvokeInfo();
         info.success = false;
         info.exception = ex;
@@ -54,13 +57,14 @@ public final class InvokeInfo {
     }
 
     // 异常时
-    protected void onException(Exception e, Object[] methodArgs) {
+    protected InvokeInfo onException(ConsoleAppRuntimeException e, Object[] methodArgs) {
         this.success = false;
         this.methodArgs = methodArgs;
         this.rtnVal = null;
         this.exception = e;
         this.exMsg = e.getMessage();
         this.interval = System.currentTimeMillis() - this.invokeAt;
+        return this;
     }
 
     // 对应 beforeInvoke ，方法执行完成后
@@ -111,7 +115,7 @@ public final class InvokeInfo {
         return this.methodArgs;
     }
 
-    public Exception getException() {
+    public ConsoleAppRuntimeException getException() {
         return this.exception;
     }
 

@@ -2,6 +2,7 @@ package xyz.scootaloo.console.app.listener;
 
 /**
  * 对监听器进行更细粒度的配置
+ * @see Moment 事件描述
  * @author flutterdash@qq.com
  * @since 2021/2/10 21:57
  */

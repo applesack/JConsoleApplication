@@ -125,7 +125,7 @@ public final class ConsoleApplication extends AbstractConsoleApplication {
             }
         }
         if (!info.isSuccess()) {
-            console.onException(config, info.getException());
+            throw info.getException();
         }
         return false;
     }
