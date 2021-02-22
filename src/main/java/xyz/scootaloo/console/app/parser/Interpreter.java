@@ -1,7 +1,7 @@
 package xyz.scootaloo.console.app.parser;
 
 import xyz.scootaloo.console.app.config.ConsoleConfig;
-import xyz.scootaloo.console.app.exception.CommandInvokeException;
+import xyz.scootaloo.console.app.error.CommandInvokeException;
 import xyz.scootaloo.console.app.parser.AssemblyFactory.MethodActuator;
 import xyz.scootaloo.console.app.util.StringUtils;
 

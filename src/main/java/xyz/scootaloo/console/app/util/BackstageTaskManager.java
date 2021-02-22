@@ -164,7 +164,7 @@ public final class BackstageTaskManager {
     }
 
     // 打印器默认实现
-    private static class PrinterImpl implements OutPrinter {
+    private static class PrinterImpl extends OutPrinter {
         // 默认实现为直接输出在控制台上
         static final PrinterImpl DFT_PRINTER = new PrinterImpl(new StringBuffer(), true);
         static Consumer<String> outputMode = console::println;
@@ -242,6 +242,11 @@ public final class BackstageTaskManager {
             } else {
                 lines.add(o.toString());
             }
+        }
+
+        @Override
+        public void write(int b) {
+            this.print(b);
         }
 
     }

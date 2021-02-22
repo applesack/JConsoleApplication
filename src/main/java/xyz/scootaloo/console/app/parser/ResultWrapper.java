@@ -1,6 +1,6 @@
 package xyz.scootaloo.console.app.parser;
 
-import xyz.scootaloo.console.app.exception.ConsoleAppRuntimeException;
+import xyz.scootaloo.console.app.error.ConsoleAppRuntimeException;
 
 /**
  * 结果包装

@@ -1,4 +1,4 @@
-package xyz.scootaloo.console.app.exception;
+package xyz.scootaloo.console.app.error;
 
 import xyz.scootaloo.console.app.parser.MethodMeta;
 import xyz.scootaloo.console.app.parser.ParameterParser;

@@ -1,7 +1,7 @@
 package xyz.scootaloo.console.app.application;
 
 import xyz.scootaloo.console.app.application.processor.PostProcessor;
-import xyz.scootaloo.console.app.exception.ConsoleAppRuntimeException;
+import xyz.scootaloo.console.app.error.ConsoleAppRuntimeException;
 import xyz.scootaloo.console.app.util.StringUtils;
 
 import java.util.List;

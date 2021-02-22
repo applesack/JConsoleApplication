@@ -1,4 +1,4 @@
-package xyz.scootaloo.console.app.exception;
+package xyz.scootaloo.console.app.error;
 
 /**
  * 命令执行时异常

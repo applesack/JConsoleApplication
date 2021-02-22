@@ -1,7 +1,7 @@
 package xyz.scootaloo.console.app.parser.preset;
 
 import xyz.scootaloo.console.app.anno.Opt;
-import xyz.scootaloo.console.app.exception.ParameterResolveException;
+import xyz.scootaloo.console.app.error.ParameterResolveException;
 import xyz.scootaloo.console.app.parser.*;
 import xyz.scootaloo.console.app.util.InvokeProxy;
 
