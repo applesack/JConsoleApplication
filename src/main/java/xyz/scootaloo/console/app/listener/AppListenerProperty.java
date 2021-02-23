@@ -2,7 +2,7 @@ package xyz.scootaloo.console.app.listener;
 
 /**
  * 对监听器进行更细粒度的配置
- * @see Moment 事件描述
+ * @see Occasion 事件描述
  * @author flutterdash@qq.com
  * @since 2021/2/10 21:57
  */
@@ -69,17 +69,17 @@ public final class AppListenerProperty {
      * @since 2021/2/10 23:13
      */
     public static class EventProperty {
-        protected final Property    onAppStarted = new Property(Moment.OnAppStarted);
-        protected final Property         onInput = new Property(Moment.OnInput);
-        protected final Property  onResolveInput = new Property(Moment.OnResolveInput);
-        protected final Property onInputResolved = new Property(Moment.OnInputResolved);
-        protected final Property       onMessage = new Property(Moment.OnMessage);
+        protected final Property    onAppStarted = new Property(Occasion.OnAppStarted);
+        protected final Property         onInput = new Property(Occasion.OnInput);
+        protected final Property  onResolveInput = new Property(Occasion.OnResolveInput);
+        protected final Property onInputResolved = new Property(Occasion.OnInputResolved);
+        protected final Property       onMessage = new Property(Occasion.OnMessage);
 
         public EventProperty() {
         }
 
-        public Property get(Moment moment) {
-            switch (moment) {
+        public Property get(Occasion occasion) {
+            switch (occasion) {
                 case OnMessage: return onMessage;
                 case OnInputResolved: return onInputResolved;
                 case OnAppStarted: return onAppStarted;
@@ -91,21 +91,21 @@ public final class AppListenerProperty {
     }
 
     public static class Property {
-        private static final Property DFT = new Property(Moment.OnResolveInput);
+        private static final Property DFT = new Property(Occasion.OnResolveInput);
         private boolean interestedIn = false; // 是否对此事件感兴趣
         private int priority = DFT_PRIORITY;  // 监听此事件时执行的优先级
-        private final Moment moment;          // 此事件对应的枚举类型
+        private final Occasion occasion;          // 此事件对应的枚举类型
 
-        public Property(Moment moment) {
-            this.moment = moment;
+        public Property(Occasion occasion) {
+            this.occasion = occasion;
         }
 
         public int priority() {
             return this.priority;
         }
 
-        public Moment getMoment() {
-            return this.moment;
+        public Occasion getMoment() {
+            return this.occasion;
         }
 
         public boolean isInterestedIn() {

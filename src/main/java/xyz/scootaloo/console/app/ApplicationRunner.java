@@ -13,11 +13,12 @@ import xyz.scootaloo.console.app.util.ClassUtils;
 import static xyz.scootaloo.console.app.config.ConsoleConfigProvider.*;
 
 /**
- * 应用运行器
+ * 应用运行器<br>
+ * <pre>
  * 目前支持两种开始方式
  * 1. 启动一个控制台应用
  *      1.1 如果无参运行，默认将调用者实例化
- * 2. 获得一个解释器对象
+ * 2. 获得一个解释器对象 </pre>
  * @author flutterdash@qq.com
  * @since 2020/12/27 15:04
  */

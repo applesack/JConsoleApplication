@@ -164,6 +164,13 @@ public final class StringUtils {
         return new String(rslChars);
     }
 
+    /**
+     * 获取包名
+     * <p>输入: "xyz.scootaloo.Main"</p>
+     * <p>输出: "xyz.scootaloo"</p>
+     * @param className 完整的类名
+     * @return 包名
+     */
     public static String getPack(String className) {
         StringBuilder tmp = new StringBuilder();
         StringBuilder res = new StringBuilder();

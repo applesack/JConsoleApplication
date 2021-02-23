@@ -48,7 +48,7 @@ public final class VariableManager {
     }
 
     /**
-     * 获取变量
+     * 根据变量名获取变量获取变量
      * @param key 变量值
      * @return Optional对象
      */
@@ -57,9 +57,10 @@ public final class VariableManager {
     }
 
     /**
-     * 获取命令行解析过程中，最后一个遇到的占位符所代表的值。
-     * @param tKeyId keyId
-     * @return 返回这个变量值，假如这条命令行中没有占位符，则返回空。
+     * 根据id获取历史替换记录
+     * @see xyz.scootaloo.console.app.parser.TransformFactory#simpleTrans(Object, Class) 使用点
+     * @param tKeyId 这条替换记录的id
+     * @return 返回这个变量值，假如没有这个id的信息，则返回空。
      */
     public static Optional<Object> get(int tKeyId) {
         Optional<KVPairs> rsl = KVPairs.hisKVs.stream()
@@ -93,7 +94,7 @@ public final class VariableManager {
     /**
      * 将字符串中的占位符替换成Properties中的value
      * @see xyz.scootaloo.console.app.parser.preset.SystemPresetCmd#onResolveInput 使用点
-     * 这里当命令行参数按照空格分段以后，每个部分假如有占位符，都会被替换成变量的“@#@”，同时每次替换都会在 {@link KVPairs} 做记录。
+     * 这里当命令行参数按照空格分段以后，每个部分假如有占位符，都会被替换成变量的“@#@”加上id，同时每次替换都会在 {@link KVPairs} 做记录。
      * @param text 文本
      * @return 替换占位符后的文本
      */

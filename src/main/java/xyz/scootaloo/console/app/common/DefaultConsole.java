@@ -6,7 +6,7 @@ package xyz.scootaloo.console.app.common;
  * @since 2020/12/28 15:17
  */
 public class DefaultConsole extends Console {
-    // singleton
+    /** singleton */
     protected static final DefaultConsole INSTANCE = new DefaultConsole() {};
 
     @Override

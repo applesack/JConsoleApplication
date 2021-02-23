@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 /**
- * 管理预设的工厂
+ * 管理预设的工厂<br>
  * 管理此包下的预设的接口实现
  * @author flutterdash@qq.com
  * @since 2021/1/25 17:39

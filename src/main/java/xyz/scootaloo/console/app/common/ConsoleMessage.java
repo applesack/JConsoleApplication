@@ -10,7 +10,7 @@ import xyz.scootaloo.console.app.listener.EventPublisher;
  * @since 2021/2/5 15:31
  */
 public final class ConsoleMessage {
-    // 定义了控制台消息的4个级别
+    /** 定义了控制台消息的4个级别 */
     enum Type {
         NORMAL,  // 一般
         MESSAGE, // 消息

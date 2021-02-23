@@ -15,9 +15,9 @@ import java.util.*;
  * @since 2020/12/30 9:44
  */
 public final class EventPublisher {
-    // resources
+    /** resources */
     private static final Console console = ResourceManager.getConsole();
-    private static final Map<Moment, List<ListenerWrapper>> LISTENERS = new HashMap<>();
+    private static final Map<Occasion, List<ListenerWrapper>> LISTENERS = new HashMap<>();
     private static final List<AppListener> WORKING_LISTENERS = new ArrayList<>();
     private static volatile boolean hasEnable;
 
@@ -35,15 +35,15 @@ public final class EventPublisher {
         ListenerWrapper wrapper = new ListenerWrapper(listener);
         EventProperty eventProperty = wrapper.appListenerProperty.get();
         if (eventProperty.onAppStarted.isInterestedIn())
-            putToCollection(Moment.OnAppStarted, wrapper);
+            putToCollection(Occasion.OnAppStarted, wrapper);
         if (eventProperty.onInput.isInterestedIn())
-            putToCollection(Moment.OnInput, wrapper);
+            putToCollection(Occasion.OnInput, wrapper);
         if (eventProperty.onResolveInput.isInterestedIn())
-            putToCollection(Moment.OnResolveInput, wrapper);
+            putToCollection(Occasion.OnResolveInput, wrapper);
         if (eventProperty.onInputResolved.isInterestedIn())
-            putToCollection(Moment.OnInputResolved, wrapper);
+            putToCollection(Occasion.OnInputResolved, wrapper);
         if (eventProperty.onMessage.isInterestedIn())
-            putToCollection(Moment.OnMessage, wrapper);
+            putToCollection(Occasion.OnMessage, wrapper);
 
         if (hasEnable) {
             WORKING_LISTENERS.add(listener);
@@ -60,7 +60,7 @@ public final class EventPublisher {
         );
     }
 
-    private static void putToCollection(Moment key, ListenerWrapper value) {
+    private static void putToCollection(Occasion key, ListenerWrapper value) {
         hasEnable = true;
         Optional<List<ListenerWrapper>> optional = Optional.ofNullable(LISTENERS.get(key));
         if (!optional.isPresent()) {
@@ -73,10 +73,10 @@ public final class EventPublisher {
     }
 
     private static void sortListeners() {
-        LISTENERS.forEach((moment, listenerWrappers) -> {
+        LISTENERS.forEach((occasion, listenerWrappers) -> {
             if (!listenerWrappers.isEmpty()) {
                 listenerWrappers.sort(Comparator.comparingInt(wrap ->
-                        wrap.getProperty().get(moment).priority()));
+                        wrap.getProperty().get(occasion).priority()));
             }
         });
     }
@@ -85,7 +85,7 @@ public final class EventPublisher {
 
     // 系统起步时
     public static void onAppStarted(ConsoleConfig config) {
-        Optional.ofNullable(LISTENERS.get(Moment.OnAppStarted))
+        Optional.ofNullable(LISTENERS.get(Occasion.OnAppStarted))
                 .ifPresent(listenerWrappers ->
                         listenerWrappers.forEach(wrapper ->
                                 wrapper.onAppStarted(config)));
@@ -94,7 +94,7 @@ public final class EventPublisher {
     // 获取控制台输入时
     public static String onInput(String cmdline) {
         final String[] modifiedCmdline = {cmdline};
-        Optional.ofNullable(LISTENERS.get(Moment.OnInput))
+        Optional.ofNullable(LISTENERS.get(Occasion.OnInput))
                 .ifPresent(listenerWrappers -> {
                     for (AppListener listener : listenerWrappers)
                         modifiedCmdline[0] = listener.onInput(modifiedCmdline[0]);
@@ -104,7 +104,7 @@ public final class EventPublisher {
 
     // 解析输入前
     public static void onResolveInput(String cmdName, List<String> cmdItems) {
-        Optional.ofNullable(LISTENERS.get(Moment.OnResolveInput))
+        Optional.ofNullable(LISTENERS.get(Occasion.OnResolveInput))
                 .ifPresent(listenerWrappers ->
                         listenerWrappers.forEach(wrapper ->
                                 wrapper.onResolveInput(cmdName, cmdItems)));
@@ -112,7 +112,7 @@ public final class EventPublisher {
 
     // 解析输入后
     public static void onInputResolved(String cmdName, InvokeInfo info) {
-        Optional.ofNullable(LISTENERS.get(Moment.OnInputResolved))
+        Optional.ofNullable(LISTENERS.get(Occasion.OnInputResolved))
                 .ifPresent(listenerWrappers ->
                         listenerWrappers.forEach(wrapper ->
                                 wrapper.onInputResolved(cmdName, info)));
@@ -120,7 +120,7 @@ public final class EventPublisher {
 
     // 产生消息时
     public static void onMessage(ConsoleMessage message) {
-        Optional.ofNullable(LISTENERS.get(Moment.OnMessage))
+        Optional.ofNullable(LISTENERS.get(Occasion.OnMessage))
                 .ifPresent(listenerWrappers ->
                         listenerWrappers.forEach(wrapper ->
                                 wrapper.onMessage(message)));

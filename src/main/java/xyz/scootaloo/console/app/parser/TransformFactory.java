@@ -18,6 +18,7 @@ import java.util.function.Supplier;
  * @since 2020/12/29 21:47
  */
 public final class TransformFactory {
+    /** resource */
     private static final Map<Class<?>, Object> DEFAULT_VALUE_MAP = new HashMap<>(16);
     private static final Map<Class<?>, Function<String , Object>> STR_RESOLVE_MAP = new HashMap<>(16);
     private static final Map<Class<?>, Supplier<Object>> PRESET_VALUES_MAP = new HashMap<>();
@@ -68,7 +69,13 @@ public final class TransformFactory {
         }
     }
 
-    // 简易的转换，转换基本类型
+    /**
+     * 简易的转换，转换基本类型
+     * 根据占位符信息获取变量值，
+     * @param value 一般是字符串
+     * @param type 目标类型
+     * @return 转换结果
+     */
     public static Object simpleTrans(Object value, Class<?> type) {
         // 尝试进行占位符替换
         Optional<Object> pObj = resolvePlaceholder(value, type);
@@ -120,9 +127,10 @@ public final class TransformFactory {
 
     /**
      * 占位符替换
-     * @param value -
-     * @param type -
-     * @return -
+     * <p>满足要求：确实存在变量，且变量的类型和方法参数类型一致</p>
+     * @param value 占位符信息
+     * @param type 目标类型
+     * @return 处理结果，假如处理失败，则返回空
      */
     private static Optional<Object> resolvePlaceholder(Object value, Class<?> type) {
         if (!(value instanceof String))

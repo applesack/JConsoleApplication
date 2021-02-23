@@ -22,7 +22,7 @@ import java.util.Scanner;
  * @since 2020/12/27 23:44
  */
 public final class ConsoleApplication extends AbstractConsoleApplication {
-    // resources
+    /** resources */
     private final Scanner scanner = ResourceManager.getScanner();
     private final Console console = ResourceManager.getConsole();
     private final Colorful color = ResourceManager.getColorful();

@@ -8,7 +8,7 @@ package xyz.scootaloo.console.app.common;
  * @since 2020/12/27 16:25
  */
 public final class Colorful {
-    // 单例
+    /** singleton */
     protected static final Colorful INSTANCE = new Colorful();
 
     public String green(Object line) {

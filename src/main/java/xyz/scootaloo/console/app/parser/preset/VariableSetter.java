@@ -15,7 +15,7 @@ import java.util.List;
  * @since 2021/2/7 9:40
  */
 public final class VariableSetter implements OptionHandle {
-    // 单例
+    /** singleton */
     protected static final VariableSetter INSTANCE = new VariableSetter();
     private static final Console console = ResourceManager.getConsole();
 

@@ -32,7 +32,7 @@ import static xyz.scootaloo.console.app.util.VariableManager.*;
  * @since 2020/12/29 19:43
  */
 public final class SystemPresetCmd implements AppListenerAdapter {
-    // 单例
+    /** singleton */
     protected static final SystemPresetCmd INSTANCE = new SystemPresetCmd();
     private static final Console console = ResourceManager.getConsole();
     private static ConsoleConfig config;
@@ -433,8 +433,8 @@ public final class SystemPresetCmd implements AppListenerAdapter {
     //--------------------------------------------------------------------------------
 
     // 对于系统预置命令的描述
-    public static final class  Help implements HelpDoc {
-        // 单例
+    public static final class Help implements HelpDoc {
+        /** singleton */
         protected static final Help INSTANCE = new Help();
 
         public String _app() {

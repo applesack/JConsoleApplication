@@ -6,11 +6,12 @@ import java.util.List;
 
 /**
  * 参数包装器
+ * <p>提供一些静态方法，</p>
  * @author flutterdash@qq.com
  * @since 2021/1/25 20:01
  */
 public final class ParameterWrapper implements ResultWrapper {
-
+    /** meta */
     private final boolean success;
     private final Object[] args;
     private final ConsoleAppRuntimeException ex;

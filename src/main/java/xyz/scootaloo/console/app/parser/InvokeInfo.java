@@ -5,7 +5,7 @@ import xyz.scootaloo.console.app.error.ConsoleAppRuntimeException;
 import java.util.List;
 
 /**
- * 包含 命令/方法 执行结果的信息
+ * 包含 java方法 执行结果的信息
  * @author flutterdash@qq.com
  * @since 2021/1/7 9:32
  */

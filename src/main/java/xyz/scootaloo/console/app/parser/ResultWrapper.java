@@ -4,18 +4,25 @@ import xyz.scootaloo.console.app.error.ConsoleAppRuntimeException;
 
 /**
  * 结果包装
+ * @see ParameterWrapper 一般情况下使用这个
  * @author flutterdash@qq.com
  * @since 2021/1/16 22:59
  */
 public interface ResultWrapper {
 
-    // 解析是否成功
+    /**
+     * @return 是否解析成功，假如解析不成功，{@code getEx} 方法将返回解析时遇到的异常
+     */
     boolean isSuccess();
 
-    // 解析成功，得到的参数
+    /**
+     * @return 如果解析成功，这个方法将返回供java方法调用的参数
+     */
     Object[] getArgs();
 
-    // 解析过程中遇到的异常
+    /**
+     * @return 解析过程中遇到的异常
+     */
     ConsoleAppRuntimeException getEx();
 
 }

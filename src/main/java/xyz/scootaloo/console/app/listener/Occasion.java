@@ -5,7 +5,7 @@ package xyz.scootaloo.console.app.listener;
  * @author flutterdash@qq.com
  * @since 2020/12/30 9:32
  */
-public enum Moment {
+public enum Occasion {
 
     // 系统启动之初，完成命令装配，但是还未执行 Init 方法时被调用
     OnAppStarted,

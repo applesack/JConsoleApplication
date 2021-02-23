@@ -10,7 +10,7 @@ import java.util.List;
 public interface OptionHandle {
 
     /**
-     * 使用一个字符来标识一个操作
+     * 使用一个字符来标识一个操作<br>
      * 注意，这个操作是区分大小写的
      * @return 此参数的内容
      */
@@ -25,6 +25,11 @@ public interface OptionHandle {
      */
     void runWithParameter(String cmd, String optionParameter, List<String> argItems, Interpreter interpreter);
 
+    /**
+     * @param cmdName 命令名
+     * @param items 命令行参数
+     * @return 返回原本输入的命令行
+     */
     default String getCompleteCommand(String cmdName, List<String> items) {
         if (!items.isEmpty())
             items.remove(0);

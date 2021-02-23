@@ -2,7 +2,6 @@ package xyz.scootaloo.console.app;
 
 import xyz.scootaloo.console.app.anno.Boot;
 import xyz.scootaloo.console.app.anno.Cmd;
-import xyz.scootaloo.console.app.anno.Opt;
 
 /**
  * 示例
@@ -28,22 +27,6 @@ public class Main {
     @Cmd
     public void hello() {
         System.out.println("hello world");
-    }
-
-    @Cmd(parser = "sub")
-    public void setStu(@Opt(value = 's', fullName = "stu1") Student stu1,
-                       @Opt(value = 's', fullName = "") Student stu2) {
-        System.out.println(stu1);
-        System.out.println(stu2);
-    }
-
-    @Cmd
-    public Student getStu() {
-        return new Student();
-    }
-
-    public static class Student {
-
     }
 
 }

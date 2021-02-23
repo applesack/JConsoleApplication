@@ -9,29 +9,30 @@ import java.util.*;
 
 /**
  * 当你想要的很简单的命令参数输入，请将@Cmd注解的parser标记为sub
- * 注意: 不处理集合，不处理泛型，也不处理@Opt注解的value
+ * <p><pre>注意: 不处理集合，不处理泛型，也不处理@Opt注解的value
  * 解析格式为:
  *      参数名 参数值 ...
  * 其中参数值不需要以’-‘做为前缀
- * 举个例子，这是系统预设的一个命令，这里拿这个命令做为演示
- *-@Cmd(tag = SYS_TAG, parser = "sub")
+ * 举个例子，这是系统预设的一个命令，这里拿这个命令做为演示: </pre></p>
+ * <pre>{@code @Cmd(tag = SYS_TAG, parser = "sub")
  * public void task(@Opt(value = 's', fullName = "name", dftVal = "*") String taskName,
- *-                 @Opt(value = 'n', fullName = "size", dftVal = "-1") int size,
- *-                 @Opt(value = 'c', fullName = "clear", dftVal = "*") String clear) {
- * }
+ *                  @Opt(value = 'n', fullName = "size", dftVal = "-1") int size,
+ *                  @Opt(value = 'c', fullName = "clear", dftVal = "*") String clear) {
+ * }}</pre>
  *
  * 你可以这样输入命令行
+ * <pre>
  * task clear
  * task name nameOfTask size 9
  * task nameOfTask 9
- *
+ * </pre>
  * @see DftParameterParser 参照默认实现
  *
  * @author flutterdash@qq.com
  * @since 2021/2/6 14:47
  */
 public final class SubParameterParser implements NameableParameterParser {
-    // 单例
+    /** singleton */
     protected static final SubParameterParser INSTANCE = new SubParameterParser();
 
     @Override

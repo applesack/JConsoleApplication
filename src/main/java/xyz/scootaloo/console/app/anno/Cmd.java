@@ -8,8 +8,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 命令方法标记
- * 标记此注解的实例方法可以用命令行进行调用
+ * 命令方法标记<br>
+ * 标记此注解的实例方法可以用命令行进行调用<br>
  * 注意: 必须标记在工厂的实例方法上，非工厂则不会被系统读取，也无法进行装配
  * @see Console#factories() 框架常用的注册工厂入口
  * @see xyz.scootaloo.console.app.Main 使用方式，以启动一个控制台应用示例

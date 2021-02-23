@@ -15,7 +15,7 @@ import java.util.function.Consumer;
  * @since 2021/2/5 21:09
  */
 public final class BackstageTaskManager {
-    // 线程池 Size : 3
+    /** 线程池 Size : 3 */
     private static final ExecutorService threadPool = Executors.newFixedThreadPool(3);
     private static final LinkedHashSet<BackstageTaskInfo> taskList = new LinkedHashSet<>();
     private static final Console console = ResourceManager.getConsole();

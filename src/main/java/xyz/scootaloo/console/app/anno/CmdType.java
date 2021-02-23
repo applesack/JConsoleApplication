@@ -2,7 +2,6 @@ package xyz.scootaloo.console.app.anno;
 
 /**
  * 命令类型，不同的类型决定了不同的装配方式和调用时机
- * -------------------------
  * @author flutterdash@qq.com
  * @since 2020/12/28 13:59
  */

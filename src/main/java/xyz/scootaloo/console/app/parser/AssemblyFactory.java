@@ -24,13 +24,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * 系统中所有工厂的处理入口 {@link  #init(ConsoleConfig)}
- * 管理部分接口的实现
+ * 框架核心装配工厂
+ * <p>框架中所有工厂的处理入口 {@link  #init(ConsoleConfig)}</p>
+ * <p>负责对所有工厂进行装配，并管理一些工厂资源</p>
  * @author flutterdash@qq.com
  * @since 2020/12/28 10:05
  */
 public final class AssemblyFactory {
-    // resources
+    /** resources */
     private static final Colorful color = ResourceManager.getColorful();
     private static final Console console = ResourceManager.getConsole();
     protected static final Map<String, Actuator> strategyMap = new HashMap<>();
@@ -55,10 +56,9 @@ public final class AssemblyFactory {
     }
 
     /**
-     * 获取于此命令名对应的执行器对象
-     * 当命令是空的，返回的是执行成功但没有任何内容的结果
+     * 根据一个命令名，返回对应的执行器
      * @param cmdName 命令名，或者方法名
-     * @return 执行器对象
+     * @return 执行器对象，当没有找到执行器时，返回一个空的执行器实现，这个执行器调用不会触发事件
      */
     public static Actuator findActuator(String cmdName) {
         cmdName = cmdName.toLowerCase(Locale.ROOT);
@@ -73,14 +73,17 @@ public final class AssemblyFactory {
         };
     }
 
-    // 返回系统中所有可调用的命令
+    /**
+     * 返回系统中所有可调用的命令
+     * @return 执行器列表
+     */
     public static List<MethodActuator> getAllCommands() {
         return ALL_COMMANDS;
     }
 
     /**
      * 返回可调用的系统命令集
-     * @return -
+     * @return 命令名称集合
      */
     public static Set<String> getSysCommands() {
         return getAllCommands().stream()
@@ -329,7 +332,7 @@ public final class AssemblyFactory {
     }
 
     /**
-     * 对 Actuator 进行包装
+     * 对 Actuator 进行包装 <br>
      * 对于同包下的类提供一些便捷方法
      * @author flutterdash@qq.com
      * @since 2020/12/29 11:00

@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * 抽象的控制台应用
- * 执行 run() 方法后不断等待键盘输入，并解析处理
+ * 抽象的控制台应用<br>
+ * 执行 run() 方法后不断等待键入，并解析处理
  * @author flutterdash@qq.com
  * @since 2020/12/27 21:54
  */

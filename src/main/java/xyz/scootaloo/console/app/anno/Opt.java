@@ -6,8 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 标记一个方法参数，配合参数解析器来实现特定的功能。
- * 这些属性代表什么含义，取决于参数解析器的实现
+ * 标记一个方法参数，配合参数解析器来实现特定的功能。<br>
+ * 这些属性代表什么含义，取决于参数解析器的实现<br>
  * @see xyz.scootaloo.console.app.parser.NameableParameterParser 解析器接口
  * @see xyz.scootaloo.console.app.parser.DftParameterParser 默认实现
  *
