@@ -3,7 +3,7 @@ package xyz.scootaloo.console.app.common;
 import xyz.scootaloo.console.app.listener.EventPublisher;
 
 /**
- * 控制台消息
+ * 定义控制台消息
  * 本框架不处理控制台消息，
  * 但是可以使用事件监听器来监听被提交的消息
  * @author flutterdash@qq.com

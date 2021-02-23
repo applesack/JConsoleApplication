@@ -5,7 +5,7 @@ console:
   # 提示符: String
   prompt: console>
   # 是否打印欢迎信息: boolean
-  printWelcome: true
+  printWelcome: false
   # 输入这些命令可以退出应用，假如有多个命令，各个命令之间使用英文逗号分隔: String
   exitCmd: exit,quit
 
@@ -36,7 +36,7 @@ dev:
 # 系统启动时执行的命令，由于是列表，所以每一项之前有一个'-'减号符号
 init:
   - find --tag usr
-  - help help
+#  - help help
 
 # 各种工厂，这部分的配置暂时忽略
 factories:

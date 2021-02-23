@@ -236,25 +236,8 @@ public final class SystemPresetCmd implements AppListenerAdapter {
     }
 
     @Cmd(tag = SYS_TAG)
-    private Object echo(@Opt(value = 'v', fullName = "value") String val) {
-        if (val != null) {
-            // print type
-            if (!KVPairs.hisKVs.isEmpty()) {
-                if (KVPairs.hisKVs.size() == 1) {
-                    echoPrint(KVPairs.hisKVs.peek());
-                    return KVPairs.hisKVs.peek().value;
-                } else {
-                    for (KVPairs nextKV : KVPairs.hisKVs) {
-                        echoPrint(nextKV);
-                    }
-                    return null;
-                }
-            } else {
-                return null;
-            }
-        } else {
-            return null;
-        }
+    private void echo(@Opt(value = 'v', fullName = "value") String val) {
+        KVPairs.hisKVs.forEach(this::echoPrint);
     }
 
     private void echoPrint(KVPairs kv) {
@@ -285,7 +268,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
 
     @Override
     public void onResolveInput(String cmdName, List<String> cmdItems) {
-        VariableManager.doClear();
+        VariableManager.reset();
         if (cmdItems != null) {
             for (int i = 0; i<cmdItems.size(); i++) {
                 cmdItems.set(i, resolvePlaceholders(cmdItems.get(i)));

@@ -118,10 +118,20 @@ public final class TransformFactory {
         }
     }
 
+    /**
+     * 占位符替换
+     * @param value -
+     * @param type -
+     * @return -
+     */
     private static Optional<Object> resolvePlaceholder(Object value, Class<?> type) {
-        if (!value.equals(VariableManager.placeholder))
+        if (!(value instanceof String))
             return Optional.empty();
-        Optional<Object> placeholderObj = VariableManager.get();
+        String key = (String) value;
+        if (!key.startsWith(VariableManager.placeholder))
+            return Optional.empty();
+        int keyId = Integer.parseInt(key.substring(VariableManager.placeholder.length()));
+        Optional<Object> placeholderObj = VariableManager.get(keyId);
         if (placeholderObj.isPresent() && placeholderObj.get().getClass() == type) {
             return placeholderObj;
         }

@@ -17,6 +17,7 @@ public abstract class AbstractConsoleApplication {
 
     // 提供一个异常处理器
     protected Consumer<ConsoleAppRuntimeException> exceptionHandle;
+    // 默认退出动作，调用 System.exit(0) 退出程序
     protected ExitAction exitAction = () -> System.exit(0);
 
     // 获取字符串输入
@@ -70,17 +71,36 @@ public abstract class AbstractConsoleApplication {
 
     // setter---------------------------------------------------------------
 
+    /**
+     * 提供一个异常处理器<br>
+     * <p>框架中的异常分为两类，<br>
+     *     1. 解析命令行时<br>
+     *     2. 执行方法时</p>
+     * @see ConsoleAppRuntimeException
+     * @param exceptionHandle 异常处理器
+     * @return 返回控制台应用对象，可以继续进行配置
+     */
     public AbstractConsoleApplication setExceptionHandle(Consumer<ConsoleAppRuntimeException> exceptionHandle) {
         if (exceptionHandle != null)
             this.exceptionHandle = exceptionHandle;
         return this;
     }
 
+    /**
+     * 指定一个其他的退出方法
+     * @param exitAction 这将是系统的最后一个方法，调用完这个方法后，程序退出。
+     * @return 返回控制台应用对象，可以继续进行配置
+     */
     public AbstractConsoleApplication setExitAction(ExitAction exitAction) {
         this.exitAction = exitAction;
         return this;
     }
 
+    /**
+     * 提供一个处理器接受命令的执行信息
+     * @param processor 处理器
+     * @return 返回控制台应用对象，可以继续进行配置，另外，这个处理器可以设置多个，框架将按照顺序调用它们
+     */
     public abstract AbstractConsoleApplication addPostProcessor(PostProcessor processor);
 
     // ---------------------------------------------------------------------
@@ -91,7 +111,7 @@ public abstract class AbstractConsoleApplication {
      * @return bool 是否是退出命令
      * @throws ConsoleAppRuntimeException 可能抛出的异常
      */
-    abstract boolean simpleRunCommand(String command) throws ConsoleAppRuntimeException;
+    protected abstract boolean simpleRunCommand(String command) throws ConsoleAppRuntimeException;
 
     // 仅获取第一个被空格分隔的字符段，以小写形式返回
     protected String getCmdName(List<String> items) {

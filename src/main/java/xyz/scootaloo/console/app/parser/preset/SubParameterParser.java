@@ -66,7 +66,7 @@ public final class SubParameterParser implements NameableParameterParser {
                                 new ParameterResolveException("参数解析时异常", (Exception) obj));
                     else
                         methodArgs.add(obj);
-                } else { // 没有 @Opt 注解时
+                } else { // 当前参数不在参数键值对中时
                     if (!option.dftVal().equals("")) {
                         Object obj = exTransform(option.dftVal(), curParamType);
                         if (obj instanceof Exception)
@@ -82,7 +82,7 @@ public final class SubParameterParser implements NameableParameterParser {
                     }
                     wildcardArguments.add(new SimpleWildcardArgument(i, curParamType));
                 }
-            } else {
+            } else { // 没有 @Opt 注解时
                 methodArgs.add(TransformFactory.getDefVal(curParamType));
                 wildcardArguments.add(new SimpleWildcardArgument(i, curParamType));
             }

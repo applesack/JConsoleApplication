@@ -116,9 +116,7 @@ public final class ConsoleConfigProvider {
         }
 
         public DefaultValueConfigBuilder setConfFile(String filename) {
-            if (filename != null) {
-                this.configFileName = filename;
-            }
+            this.configFileName = filename;
             return this;
         }
 

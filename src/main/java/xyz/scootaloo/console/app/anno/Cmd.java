@@ -1,5 +1,7 @@
 package xyz.scootaloo.console.app.anno;
 
+import xyz.scootaloo.console.app.common.Console;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -7,8 +9,10 @@ import java.lang.annotation.Target;
 
 /**
  * 命令方法标记
- * 将这个注解标记在一个实例方法上，就可以被系统扫描到，
- * 前提是这个实例方法所在的类被添加到了配置中
+ * 标记此注解的实例方法可以用命令行进行调用
+ * 注意: 必须标记在工厂的实例方法上，非工厂则不会被系统读取，也无法进行装配
+ * @see Console#factories() 框架常用的注册工厂入口
+ * @see xyz.scootaloo.console.app.Main 使用方式，以启动一个控制台应用示例
  * @author flutterdash@qq.com
  * @since 2020/12/28 13:30
  */

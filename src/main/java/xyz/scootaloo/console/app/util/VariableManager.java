@@ -7,26 +7,35 @@ import java.util.*;
 
 /**
  * 变量管理器，如果不需要这个功能则在设置中关闭
- * set get echo 占位符替换
+ * <p>这里维护了一个一个HashMap做为变量池，可以通过命令将一个方法的返回值绑定到一个变量名上。</p>
+ * <p>然后这些变量可以用占位符的方式在其他命令行中使用，占位符最终会替换成变量的实际的值。</p>
  * @author flutterdash@qq.com
  * @since 2021/1/14 20:19
  */
 public final class VariableManager {
-    // 需要启动此功能，需要在设置中开启
+    /* 需要启动此功能，需要在设置中开启 */
     public static final String msg = "设置中已关闭此功能";
     public static final String placeholder = "@#@";
 
     /**
-     * 属性集，假如value是一个对象，那么key应该用符合拼写习惯的小驼峰写法，
+     * 变量名是一个字符串； 变量值可以是任意对象
      * {@code "student" -> new Student} 在引用的时候
      * {@code the name is ${student.name}}
      */
     private static final Map<String, Object> properties = new HashMap<>(16);
     private static final String DFT_RAND_STR = "0";
     private static final Random rand = ResourceManager.getRandom();
+    private static int keyId = 0;
 
     // getter and setter ---------------------------------------------------------------------------
 
+    /**
+     * 向变量池中放置键值对，使用方式和HashMap一致
+     * <p>注意: 如果键是小数点 '.', 则整个变量池都会被清空。<br>
+     * 如果值是小数点 '.', 则这个变量会被从变量池中移除</p>
+     * @param key 变量名
+     * @param value 变量值
+     */
     public static void set(String key, Object value) {
         if (key.startsWith(".")) {
             properties.clear();
@@ -38,29 +47,53 @@ public final class VariableManager {
             properties.put(key, value);
     }
 
+    /**
+     * 获取变量
+     * @param key 变量值
+     * @return Optional对象
+     */
     public static Optional<Object> get(String key) {
         return Optional.ofNullable(properties.get(key));
     }
 
-    public static Optional<Object> get() {
-        if (!KVPairs.hisKVs.isEmpty()) {
-            return Optional.ofNullable(KVPairs.hisKVs.peek().value);
+    /**
+     * 获取命令行解析过程中，最后一个遇到的占位符所代表的值。
+     * @param tKeyId keyId
+     * @return 返回这个变量值，假如这条命令行中没有占位符，则返回空。
+     */
+    public static Optional<Object> get(int tKeyId) {
+        Optional<KVPairs> rsl = KVPairs.hisKVs.stream()
+                .filter(kvPairs -> kvPairs.id == tKeyId)
+                .findAny();
+        if (rsl.isPresent()) {
+            Object value = rsl.get().value;
+            return Optional.of(value);
+        } else {
+            return Optional.empty();
         }
-        return Optional.empty();
     }
 
+    /**
+     * @return 返回整个变量池的信息
+     */
     public static Map<String, Object> getKVs() {
         return properties;
     }
 
     //----------------------------------------------------------------------------------------------
 
-    public static void doClear() {
+    /**
+     * 清除上一次解析命令行的占位符替换记录
+     */
+    public static void reset() {
+        keyId = 0;
         KVPairs.hisKVs.clear();
     }
 
     /**
      * 将字符串中的占位符替换成Properties中的value
+     * @see xyz.scootaloo.console.app.parser.preset.SystemPresetCmd#onResolveInput 使用点
+     * 这里当命令行参数按照空格分段以后，每个部分假如有占位符，都会被替换成变量的“@#@”，同时每次替换都会在 {@link KVPairs} 做记录。
      * @param text 文本
      * @return 替换占位符后的文本
      */
@@ -70,6 +103,7 @@ public final class VariableManager {
         boolean isOpen = false;
         int lSign = -1;
 
+        // 遍历字符串，检查其中的占位符
         for (int i = 0; i<text.length(); i++) {
             char c = text.charAt(i);
             if (c == '$') {
@@ -89,50 +123,77 @@ public final class VariableManager {
                 isOpen = false;
                 if (lSign == i)
                     continue;
+                // 获取占位符中的内容
                 String key = String.valueOf(text.subSequence(lSign, i));
+                // 这段内容做为变量的key
                 curKV.key = key;
-                String value = getValue(key, "${"+ key + "}", curKV);
+                // 尝试在变量池中找到对应的值，假如没有则保持原样
+                String value = getValueOrDefault(key, "${"+ key + "}", curKV);
                 sb.append(value);
                 continue;
             }
             if (!isOpen)
                 sb.append(c);
         }
-        if (curKV.hasVar)
-            KVPairs.hisKVs.push(curKV);
+        if (curKV.hasVar) {
+            curKV.id = keyId;
+            KVPairs.hisKVs.add(curKV);
+            keyId++;
+        }
         return sb.toString();
     }
 
-    private static String getValue(String key, String defaultValue, KVPairs curKV) {
+    /**
+     * @param key 这是占位符中包含的内容，做为key
+     * @param defaultValue 假如不能找到key对应的值，则返回defaultValue
+     * @param curKV 替换过程中的信息会记录到这个对象中
+     * @return 参考defaultValue的描述
+     */
+    private static String getValueOrDefault(String key, String defaultValue, KVPairs curKV) {
+        // 从变量池中尝试查找这个键
         Object value = properties.get(key);
         curKV.hasVar = true;
         if (value != null) {
+            // 键不为空，且是String类型，直接返回
             if (value instanceof String) {
                 curKV.value = value;
                 return value.toString();
-            } else {
+            }
+            // 是一个非字符串类型的对象，这里返回占位符，交给其他使用者处理
+            else {
                 curKV.value = value;
-                return placeholder;
+                return getPlaceholderWithId();
             }
         }
+
         String[] fields = key.split("\\.");
         if (fields.length < 2) {
+            // 将这个key按照小数点分隔后，所得到的位数小于2，这不符合预期的格式，所以直接返回
             curKV.hasVar = false;
             return defaultValue;
         }
+        // 假如这段字符串类似这样的格式 "rand.int(1,2)"，则按照随机函数的方式处理
         if (fields[0].toLowerCase(Locale.ROOT).equals("rand"))
             return doRandom(fields[1], curKV);
 
+        // 它可能是一个对象中的一个属性，进行递归操作找到这个目标属性值
         Object obj = properties.get(fields[0]);
         if (obj == null)
             return defaultValue;
         String[] res = new String[1];
         if (dfs(obj, fields, 1, res, curKV))
-            return res[0];
+            return getPlaceholderWithId();
         else
+            // 查找失败，返回默认值
             return defaultValue;
     }
 
+    /**
+     * 根据字符串获得随机值
+     * @param option 随机标识，目前只支持 bool 或者 int, 返回这两种类型的随机值
+     * @param curKV 替换过程中的信息会记录到这个对象中
+     * @return 随机值代表的字符串
+     */
     private static String doRandom(String option, KVPairs curKV) {
         option = option.toLowerCase(Locale.ROOT);
         if (option.startsWith("int")) {
@@ -179,6 +240,10 @@ public final class VariableManager {
         return String.valueOf(res);
     }
 
+    private static String getPlaceholderWithId() {
+        return placeholder + keyId;
+    }
+
     private static boolean dfs(Object obj, String[] fields, int idx, String[] res, KVPairs curKV) {
         if (idx == fields.length) {
             curKV.value = obj;
@@ -201,7 +266,7 @@ public final class VariableManager {
     public static class KVPairs {
 
         // 一条命令中如果有多个占位符，那么它们按照顺序存储在这个集合中
-        public static final Stack<KVPairs> hisKVs = new Stack<>();
+        public static final Set<KVPairs> hisKVs = new LinkedHashSet<>();
 
         // 是否有变量: 做为存储到集合的依据，假如占位符中包含的key没有对应的值，则为false
         private boolean hasVar;
@@ -212,6 +277,21 @@ public final class VariableManager {
         // 此变量的值
         public Object value;
 
+        // 标记
+        public Integer id;
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            KVPairs kvPairs = (KVPairs) o;
+            return Objects.equals(id, kvPairs.id);
+        }
+
+        @Override
+        public int hashCode() {
+            return id.hashCode();
+        }
     }
 
 }

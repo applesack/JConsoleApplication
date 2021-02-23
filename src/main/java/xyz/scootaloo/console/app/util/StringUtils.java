@@ -14,7 +14,7 @@ import java.util.stream.Stream;
  * @since 2020/12/30 20:16
  */
 public final class StringUtils {
-
+    // 用于给指定长度的字符串补齐
     private static final String[] BOX = {"0", "00", "000"};
 
     // 日期格式化
@@ -27,6 +27,11 @@ public final class StringUtils {
         return sb;
     }
 
+    /**
+     * 得到一个格式化后的字符串
+     * @param interval 一段时间，单位: 毫秒
+     * @param sb 结果将填充到这个StringBuilder中
+     */
     public static void getIntervalBySS_MS(long interval, StringBuilder sb) {
         StringBuilder tmp = new StringBuilder();
         tmp.append(SS_MS.format(new Date(interval)));
@@ -61,16 +66,13 @@ public final class StringUtils {
         return stringBuilder.toString();
     }
 
-    public static String trimNumberSizeTo4(long num) {
-        String nStr = String.valueOf(num);
-        if (nStr.length() > 4)
-            return "9999";
-        if (nStr.length() == 4)
-            return nStr;
-        int lack = 4 - nStr.length();
-        return BOX[lack - 1] + nStr;
-    }
-
+    /**
+     * 修剪一个字符串长度到 7 <br>
+     * 当目标字符串大于这个长度，后三位替换为 '.' <br>
+     * 当目标字符串小于这个长度，缺少的位置填充为 '_'
+     * @param str 要被修剪的字符串
+     * @return 修剪后的字符串
+     */
     public static String trimSizeTo7(String str) {
         char[] rslChars = new char[7];
         int minSize = Math.min(str.length(), 7);
@@ -86,12 +88,44 @@ public final class StringUtils {
         return new String(rslChars);
     }
 
+    /**
+     * 修剪只包含数字的字符串, 截取最后4位<br>
+     * 假如字符串大于4位，则返回 “9999” <br>
+     * 恰好四位则直接返回<br>
+     * 少于4位用0补齐
+     * @param num 一个数字
+     * @return 修剪后的字符串
+     */
+    public static String trimNumberSizeTo4(long num) {
+        String nStr = String.valueOf(num);
+        if (nStr.length() > 4)
+            return "9999";
+        if (nStr.length() == 4)
+            return nStr;
+        int lack = 4 - nStr.length();
+        return BOX[lack - 1] + nStr;
+    }
+
+    /**
+     * 将字符串按照空格分隔，拼接成列表
+     * @param line 一个字符串
+     * @return 列表结果
+     */
     public static List<String> toList(String line) {
         return Stream.of(line)
                 .flatMap(ine -> Arrays.stream(ine.split(" ")))
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 忽略字符串中的某个字符。<br>
+     * 假如有一个字符串 {@code str = "hello world"} <br>
+     * 执行方法 {@code ignoreChar(str, 'o')} 后，得到结果:
+     * {@code "hell wrld"}
+     * @param rawString 原字符串
+     * @param igChar 要忽略的某字符
+     * @return 结果
+     */
     public static String ignoreChar(String rawString, char igChar) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i<rawString.length(); i++) {
@@ -102,6 +136,11 @@ public final class StringUtils {
         return sb.toString();
     }
 
+    /**
+     * 简易的判断逻辑，不包含字符即认为是数字
+     * @param str 字符串
+     * @return 是否是数字
+     */
     public static boolean isNumber(String str) {
         for (int i = 0; i<str.length(); i++) {
             char c = str.charAt(i);
@@ -111,6 +150,11 @@ public final class StringUtils {
         return true;
     }
 
+    /**
+     * 减去字符串两端的字符
+     * @param str 原字符串
+     * @return 余下的字符串
+     */
     public static String trimBothEnds(String str) {
         if (str.length() <= 1)
             return str;
@@ -141,6 +185,13 @@ public final class StringUtils {
 
     // 反射操作，查看方法的参数和返回值信息
 
+    /**
+     * 获取精简的类型表示<br>
+     * 输入 {@code "java.util.Map<java.lang.String,java.lang.Integer>"}
+     * 输出 {@code "Map<String,Integer>"}
+     * @param type 类型，通常是方法的参数，或者是方法的返回值
+     * @return 精简的类型
+     */
     public static String typeSimpleView(Type type) {
         return typeSimpleView(type.toString());
     }

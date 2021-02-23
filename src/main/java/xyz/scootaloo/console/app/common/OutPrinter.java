@@ -1,6 +1,5 @@
 package xyz.scootaloo.console.app.common;
 
-import java.io.IOException;
 import java.io.OutputStream;
 
 /**
@@ -18,7 +17,7 @@ public abstract class OutPrinter extends OutputStream {
     public abstract void err(Object o);
 
     @Override
-    public void write(int b) throws IOException {
+    public void write(int b) {
         println(b);
     }
 

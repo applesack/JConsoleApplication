@@ -10,6 +10,8 @@ import xyz.scootaloo.console.app.parser.ExtraOptionHandle;
 import xyz.scootaloo.console.app.parser.Interpreter;
 import xyz.scootaloo.console.app.util.ClassUtils;
 
+import static xyz.scootaloo.console.app.config.ConsoleConfigProvider.*;
+
 /**
  * 应用运行器
  * 目前支持两种开始方式
@@ -23,13 +25,26 @@ public class ApplicationRunner {
     // 单例: 命令解释器
     private static Interpreter INTERPRETER_SINGLETON;
 
-    // 运行一个 ConsoleApplication
+    /**
+     * 使用一个配置对象启动获取控制台应用<br>
+     * 框架中获取配置通常是使用java代码设置工厂，结合配置文件(classpath:/console.yml)<br>
+     * @see Console#factories() 请参考示例代码中的配置方式
+     * @param config 一个配置对象
+     * @return 控制台应用对象
+     */
     public static AbstractConsoleApplication consoleApplication(ConsoleConfig config) {
         AssemblyFactory.init(config);
         return new ConsoleApplication(config, getInterpreter(config));
     }
 
-    // 无参运行
+    /**
+     * 无参运行<br>
+     * 当调用{@code ApplicationRunner.consoleApplication()}时，框架会实例化调用者，将调用者做为工厂注册到框架。
+     * @see Main 请参考默认的启动实例，这里使用了无参运行，这里{@code Main}这个类被实例化，其中{@link Main#hello()}这个方法被扫描到。
+     * 默认配置文件，请参考 classpath:/console.yml
+     * 假如 classpath下不包含这个文件，则使用构建者的默认配置 {@link DefaultValueConfigBuilder}
+     * @return 基于默认配置生成的控制台应用
+     */
     public static AbstractConsoleApplication consoleApplication() {
         Object instance = ClassUtils.instance(false);
         ConsoleConfig config = Console.factories()
@@ -39,7 +54,11 @@ public class ApplicationRunner {
         return new ConsoleApplication(config, getInterpreter(config));
     }
 
-    // 获取解释器对象，可以快捷的调用命令工厂的方法
+    /**
+     * 根据配置生成解释器对象，此解释器可以使用字符串命令行执行所有注册到框架中的方法
+     * @param config 一个配置
+     * @return 解释器对象
+     */
     public static Interpreter getInterpreter(ConsoleConfig config) {
         if (INTERPRETER_SINGLETON == null) {
             INTERPRETER_SINGLETON = new Interpreter(config);
@@ -48,7 +67,11 @@ public class ApplicationRunner {
         return INTERPRETER_SINGLETON;
     }
 
-    // 设置输出方式
+    /**
+     * 指定其他的输出方式，默认输出方法是 System.out.print
+     * @see xyz.scootaloo.console.app.common.DefaultConsole 默认实现
+     * @param console 自定义实现
+     */
     public static void setConsole(Console console) {
         if (console != null)
             ResourceManager.setConsole(console);

@@ -20,11 +20,13 @@ import static xyz.scootaloo.console.app.util.InvokeProxy.fun;
  * @since 2020/12/27 17:08
  */
 public final class ClassUtils {
+    // resource
     private static final Console console = ResourceManager.getConsole();
     private static final String DELIMITER = ",";
     private static final Set<Class<?>> BOXING_SET = new LinkedHashSet<>();
 
     static {
+        // 基本类型
         BOXING_SET.add(Integer.class);
         BOXING_SET.add(Double.class);
         BOXING_SET.add(Boolean.class);
@@ -33,7 +35,16 @@ public final class ClassUtils {
         BOXING_SET.add(Long.class);
     }
 
+    /**
+     * 将一个值设置到一个对象的属性上，假如这个对象没有这个属性，则不执行任何操作，
+     * 假如在赋值的过程中遇到异常，也不执行任何操作。其间遇到的异常都会被屏蔽
+     * @param instance 对象实例
+     * @param fieldName 此对象的属性名
+     * @param value 要设置的新值
+     */
     public static void set(Object instance, String fieldName, Object value) {
+        if (instance == null)
+            return;
         Class<?> clazz = instance.getClass();
         Field field = fun(clazz::getDeclaredField).call(fieldName);
         if (field == null)
@@ -129,6 +140,7 @@ public final class ClassUtils {
     }
 
     /**
+     * Yml配置文件专用
      * 从Map中获取属性并拷贝到对象
      * @param instance 对象的实例
      * @param properties 属性集
@@ -171,12 +183,28 @@ public final class ClassUtils {
         }
     }
 
-    // 判断两个类的属性是否一致
+    /**
+     * 判断两个类的属性是否一致
+     * @param f1 f1
+     * @param f2 f2
+     * @return 通过类型名判断
+     */
     public static boolean sameType(Field f1, Field f2) {
         return f1.getGenericType().getTypeName().equals(f2.getGenericType().getTypeName());
     }
 
-    // 返回方法的信息，方法名(参数):返回值
+    /**
+     * 获取方法信息的描述
+     * 返回方法的信息，方法名(参数):返回值
+     * 例子:
+     * <pre>{@code
+     * public List<String> fun(Map<String, Integer> map) {
+     *      return null;
+     * }}</pre>
+     * <p>这个方法将会返回 {@code fun(Map<String,Integer):List<String>}</p>
+     * @param method 方法对象
+     * @return 方法的字符串描述
+     */
     public static String getMethodDescribe(Method method) {
         if (method == null)
             return "null():void";
@@ -191,7 +219,13 @@ public final class ClassUtils {
         return sb.toString();
     }
 
-    // 获取方法泛型参数的实际类型 List<Integer> => Integer
+    /**
+     * 这个方法专门用于处理只有一个泛型的集合，不做其他用途
+     * 获取方法泛型参数的实际类型 List<Integer> => Integer
+     * @param type 方法参数的类型
+     * @return 泛型的实际类型的Class对象
+     * @throws ClassNotFoundException 假如没有这个类
+     */
     public static Class<?> getRawType(Type type) throws ClassNotFoundException {
         return Class.forName(((ParameterizedTypeImpl) type).getActualTypeArguments()[0].getTypeName(),
                 false, ResourceManager.getLoader());

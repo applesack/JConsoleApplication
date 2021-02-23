@@ -67,6 +67,7 @@ public final class ConsoleApplication extends AbstractConsoleApplication {
                 simpleRunCommand(cmd);
             }
         } catch (Exception e) {
+            // 调用命令时出现异常，退出程序
             console.onException(config, e, "初始化遇到异常", true);
         }
     }
@@ -110,7 +111,7 @@ public final class ConsoleApplication extends AbstractConsoleApplication {
      * @return 是否是退出命令
      */
     @Override
-    boolean simpleRunCommand(String command) {
+    protected boolean simpleRunCommand(String command) {
         List<String> cmdItems = StringUtils.toList(command);
         String cmdName = getCmdName(cmdItems);
         if (isExitCmd(cmdName))
