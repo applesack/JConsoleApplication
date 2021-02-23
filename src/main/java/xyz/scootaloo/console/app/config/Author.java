@@ -55,7 +55,7 @@ public final class Author {
         return this;
     }
 
-    public DefaultValueConfigBuilder ok() {
+    public DefaultValueConfigBuilder then() {
         return this.dvBuilder;
     }
 

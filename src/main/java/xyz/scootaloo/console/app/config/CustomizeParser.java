@@ -36,7 +36,7 @@ public final class CustomizeParser {
         return this;
     }
 
-    public DefaultValueConfigBuilder ok() {
+    public DefaultValueConfigBuilder then() {
         builder.setParserMap(this);
         return builder;
     }

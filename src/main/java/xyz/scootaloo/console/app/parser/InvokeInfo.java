@@ -131,4 +131,11 @@ public final class InvokeInfo {
         return this.invokeAt;
     }
 
+    @Override
+    public String toString() {
+        return "InvokeInfo{" +
+                "rtnType=" + rtnType +
+                ", rtnVal=" + rtnVal +
+                '}';
+    }
 }

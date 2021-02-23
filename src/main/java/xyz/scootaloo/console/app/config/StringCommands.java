@@ -25,12 +25,12 @@ public final class StringCommands {
         return this;
     }
 
-    // todo 从文件中读取初始化命令
+    @Deprecated
     public StringCommands getFromFile(String fileName) {
         return this;
     }
 
-    public DefaultValueConfigBuilder ok() {
+    public DefaultValueConfigBuilder then() {
         this.builder.setInitCommands(this);
         return this.builder;
     }

@@ -193,7 +193,8 @@ public final class AssemblyFactory {
                 // 处理解析模式
                 ParameterParser parser = parserMap.get(cmdAnno.parser());
                 if (parser != null)
-                    actuator.setParser(parser);
+                    if (!actuator.setParser(parser))
+                        return;
                 strategyMap.put(actuator.cmdName, actuator);
                 ALL_COMMANDS.add(actuator);
                 Cmd cmd = method.getAnnotation(Cmd.class);
@@ -201,7 +202,7 @@ public final class AssemblyFactory {
                     strategyMap.put(cmd.name().toLowerCase(Locale.ROOT), actuator);
                 }
             } break;
-            case Pre: {
+            case Filter: {
                 preActuators.add(actuator);
             } break;
             case Init: {
@@ -362,7 +363,7 @@ public final class AssemblyFactory {
             switch (cmd.type()) {
                 // 假如是销毁、前置、初始化方法，可以直接执行
                 case Destroy:
-                case Pre:
+                case Filter:
                 case Init: {
                     return invokeCore(cmdArgs);
                 }
@@ -391,10 +392,10 @@ public final class AssemblyFactory {
             switch (type) {
                 case Destroy:
                 case Init:
-                case Pre: {
+                case Filter: {
                     if (method.getParameterCount() != 0)
                         return false;
-                    if (type == CmdType.Pre) {
+                    if (type == CmdType.Filter) {
                         if (!(rtnType.equals(boolean.class) ||
                                 rtnType.equals(Boolean.class)))
                             return false;
@@ -494,9 +495,12 @@ public final class AssemblyFactory {
         }
 
         // 设置解析器
-        public void setParser(ParameterParser parser) {
-            if (parser != null)
+        public boolean setParser(ParameterParser parser) {
+            if (parser != null) {
                 this.parser = parser;
+                return parser.check(this.methodMeta);
+            }
+            return true;
         }
 
         // getter

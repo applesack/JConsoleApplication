@@ -11,37 +11,37 @@ import xyz.scootaloo.console.app.config.FactoryCollector;
  * @author flutterdash@qq.com
  * @since 2021/1/18 23:08
  */
-public interface Console {
+public abstract class Console extends OutPrinter {
 
     // 完整的控制台配置类
-    static ConsoleConfigProvider.DefaultValueConfigBuilder config() {
+    public static ConsoleConfigProvider.DefaultValueConfigBuilder config() {
         return new ConsoleConfigProvider.DefaultValueConfigBuilder();
     }
 
     // 精简的控制台配置类
-    static FactoryCollector factories() {
+    public static FactoryCollector factories() {
         return new FactoryCollector(new ConsoleConfigProvider.DefaultValueConfigBuilder());
     }
 
     //---------------------------------------------------------------------------------
 
-    void print(Object z);
+    public abstract void print(Object z);
 
-    void println(Object z);
+    public abstract void println(Object z);
 
-    void err(Object z);
+    public abstract void err(Object z);
 
     //---------------------------------------------------------------------------------
 
-    default void onException(ConsoleConfig config, Exception e) {
+    public void onException(ConsoleConfig config, Exception e) {
         onException(config, e, null);
     }
 
-    default void onException(ConsoleConfig config, Exception e, String msg) {
+    public void onException(ConsoleConfig config, Exception e, String msg) {
         onException(config, e, msg, false);
     }
 
-    default void onException(ConsoleConfig config, Exception e, String msg, boolean exit) {
+    public void onException(ConsoleConfig config, Exception e, String msg, boolean exit) {
         if (config.isPrintStackTraceOnException()) {
             e.printStackTrace();
         } else {
@@ -56,13 +56,13 @@ public interface Console {
     }
 
     // 输出信息后退出应用
-    default void exit0(String msg) {
+    public void exit0(String msg) {
         println(msg);
         exit0();
     }
 
     // 退出应用
-    default void exit0() {
+    public void exit0() {
         println("应用退出");
         System.exit(0);
     }
