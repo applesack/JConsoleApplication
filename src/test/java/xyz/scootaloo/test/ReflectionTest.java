@@ -6,6 +6,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static xyz.scootaloo.console.app.util.InvokeProxy.fun;
 
 /**
  * @author flutterdash@qq.com
@@ -105,6 +108,48 @@ public class ReflectionTest {
     public void testGetSimpleName() {
         String typeStr = "xyz.scootaloo.Main";
         System.out.println(getSimpleName(typeStr));
+    }
+
+    @Test
+    public void testGetInstantiateFactory() {
+        String factory_name = "FACTORY_INSTANCE";
+        String instance_name = "INSTANCE";
+        List<Object> objects = getClasses().stream()
+                .map(classType ->
+                        Stream.of(
+                            fun(classType::getDeclaredField).call(factory_name),
+                            fun(classType::getDeclaredField).call(instance_name)
+                        )
+                        .filter(Objects::nonNull)
+                        .filter(curType -> curType.getType() == classType)
+                        .map(field -> {
+                            field.setAccessible(true);
+                            return fun(field::get).call(new Object[]{null});
+                        })
+                        .filter(Objects::nonNull)
+                        .findAny().orElse(null)
+        ).filter(Objects::nonNull).collect(Collectors.toList());
+        System.out.println(objects);
+    }
+
+    private Set<Class<?>> getClasses() {
+        Set<Class<?>> classSet = new LinkedHashSet<>();
+        classSet.add(AObj.class);
+        classSet.add(BObj.class);
+        classSet.add(CObj.class);
+        return classSet;
+    }
+
+    private static class AObj {
+        private static final AObj INSTANCE = new AObj();
+    }
+
+    private static class BObj {
+        private static final BObj FACTORY_INSTANCE = new BObj();
+    }
+
+    private static class CObj {
+        private static final CObj INSTANCE = null;
     }
 
 }

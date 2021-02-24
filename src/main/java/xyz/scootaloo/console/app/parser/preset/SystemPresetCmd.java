@@ -254,6 +254,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
 
     @Override
     public void config(AppListenerProperty interestedInEvents) {
+        // 指定几个感兴趣的事件，并指定优先级为 -1
         interestedInEvents
                 .onInput(-1)
                 .onInputResolved(-1)

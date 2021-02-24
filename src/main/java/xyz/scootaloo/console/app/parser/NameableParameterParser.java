@@ -2,7 +2,7 @@ package xyz.scootaloo.console.app.parser;
 
 /**
  * 给参数解析器起个名字
- * <p>要实现自定义的解析器，必须实现这个接口。
+ * <p>要使用自定义的解析器，必须实现这个接口。
  * 假设你已经创建了一个类实现了这个接口，并且在配置中注册了实现类的实例，比如这样:</p>
  * <pre>{@code ApplicationRunner.consoleApplication(
  *                 Console.factories()

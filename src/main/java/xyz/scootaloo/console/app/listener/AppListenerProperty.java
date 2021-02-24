@@ -7,8 +7,8 @@ package xyz.scootaloo.console.app.listener;
  * @since 2021/2/10 21:57
  */
 public final class AppListenerProperty {
-    protected static final int DFT_PRIORITY = 5;
-    private final EventProperty eventProperty;
+    protected static final int DFT_PRIORITY = 5; // 默认优先级
+    private final EventProperty eventProperty;   // 事件的属性
 
     public AppListenerProperty() {
         eventProperty = new EventProperty();

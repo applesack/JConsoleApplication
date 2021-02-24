@@ -60,6 +60,7 @@ public final class EventPublisher {
         );
     }
 
+    // 放置入集合
     private static void putToCollection(Occasion key, ListenerWrapper value) {
         hasEnable = true;
         Optional<List<ListenerWrapper>> optional = Optional.ofNullable(LISTENERS.get(key));
@@ -72,6 +73,7 @@ public final class EventPublisher {
         }
     }
 
+    // 按照优先级信息排序
     private static void sortListeners() {
         LISTENERS.forEach((occasion, listenerWrappers) -> {
             if (!listenerWrappers.isEmpty()) {

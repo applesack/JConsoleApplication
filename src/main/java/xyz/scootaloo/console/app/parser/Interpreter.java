@@ -24,7 +24,10 @@ public final class Interpreter {
         this.config = config;
     }
 
-    // 执行命令
+    /**
+     * @param cmd 命令行
+     * @return 方法调用信息
+     */
     public InvokeInfo interpret(String cmd) {
         List<String> allTheCmdItem = StringUtils.toList(cmd);
         String cmdName = getCmdName(allTheCmdItem);
@@ -32,13 +35,23 @@ public final class Interpreter {
         return actuator.invoke(allTheCmdItem);
     }
 
-    // 根据方法名调用无参方法
+    /**
+     * 根据方法名调用无参方法
+     * @param name 框架容器中管理的无参方法的方法名
+     * @return 调用信息
+     */
     public InvokeInfo call(String name) {
         MethodActuator actuator = (MethodActuator) AssemblyFactory.findActuator(name);
         return actuator.invokeByArgs();
     }
 
-    // 根据方法名调用有参方法，需要注入参数
+    /**
+     * 根据方法名，方法参数来调用方法<br>
+     * 这个方法必须是容器管理的，否则无法调用
+     * @param name 方法名
+     * @param args 此方法需要的参数
+     * @return 调用信息
+     */
     public InvokeInfo call(String name, Object ... args) {
         Actuator actuator = AssemblyFactory.findActuator(name);
         if (actuator instanceof MethodActuator) {
