@@ -48,11 +48,9 @@ public class ApplicationRunner {
      */
     public static AbstractConsoleApplication consoleApplication() {
         Object instance = ClassUtils.instance(false);
-        ConsoleConfig config = Console.factories()
-                                .add(instance, true)
-                                .ok();
-        AssemblyFactory.init(config);
-        return new ConsoleApplication(config, getInterpreter(config));
+        return consoleApplication(Console.factories()
+                .add(instance, true)
+                .ok());
     }
 
     /**

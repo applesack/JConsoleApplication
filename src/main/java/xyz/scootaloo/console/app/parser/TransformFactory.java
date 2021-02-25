@@ -1,8 +1,7 @@
 package xyz.scootaloo.console.app.parser;
 
-import xyz.scootaloo.console.app.common.OutPrinter;
+import xyz.scootaloo.console.app.common.CPrinter;
 import xyz.scootaloo.console.app.common.ResourceManager;
-import xyz.scootaloo.console.app.util.BackstageTaskManager;
 import xyz.scootaloo.console.app.util.ClassUtils;
 import xyz.scootaloo.console.app.util.VariableManager;
 
@@ -12,7 +11,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * 转换工厂
+ * 转换工厂<br>
  * 实现字符串到指定类型的转换
  * @author flutterdash@qq.com
  * @since 2020/12/29 21:47
@@ -45,22 +44,38 @@ public final class TransformFactory {
 
         // 设置系统预设的一些实例
         PRESET_VALUES_MAP.put(Random.class, () -> random);
-        PRESET_VALUES_MAP.put(OutPrinter.class, TransformFactory::getPrinter);
+        PRESET_VALUES_MAP.put(CPrinter.class, ResourceManager::getPrinter);
     }
 
-    // 获取此类型的默认值
+    /**
+     * 获取此类型的默认值
+     * @param type 类型
+     * @return 类型的默认值，假如容器中不存在此默认值，则返回null; (容器中默认只包含基本类型的默认值)
+     */
     public static Object getDefVal(Class<?> type) {
         return DEFAULT_VALUE_MAP.getOrDefault(type, null);
     }
 
-    // 获取系统预设的值
+    /**
+     * 获取系统预设的值
+     * <p>通常是一些单例，或者工厂方法管理的类型，默认框架提供一个 {@code Random} 对象，和一个 {@code CPrinter} 对象</p>
+     * @param type 类型
+     * @return 此类型的实例，假如不存在此实例则返回null
+     */
     public static Object getPresetVal(Class<?> type) {
         if (PRESET_VALUES_MAP.containsKey(type))
             return PRESET_VALUES_MAP.get(type).get();
         return null;
     }
 
-    // 将value转换为type的类型
+    /**
+     * 将value转换为type的类型的实例
+     * @param value 要被转换的值，这个值一般是字符串类型
+     * @param classType 目标对象的类型
+     * @param genericType 这个目标类型的泛型信息
+     * @return 生成好的对象，假如不能生成，返回null。可能抛出运行时异常
+     * @throws Exception 解析数组时 {@link #resolveArray(Object, Class, Type)}
+     */
     public static Object resolveArgument(Object value, Class<?> classType, Type genericType) throws Exception {
         if (classType.isArray() || ClassUtils.isExtendForm(classType, Collection.class)) {
             return resolveArray(value, classType, genericType);
@@ -111,13 +126,14 @@ public final class TransformFactory {
     }
 
     // 解析数组和集合
-    private static Object resolveArray(Object value, Class<?> type, Type genericType) throws ClassNotFoundException {
-        if (type.isArray()) {
+    private static Object resolveArray(Object value, Class<?> type, Type genericType)
+            throws ClassNotFoundException {
+        if (type.isArray()) { // 数组
             return ClassUtils.genArray(type.getComponentType(), (String) value);
         } else {
-            if (ClassUtils.isExtendForm(type, Set.class)) {
+            if (ClassUtils.isExtendForm(type, Set.class)) { // 集
                 return ClassUtils.genSet(ClassUtils.getRawType(genericType), (String) value);
-            } else if (ClassUtils.isExtendForm(type, List.class)) {
+            } else if (ClassUtils.isExtendForm(type, List.class)) { // 列表
                 return ClassUtils.genList(ClassUtils.getRawType(genericType), (String) value);
             } else {
                 throw new RuntimeException("暂不支持的数据结构: " + type.getName());
@@ -144,10 +160,6 @@ public final class TransformFactory {
             return placeholderObj;
         }
         return Optional.empty();
-    }
-
-    private static OutPrinter getPrinter() {
-        return BackstageTaskManager.getPrinter();
     }
 
     private static void putDefVal(Function<String, Object> convertor) {

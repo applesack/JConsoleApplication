@@ -10,7 +10,7 @@ import xyz.scootaloo.console.app.config.FactoryCollector;
  * @author flutterdash@qq.com
  * @since 2021/1/18 23:08
  */
-public abstract class Console extends OutPrinter {
+public abstract class Console extends CPrinter {
 
     /**
      * 完整的控制台配置类<br>
@@ -42,19 +42,19 @@ public abstract class Console extends OutPrinter {
     //---------------------------------------------------------------------------------
 
     /**
-     * @see OutPrinter
+     * @see CPrinter
      * @param z -
      */
     public abstract void print(Object z);
 
     /**
-     * @see OutPrinter
+     * @see CPrinter
      * @param z -
      */
     public abstract void println(Object z);
 
     /**
-     * @see OutPrinter
+     * @see CPrinter
      * @param z -
      */
     public abstract void err(Object z);

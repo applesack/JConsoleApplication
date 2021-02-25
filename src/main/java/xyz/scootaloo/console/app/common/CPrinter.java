@@ -8,7 +8,7 @@ import java.io.OutputStream;
  * @author flutterdash@qq.com
  * @since 2021/2/5 20:46
  */
-public abstract class OutPrinter extends OutputStream {
+public abstract class CPrinter extends OutputStream {
 
     public abstract void print(Object o);
 

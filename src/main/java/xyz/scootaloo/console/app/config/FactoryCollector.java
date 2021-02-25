@@ -58,14 +58,13 @@ public final class FactoryCollector {
     }
 
     /**
-     * 扫描一个包下的所有类
+     * 扫描一个包下的所有类，并将这些类实例化
      * <p>目前的策略是遍历检查这个包下的所有的类(包括子包)，如果这个类中含有名为 {@code FACTORY_INSTANCE} 或者
-     * {@code INSTANCE} 的静态常量，且这个静态常量的类型和当前类的类型一致，则获取这个变量值，加入到框架。</p>
-     * <pre>{@code
-     * public class MyFactory {
+     * {@code INSTANCE} 的静态常量，且这个静态常量的类型和当前类的类型一致，则获取这个变量值，装配到框架的容器中。<br> 例:</p>
+     * <pre>{@code public class MyFactory {
      *     private static final MyFactory INSTANCE = new MyFactory();
      * }}</pre>
-     * <p>类似于上面代码所描述的情况，这个名为"INSTANCE"的变量会被获取到</p>
+     * <p>这个名为"INSTANCE"的变量会被装配</p>
      * @param packName 包名
      * @return 构建者
      */

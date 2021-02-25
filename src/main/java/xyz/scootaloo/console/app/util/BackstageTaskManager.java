@@ -1,7 +1,7 @@
 package xyz.scootaloo.console.app.util;
 
 import xyz.scootaloo.console.app.common.Console;
-import xyz.scootaloo.console.app.common.OutPrinter;
+import xyz.scootaloo.console.app.common.CPrinter;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.parser.InvokeInfo;
 
@@ -46,12 +46,13 @@ public final class BackstageTaskManager {
      * 获取一个输出器，用于使用print或者println这些功能
      * @return 输出器
      */
-    public static OutPrinter getPrinter() {
+    public static CPrinter getPrinter() {
         if (curOutput != null) {
-            OutPrinter printer = curOutput;
+            CPrinter printer = curOutput;
             curOutput = null;
             return printer;
         }
+        PrinterImpl.DFT_PRINTER.reset();
         return PrinterImpl.DFT_PRINTER;
     }
 
@@ -164,7 +165,7 @@ public final class BackstageTaskManager {
     }
 
     // 打印器默认实现
-    private static class PrinterImpl extends OutPrinter {
+    private static class PrinterImpl extends CPrinter {
         // 默认实现为直接输出在控制台上
         static final PrinterImpl DFT_PRINTER = new PrinterImpl(new StringBuffer(), true);
         static Consumer<String> outputMode = console::println;
@@ -217,15 +218,24 @@ public final class BackstageTaskManager {
             }
         }
 
+        protected void reset() {
+            sb.setLength(0);
+            lines.clear();
+        }
+
         @Override
         public void print(Object o) {
+            if (immediately) {
+                console.print(o);
+                return;
+            }
             sb.append(o.toString());
         }
 
         @Override
         public void println(Object o) {
             if (immediately) {
-                console.print(o);
+                console.println(o);
                 return;
             }
             if (sb.length() > 0) {
