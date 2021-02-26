@@ -2,15 +2,14 @@ package xyz.scootaloo.console.app;
 
 import xyz.scootaloo.console.app.application.AbstractConsoleApplication;
 import xyz.scootaloo.console.app.application.ConsoleApplication;
-import xyz.scootaloo.console.app.common.Console;
-import xyz.scootaloo.console.app.common.ResourceManager;
+import xyz.scootaloo.console.app.common.*;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.parser.AssemblyFactory;
 import xyz.scootaloo.console.app.parser.ExtraOptionHandle;
 import xyz.scootaloo.console.app.parser.Interpreter;
 import xyz.scootaloo.console.app.util.ClassUtils;
 
-import static xyz.scootaloo.console.app.config.ConsoleConfigProvider.*;
+import static xyz.scootaloo.console.app.config.ConsoleConfigProvider.DefaultValueConfigBuilder;
 
 /**
  * 应用运行器<br>
@@ -22,7 +21,7 @@ import static xyz.scootaloo.console.app.config.ConsoleConfigProvider.*;
  * @author flutterdash@qq.com
  * @since 2020/12/27 15:04
  */
-public class ApplicationRunner {
+public final class ApplicationRunner {
     // 单例: 命令解释器
     private static Interpreter INTERPRETER_SINGLETON;
 
@@ -69,12 +68,13 @@ public class ApplicationRunner {
     /**
      * 指定其他的输出方式，默认输出方法是 System.out.print
      * @see xyz.scootaloo.console.app.common.DefaultConsole 默认实现
-     * @param console 自定义实现
+     * @param supplier 自定义实现
      */
-    public static void setConsole(Console console) {
-        if (console != null)
-            ResourceManager.setConsole(console);
-        else
+    public static void setPrinterFactory(CPrinterSupplier supplier) {
+        if (supplier != null) {
+            ResourceManager.setPrinterFactory(supplier);
+            DefaultConsole.setPrinter(supplier.get());
+        } else
             throw new NullPointerException("console 实现为空");
     }
 

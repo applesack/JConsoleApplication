@@ -3,7 +3,7 @@ package xyz.scootaloo.console.app.util;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.listener.AppListenerAdapter;
 import xyz.scootaloo.console.app.listener.AppListenerProperty;
-import xyz.scootaloo.console.app.util.FunctionDescribe.*;
+import xyz.scootaloo.console.app.util.FunctionDesc.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +13,18 @@ import java.util.function.Supplier;
 
 /**
  * 传递或者调用会抛出异常的方法
+ * <p>对 try-catch 的异常处理方式进行了包装，当需要调用会抛出异常的方式时，例如:
+ * <pre>{@code public File getFile(String filename) throws NoSuchFileException {
+ *     // some code ...
+ * }}</pre></p>
+ * <p>调用时 {@code InvokeProxy.fun(fileUtils::getFile).call("filename")} , 这样完成调用。
+ * 这里 {@code fun()} 的参数是要调用方法，{@code call()} 的参数是要调用的方法的实际参数。<br>
+ * 当方法抛出异常时，{@code call()} 调用返回 {@code null}，这里提供一些便捷的操作: <br></p>
+ *<pre>
+ *  - 添加异常处理器: {@link MethodCallWrapper#addHandle(Class, Consumer)} <br>
+ *  - 调用方法时抛出异常时指定默认值: {@link MethodCallWrapper#setElse(Supplier)} <br>
+ *  - 使方法返回的结果用Optional包装返回: {@link MethodCallWrapper#getOptional(Object...)}
+ *</pre>
  * @author flutterdash@qq.com
  * @since 2021/2/12 0:21
  */
@@ -20,12 +32,12 @@ public final class InvokeProxy implements AppListenerAdapter {
     private static ConsoleConfig conf;
     private static final InvokeProxy INSTANCE = new InvokeProxy();
 
-    public static <R> MethodCallWrapper<R> fun(FunctionDescribe.Rtn0P<R> rtn0P) {
+    public static <R> MethodCallWrapper<R> fun(FunctionDesc.Rtn0P<R> rtn0P) {
         return new MethodCallWrapper<>((Object ... args) -> rtn0P.call());
     }
 
     @SuppressWarnings({ "unchecked", "hiding" })
-    public static <R, T> MethodCallWrapper<R> fun(FunctionDescribe.Rtn1P<R, T> rtn1P) {
+    public static <R, T> MethodCallWrapper<R> fun(FunctionDesc.Rtn1P<R, T> rtn1P) {
         return new MethodCallWrapper<>((Object ... args) -> rtn1P.call((T) args[0]));
     }
 
@@ -36,13 +48,13 @@ public final class InvokeProxy implements AppListenerAdapter {
     }
 
     @SuppressWarnings({ "unchecked", "hiding" })
-    public static <R, T1, T2, T3> MethodCallWrapper<R> fun(FunctionDescribe.Rtn3P<R, T1, T2, T3> rtn3P) {
+    public static <R, T1, T2, T3> MethodCallWrapper<R> fun(FunctionDesc.Rtn3P<R, T1, T2, T3> rtn3P) {
         return new MethodCallWrapper<>((Object ... args) ->
                 rtn3P.call((T1) args[0], (T2) args[1], (T3) args[2]));
     }
 
     @SuppressWarnings({ "unchecked", "hiding" })
-    public static <R, T1, T2, T3, T4> MethodCallWrapper<R> fun(FunctionDescribe.Rtn4P<R, T1, T2, T3, T4> rtn4P) {
+    public static <R, T1, T2, T3, T4> MethodCallWrapper<R> fun(FunctionDesc.Rtn4P<R, T1, T2, T3, T4> rtn4P) {
         return new MethodCallWrapper<>((Object ... args) ->
                 rtn4P.call((T1) args[0], (T2) args[1], (T3) args[2], (T4) args[3]));
     }

@@ -1,8 +1,9 @@
 package xyz.scootaloo.console.app.util;
 
 /**
- * Id 生成器
+ * Id 生成器,
  * 通过自增的方式产生id
+ * @deprecated 预计将废弃这个类
  * @author flutterdash@qq.com
  * @since 2021/2/7 20:16
  */

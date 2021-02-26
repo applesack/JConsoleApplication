@@ -8,20 +8,47 @@ package xyz.scootaloo.console.app.common;
 public class DefaultConsole extends Console {
     /** singleton */
     protected static final DefaultConsole INSTANCE = new DefaultConsole() {};
+    private CPrinter default_printer = CPrinterImpl.INSTANCE;
 
     @Override
     public void print(Object z) {
-        System.out.print(z);
+        default_printer.print(z);
     }
 
     @Override
     public void println(Object z) {
-        System.out.println(z);
+        default_printer.println(z);
     }
 
     @Override
     public void err(Object z) {
-        System.err.println(z);
+        default_printer.err(z);
+    }
+
+    // 默认实现，使用标准系统标准输出
+    public static void setPrinter(CPrinter cPrinter) {
+        if (cPrinter != null)
+            INSTANCE.default_printer = cPrinter;
+    }
+
+    private static class CPrinterImpl extends CPrinter {
+        private static final CPrinterImpl INSTANCE = new CPrinterImpl();
+
+        @Override
+        public void print(Object o) {
+            System.out.print(o);
+        }
+
+        @Override
+        public void println(Object o) {
+            System.out.println(o);
+        }
+
+        @Override
+        public void err(Object o) {
+            System.err.println(o);
+        }
+
     }
 
 }
