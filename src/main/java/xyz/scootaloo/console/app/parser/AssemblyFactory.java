@@ -185,7 +185,7 @@ public final class AssemblyFactory {
         // 将销毁方法注册到系统关闭钩子中
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             for (Actuator actuator : destroyActuators) {
-                InvokeProxy.fun(actuator::invoke).call();
+                InvokeProxy.fun(actuator::invoke).call(null);
             }
         }));
     }
