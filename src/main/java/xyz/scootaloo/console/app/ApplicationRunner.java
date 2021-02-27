@@ -65,17 +65,4 @@ public final class ApplicationRunner {
         return INTERPRETER_SINGLETON;
     }
 
-    /**
-     * 指定其他的输出方式，默认输出方法是 System.out.print
-     * @see xyz.scootaloo.console.app.common.DefaultConsole 默认实现
-     * @param supplier 自定义实现
-     */
-    public static void setPrinterFactory(CPrinterSupplier supplier) {
-        if (supplier != null) {
-            ResourceManager.setPrinterFactory(supplier);
-            DefaultConsole.setPrinter(supplier.get());
-        } else
-            throw new NullPointerException("console 实现为空");
-    }
-
 }

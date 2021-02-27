@@ -2,6 +2,7 @@ package xyz.scootaloo.console.app.listener;
 
 import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ConsoleMessage;
+import xyz.scootaloo.console.app.common.Factory;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.parser.InvokeInfo;
 
@@ -17,7 +18,7 @@ import java.util.List;
  * @author flutterdash@qq.com
  * @since 2020/12/30 9:30
  */
-public interface AppListener {
+public interface AppListener extends Factory {
 
     /**
      * @return 是否启用

@@ -2,9 +2,7 @@ package xyz.scootaloo.console.app.parser;
 
 import xyz.scootaloo.console.app.anno.Cmd;
 import xyz.scootaloo.console.app.anno.CmdType;
-import xyz.scootaloo.console.app.common.Colorful;
-import xyz.scootaloo.console.app.common.Console;
-import xyz.scootaloo.console.app.common.ResourceManager;
+import xyz.scootaloo.console.app.common.*;
 import xyz.scootaloo.console.app.config.Author;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.error.CommandInvokeException;
@@ -34,6 +32,7 @@ public final class AssemblyFactory {
     /** resources */
     private static final Colorful color = ResourceManager.getColorful();
     private static final Console console = ResourceManager.getConsole();
+    private static ConsoleBanner bannerPrinter = AssemblyFactory::welcome;
     protected static final Map<String, Actuator> strategyMap = new HashMap<>();
     protected static final List<MethodActuator> initActuators = new ArrayList<>();
     protected static final List<MethodActuator> preActuators = new ArrayList<>();
@@ -108,7 +107,6 @@ public final class AssemblyFactory {
             return;
         } else {
             hasInit = true;
-            welcome();
         }
 
         // 将预置的工厂注入进来
@@ -123,6 +121,12 @@ public final class AssemblyFactory {
             Object factoryInstance = factory.get();
             if (factoryInstance == null)
                 continue;
+            // 全局输出实现工厂方法
+            if (factoryInstance instanceof CPrinterSupplier)
+                doGetPrinterFactory((CPrinterSupplier) factoryInstance);
+            // banner printer
+            if (factoryInstance instanceof ConsoleBanner)
+                bannerPrinter = (ConsoleBanner) factoryInstance;
             // 装配参数解析器
             if (factoryInstance instanceof NameableParameterParser) {
                 NameableParameterParser parser = (NameableParameterParser) factoryInstance;
@@ -143,6 +147,9 @@ public final class AssemblyFactory {
                     doGetListener((AppListener) factoryInstance);
             }
         }
+
+        // 输出欢迎信息
+        bannerPrinter.printBanner();
 
         // 处理命令工厂
         for (Object factoryInstance : retainSet) {
@@ -264,6 +271,16 @@ public final class AssemblyFactory {
         }, types);
     }
 
+    /**
+     * 指定其他的输出方式，默认输出方法是 System.out.print
+     * @see xyz.scootaloo.console.app.common.DefaultConsole 默认实现
+     * @param printerFactory 自定义实现工厂方法实现
+     */
+    private static void doGetPrinterFactory(CPrinterSupplier printerFactory) {
+        ResourceManager.setPrinterFactory(printerFactory);
+        DefaultConsole.setPrinter(printerFactory.get());
+    }
+
     // 装配Help工厂
     private static void doGetHelpFactory(Object factory) {
         Class<?> helpObjClass = factory.getClass();
@@ -313,6 +330,7 @@ public final class AssemblyFactory {
         console.println("");
     }
 
+    // 根据时间输出问候语
     private static Optional<String> greetings() {
         Properties properties = System.getProperties();
         String username = properties.getProperty("user.name");

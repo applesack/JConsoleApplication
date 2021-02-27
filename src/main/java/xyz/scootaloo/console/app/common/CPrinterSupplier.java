@@ -6,7 +6,7 @@ package xyz.scootaloo.console.app.common;
  * @since 2021/2/25 0:04
  */
 @FunctionalInterface
-public interface CPrinterSupplier {
+public interface CPrinterSupplier extends Factory {
 
     /**
      * 工厂方法，实现类的此工厂方法可能会被多次调用。<br>

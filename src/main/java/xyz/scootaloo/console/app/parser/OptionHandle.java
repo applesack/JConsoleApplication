@@ -1,5 +1,7 @@
 package xyz.scootaloo.console.app.parser;
 
+import xyz.scootaloo.console.app.common.Factory;
+
 import java.util.List;
 
 /**
@@ -16,7 +18,7 @@ import java.util.List;
  * @author flutterdash@qq.com
  * @since 2021/2/5 21:10
  */
-public interface OptionHandle {
+public interface OptionHandle extends Factory {
 
     /**
      * 使用一个字符来标识一个操作<br>
