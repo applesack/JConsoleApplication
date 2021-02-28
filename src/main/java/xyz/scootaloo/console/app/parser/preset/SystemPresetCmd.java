@@ -37,7 +37,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
     private static final Console console = ResourceManager.getConsole();
     private static ConsoleConfig config;
 
-    private static final String version = "v0.3.1";
+    private static final String version = "v0.3.2";
     public static final String SYS_TAG = "sys";
 
     // 使用方法返回值做为属性资源

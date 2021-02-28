@@ -79,13 +79,23 @@ public final class SubParameterParser implements NameableParameterParser {
                         if (option.required())
                             return ParameterWrapper.fail(
                                     new ParameterResolveException("缺少必选参数 `" + option.fullName() + "`"));
-                        methodArgs.add(TransformFactory.getDefVal(curParamType));
+                        Optional<Object> presetObjOptional = TransformFactory.getPresetVal(curParamType);
+                        if (presetObjOptional.isPresent()) {
+                            methodArgs.add(presetObjOptional.get());
+                        } else {
+                            methodArgs.add(TransformFactory.getDefVal(curParamType));
+                            wildcardArguments.add(new SimpleWildcardArgument(i, curParamType));
+                        }
                     }
+                }
+            } else { // 没有 @Opt 注解时，先放置一个默认值，然后在这个位置做一个标记
+                Optional<Object> presetObjOptional = TransformFactory.getPresetVal(curParamType);
+                if (presetObjOptional.isPresent()) {
+                    methodArgs.add(presetObjOptional.get());
+                } else {
+                    methodArgs.add(TransformFactory.getDefVal(curParamType));
                     wildcardArguments.add(new SimpleWildcardArgument(i, curParamType));
                 }
-            } else { // 没有 @Opt 注解时
-                methodArgs.add(TransformFactory.getDefVal(curParamType));
-                wildcardArguments.add(new SimpleWildcardArgument(i, curParamType));
             }
         }
 

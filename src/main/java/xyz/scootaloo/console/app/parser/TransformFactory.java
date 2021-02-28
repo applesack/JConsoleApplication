@@ -43,8 +43,8 @@ public final class TransformFactory {
         );
 
         // 设置系统预设的一些实例
-        PRESET_VALUES_MAP.put(Random.class, () -> random);
-        PRESET_VALUES_MAP.put(CPrinter.class, ResourceManager::getPrinter);
+        putPresetObj(Random.class, () -> random);
+        putPresetObj(CPrinter.class, ResourceManager::getPrinter);
     }
 
     /**
@@ -60,12 +60,23 @@ public final class TransformFactory {
      * 获取系统预设的值
      * <p>通常是一些单例，或者工厂方法管理的类型，默认框架提供一个 {@code Random} 对象，和一个 {@code CPrinter} 对象</p>
      * @param type 类型
-     * @return 此类型的实例，假如不存在此实例则返回null
+     * @return 此类型的实例，假如不存在此实例则返回 empty
      */
-    public static Object getPresetVal(Class<?> type) {
-        if (PRESET_VALUES_MAP.containsKey(type))
-            return PRESET_VALUES_MAP.get(type).get();
-        return null;
+    public static Optional<Object> getPresetVal(Class<?> type) {
+        return Optional.ofNullable(PRESET_VALUES_MAP.get(type))
+                .map(Supplier::get);
+    }
+
+    /**
+     * 向工厂中放置预设的值
+     * @param type 指定一个类型
+     * @param supplier 此类型的工厂
+     * @param <T> 类型
+     */
+    @SuppressWarnings({ "unchecked", "hiding" })
+    public static <T> void putPresetObj(Class<T> type, Supplier<T> supplier) {
+        if (type != null && supplier != null)
+            PRESET_VALUES_MAP.put(type, (Supplier<Object>) supplier);
     }
 
     /**

@@ -4,7 +4,7 @@ import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.parser.Interpreter;
 import xyz.scootaloo.console.app.parser.InvokeInfo;
-import xyz.scootaloo.console.app.parser.OptionHandle;
+import xyz.scootaloo.console.app.parser.OptionHandler;
 import xyz.scootaloo.console.app.util.VariableManager;
 
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.List;
  * @author flutterdash@qq.com
  * @since 2021/2/7 9:40
  */
-public final class VariableSetter implements OptionHandle {
+public final class VariableSetter implements OptionHandler {
     /** singleton */
     protected static final VariableSetter INSTANCE = new VariableSetter();
     private static final Console console = ResourceManager.getConsole();

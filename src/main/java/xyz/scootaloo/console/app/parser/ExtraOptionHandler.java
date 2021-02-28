@@ -13,8 +13,8 @@ import java.util.Map;
  * @author flutterdash@qq.com
  * @since 2021/2/5 21:30
  */
-public final class ExtraOptionHandle {
-    private static final Map<Character, OptionHandle> optionMap = new HashMap<>();
+public final class ExtraOptionHandler {
+    private static final Map<Character, OptionHandler> optionMap = new HashMap<>();
     private static final Console console = ResourceManager.getConsole();
     private static final String DELIMITER = "-";
     private static Interpreter interpreter;
@@ -32,7 +32,7 @@ public final class ExtraOptionHandle {
      * 从工厂中注入进来的处理器
      * @param handle 实现 OptionHandle 接口
      */
-    protected static void addExtraOption(OptionHandle handle) {
+    protected static void addExtraOption(OptionHandler handle) {
         optionMap.put(handle.option(), handle);
     }
 
@@ -57,7 +57,7 @@ public final class ExtraOptionHandle {
                 console.println("未找到解释器");
                 return false;
             }
-            OptionHandle handle = optionMap.get(option);
+            OptionHandler handle = optionMap.get(option);
             handle.runWithParameter(realCmdName, getParameter(segments[1]), args, interpreter);
         } else {
             console.println("没有找到对应的操作处理器: `" + option + "`");

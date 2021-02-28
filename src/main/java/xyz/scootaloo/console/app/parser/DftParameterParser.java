@@ -48,9 +48,9 @@ public final class DftParameterParser {
             Class<?> curArgType = argTypes[i];
             // 当前这个参数没有注解，尝试将一个无名参数解析到这里
             if (!curAnno.isPresent()) {
-                Object presetObj = TransformFactory.getPresetVal(curArgType);
-                if (presetObj != null) {
-                    args.add(presetObj);
+                Optional<Object> presetObjOptional = TransformFactory.getPresetVal(curArgType);
+                if (presetObjOptional.isPresent()) {
+                    args.add(presetObjOptional.get());
                     continue;
                 }
                 if (remainList.isEmpty())
@@ -72,6 +72,7 @@ public final class DftParameterParser {
                 if (option.required())
                     return ParameterWrapper.fail(
                             new ParameterResolveException("缺少必要的参数: -" + option.value()));
+
                 // 给这个位置的参数做一个标记，假如处理完还有多余的参数就填补到这个位置来
                 wildcardArguments.add(new WildcardArgument(i, curArgType, genericTypes[i], option.joint()));
                 // 在getAndRemove()方法中已经处理了类型默认值的情况，这里处理用户给定的自定义默认值
@@ -167,20 +168,25 @@ public final class DftParameterParser {
 
     // map 中包含了所需的参数，则从map中移除此key
     // return -> true: 没找到这个参数； false: 已找到，并进行了设置
-    private static boolean getAndRemove(List<Object> arg, Set<String> keySet,
+    private static boolean getAndRemove(List<Object> args, Set<String> keySet,
                                         Class<?> classType, Type genericType,
                                         Map<?, Object> map) throws Exception {
         boolean found = false;
         for (String key : keySet) {
             if (map.containsKey(String.valueOf(key))) {
-                arg.add(resolveArgument(map.get(key), classType, genericType));
+                args.add(resolveArgument(map.get(key), classType, genericType));
                 found = true;
                 break;
             }
         }
 
         if (!found) {
-            arg.add(TransformFactory.getDefVal(classType));
+            Optional<Object> presetObjOptional = TransformFactory.getPresetVal(classType);
+            if (presetObjOptional.isPresent()) {
+                args.add(presetObjOptional.get());
+            } else {
+                args.add(TransformFactory.getDefVal(classType));
+            }
         } else {
             for (String key : keySet) {
                 map.remove(key);

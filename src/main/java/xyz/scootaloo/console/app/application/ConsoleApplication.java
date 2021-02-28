@@ -6,7 +6,7 @@ import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.listener.EventPublisher;
-import xyz.scootaloo.console.app.parser.ExtraOptionHandle;
+import xyz.scootaloo.console.app.parser.ExtraOptionHandler;
 import xyz.scootaloo.console.app.parser.Interpreter;
 import xyz.scootaloo.console.app.parser.InvokeInfo;
 import xyz.scootaloo.console.app.util.StringUtils;
@@ -117,7 +117,7 @@ public final class ConsoleApplication extends AbstractConsoleApplication {
         if (isExitCmd(cmdName))
             return true;
         // 查看是否有需要额外处理
-        if (ExtraOptionHandle.handle(cmdName, cmdItems))
+        if (ExtraOptionHandler.handle(cmdName, cmdItems))
             return false;
         InvokeInfo info = interpreter.interpret(command);
         if (!postProcessors.isEmpty() && enableProcessor) {

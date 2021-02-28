@@ -18,7 +18,7 @@ import java.util.List;
  * @author flutterdash@qq.com
  * @since 2021/2/5 21:10
  */
-public interface OptionHandle extends Factory {
+public interface OptionHandler extends Factory {
 
     /**
      * 使用一个字符来标识一个操作<br>

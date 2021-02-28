@@ -134,8 +134,8 @@ public final class AssemblyFactory {
                 continue;
             }
             // 装配操作处理器
-            if (factoryInstance instanceof OptionHandle) {
-                ExtraOptionHandle.addExtraOption((OptionHandle) factoryInstance);
+            if (factoryInstance instanceof OptionHandler) {
+                ExtraOptionHandler.addExtraOption((OptionHandler) factoryInstance);
                 continue;
             }
             // 收集帮助文档
