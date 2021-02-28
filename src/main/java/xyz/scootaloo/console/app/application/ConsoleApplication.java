@@ -5,7 +5,7 @@ import xyz.scootaloo.console.app.common.Colorful;
 import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
-import xyz.scootaloo.console.app.listener.EventPublisher;
+import xyz.scootaloo.console.app.event.EventPublisher;
 import xyz.scootaloo.console.app.parser.ExtraOptionHandler;
 import xyz.scootaloo.console.app.parser.Interpreter;
 import xyz.scootaloo.console.app.parser.InvokeInfo;

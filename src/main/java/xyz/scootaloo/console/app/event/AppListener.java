@@ -1,4 +1,4 @@
-package xyz.scootaloo.console.app.listener;
+package xyz.scootaloo.console.app.event;
 
 import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ConsoleMessage;

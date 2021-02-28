@@ -7,7 +7,7 @@ import xyz.scootaloo.console.app.parser.OptionHandler;
  *
  * @see xyz.scootaloo.console.app.parser.NameableParameterParser 可命名的参数解析器
  * @see OptionHandler 单参数处理器
- * @see xyz.scootaloo.console.app.listener.AppListener 系统事件监听器
+ * @see xyz.scootaloo.console.app.event.AppListener 系统事件监听器
  * @see xyz.scootaloo.console.app.parser.HelpDoc 自定义帮助文档
  * @see CPrinterSupplier 输出器工厂
  * @see ConsoleBanner 自定义欢迎信息

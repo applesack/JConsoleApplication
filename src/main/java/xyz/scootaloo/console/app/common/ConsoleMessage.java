@@ -1,6 +1,6 @@
 package xyz.scootaloo.console.app.common;
 
-import xyz.scootaloo.console.app.listener.EventPublisher;
+import xyz.scootaloo.console.app.event.EventPublisher;
 
 /**
  * 定义控制台消息

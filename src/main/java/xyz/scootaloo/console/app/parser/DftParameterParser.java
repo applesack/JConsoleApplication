@@ -184,6 +184,7 @@ public final class DftParameterParser {
             Optional<Object> presetObjOptional = TransformFactory.getPresetVal(classType);
             if (presetObjOptional.isPresent()) {
                 args.add(presetObjOptional.get());
+                return false;
             } else {
                 args.add(TransformFactory.getDefVal(classType));
             }

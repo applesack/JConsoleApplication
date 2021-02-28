@@ -569,8 +569,8 @@ private void addStudent(Student student) {
 
 ```java
 @Override
-public boolean accept(Moment occasion) {
-    return occasion == Moment.OnInputResolved || occasion == Moment.OnAppStarted;
+public boolean accept(Moment event) {
+    return event == Moment.OnInputResolved || event == Moment.OnAppStarted;
 }
 ```
 
