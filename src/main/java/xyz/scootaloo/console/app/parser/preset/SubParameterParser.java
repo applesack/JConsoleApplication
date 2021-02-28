@@ -6,6 +6,7 @@ import xyz.scootaloo.console.app.parser.*;
 import xyz.scootaloo.console.app.util.InvokeProxy;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 当你想要的很简单的命令参数输入，请将@Cmd注解的parser标记为sub
@@ -43,10 +44,10 @@ public final class SubParameterParser implements NameableParameterParser {
     @Override
     public ResultWrapper parse(MethodMeta meta, List<String> args) {
         // 提取基本信息
-        Set<String> paramSet = meta.fullNameSet;         // 参数全称集合
-        List<Object> methodArgs = new ArrayList<>();     // 待返回的参数列表
-        Map<String, String> kvPairs = new HashMap<>();   // 命令行中的参数键值对
-        List<String> remainList = parseParameters(args, paramSet, kvPairs); // 命令行移除了键值对后剩余的内容
+        Optional<Opt>[] paramOptAnnoList = meta.optionals; // 参数全称集合
+        List<Object> methodArgs = new ArrayList<>();       // 待返回的参数列表
+        Map<String, String> kvPairs = new HashMap<>();     // 命令行中的参数键值对
+        List<String> remainList = parseParameters(args, paramOptAnnoList, kvPairs); // 命令行移除了键值对后剩余的内容
 
         Class<?>[] methodArgTypes = meta.parameterTypes; // 方法参数类型
         Optional<Opt>[] optionals = meta.optionals;      // 方法中的注解数组，每个方法参数对应一个注解元素
@@ -58,7 +59,7 @@ public final class SubParameterParser implements NameableParameterParser {
             Optional<Opt> optOptional = optionals[i];  // 当前参数对应的注解
             if (optOptional.isPresent()) { // 含有 @Opt 注解时
                 Opt option = optOptional.get();
-                String paramName = option.fullName();
+                String paramName = getNameStrategy(option);
                 if (kvPairs.containsKey(paramName)) {
                     String value = kvPairs.get(paramName);
                     Object obj = exTransform(value, curParamType);
@@ -133,12 +134,13 @@ public final class SubParameterParser implements NameableParameterParser {
     /**
      * 将命令行中与方法参数中注解描述相符的参数项提取出来，并从原命令行中删除该项
      * @param commandArgItems 命令行
-     * @param paramSet 参数集，对应 @Opt 注解的fullName属性
+     * @param annoList 方法参数上的注解列表
      * @param kvPairs 提供一个容器用于接收从命令行中提取出来的键值对
      * @return 命令行中剩余的内容
      */
-    private List<String> parseParameters(List<String> commandArgItems, Set<String> paramSet,
+    private List<String> parseParameters(List<String> commandArgItems, Optional<Opt>[] annoList,
                                          Map<String, String> kvPairs) {
+        Set<String> paramSet = getParamKeySetForAnnoList(annoList);
         List<String> remainList = new ArrayList<>();
         int size = commandArgItems.size();
         for (int i = 0; i<size; i++) {
@@ -155,6 +157,27 @@ public final class SubParameterParser implements NameableParameterParser {
             }
         }
         return remainList;
+    }
+
+    /**
+     * 优先选取 Opt 注解的 fullName 属性，假如没有指定 fullName，则使用 value 值
+     * @param annoList 方法参数上的注解
+     * @return 收集到的参数名集合
+     */
+    private Set<String> getParamKeySetForAnnoList(Optional<Opt>[] annoList) {
+        return Arrays.stream(annoList)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(this::getNameStrategy)
+                .collect(Collectors.toSet());
+    }
+
+    // 选取参数名的策略，优先选取 fullName， 其次选取 value 值
+    private String getNameStrategy(Opt opt) {
+        if (opt.fullName().isEmpty())
+            return String.valueOf(opt.value());
+        else
+            return opt.fullName();
     }
 
     // 缺省参数标记
