@@ -1,8 +1,5 @@
 package xyz.scootaloo.console.app.util;
 
-import xyz.scootaloo.console.app.config.ConsoleConfig;
-import xyz.scootaloo.console.app.listener.AppListenerAdapter;
-import xyz.scootaloo.console.app.listener.AppListenerProperty;
 import xyz.scootaloo.console.app.util.FunctionDesc.*;
 
 import java.util.function.Consumer;
@@ -24,9 +21,7 @@ import java.util.function.Consumer;
  * @author flutterdash@qq.com
  * @since 2021/2/12 0:21
  */
-public final class InvokeProxy implements AppListenerAdapter {
-    private static ConsoleConfig conf;
-    private static final InvokeProxy INSTANCE = new InvokeProxy();
+public final class InvokeProxy {
 
     public static <R> Rtn0pWrapper<R> fun(Rtn0P<R> rtn0P) {
         return new Rtn0pWrapper<>(rtn0P);
@@ -66,32 +61,6 @@ public final class InvokeProxy implements AppListenerAdapter {
 
     public static <T1, T2, T3, T4> NonRtn4pWrapper<T1, T2, T3, T4> fun(NonRtn4P<T1, T2, T3, T4> nonRtn4P) {
         return new NonRtn4pWrapper<>(nonRtn4P);
-    }
-
-    protected static InvokeProxy getInstance() {
-        return INSTANCE;
-    }
-
-    // --------------------------------------监听器---------------------------------------------
-
-    @Override
-    public String getName() {
-        return "invokeProxy";
-    }
-
-    @Override
-    public void config(AppListenerProperty interested) {
-        interested.onAppStarted(Integer.MIN_VALUE);
-    }
-
-    @Override
-    public void onAppStarted(ConsoleConfig config) {
-        conf = config;
-    }
-
-    @Override
-    public String info() {
-        return "仅用于在系统启动时获取配置";
     }
 
 }

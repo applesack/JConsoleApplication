@@ -187,7 +187,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
 
     private String printInfo(Actuator actuator) {
         if (actuator instanceof MethodActuator) {
-            return  ((MethodActuator) actuator).printInfo();
+            return  ((MethodActuator) actuator).getHelpInfo();
         } else {
             return "系统中没有这个命令.";
         }

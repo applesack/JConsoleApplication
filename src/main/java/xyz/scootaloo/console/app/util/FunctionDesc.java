@@ -79,14 +79,6 @@ public class FunctionDesc {
     }
 
     /**
-     * 获取方法代理对象的实例
-     * @return 单例
-     */
-    public static InvokeProxy getInvokeProxyInstance() {
-        return InvokeProxy.getInstance();
-    }
-
-    /**
      * <方法包装>
      * 一下的所有类都可以分为两种类型:
      *      1. 有返回值的方法包装，且参数少于等于4个
@@ -99,9 +91,9 @@ public class FunctionDesc {
      *      setSupplier 在被代理的方法抛出异常时，自动应用默认值(通过lambda表达式得到)
      *      getOptional 返回Optional对象，其中包含方法调用结果，假如方法抛出异常，则其中是默认值，假如没有默认值，则得到Optional.empty()
      */
-    public static class NonRtnMethod {
+    public static abstract class NonRtnMethod {
         /** 一个异常处理器队列 */
-        protected final List<ExceptionHandle> handles = new ArrayList<>();
+        protected final List<ExceptionHandler<? extends Exception>> handlers = new ArrayList<>();
 
         /**
          * 公用的添加异常处理器方法
@@ -109,12 +101,12 @@ public class FunctionDesc {
          */
         protected void xAddHandle(Consumer<Exception> handle) {
             if (handle != null)
-                handles.add(new ExceptionHandle(handle));
+                handlers.add(ExceptionHandler.getDefault(handle));
         }
 
-        protected void xAddHandle(Class<Exception> exType, Consumer<Exception> handle) {
+        protected <Ex extends Exception> void xAddHandle(Class<Ex> exType, Consumer<Ex> handle) {
             if (handle != null)
-                handles.add(new ExceptionHandle(exType, handle));
+                handlers.add(new ExceptionHandler<>(exType, handle));
         }
 
         /**
@@ -123,10 +115,7 @@ public class FunctionDesc {
          */
         protected void xHandle(Exception e) {
             // simply
-            handles.forEach(handle -> {
-                if (ClassUtils.isExtendForm(e, handle.type))
-                    handle.consumer.accept(e);
-            });
+            handlers.forEach(handler -> handler.handle(e));
         }
 
     }
@@ -202,7 +191,7 @@ public class FunctionDesc {
             return this;
         }
 
-        public NonRtn1pWrapper<T> addHandle(Class<Exception> exType, Consumer<Exception> handle) {
+        public <Ex extends Exception> NonRtn1pWrapper<T> addHandle(Class<Ex> exType, Consumer<Ex> handle) {
             super.xAddHandle(exType, handle);
             return this;
         }
@@ -227,10 +216,11 @@ public class FunctionDesc {
             return this;
         }
 
-        public NonRtn2pWrapper<T1, T2> addHandle(Class<Exception> exType, Consumer<Exception> handle) {
+        public <Ex extends Exception> NonRtn2pWrapper<T1, T2> addHandle(Class<Ex> exType, Consumer<Ex> handle) {
             super.xAddHandle(exType, handle);
             return this;
         }
+
         public void call(T1 param1, T2 param2) {
             try {
                 method.call(param1, param2);
@@ -251,7 +241,8 @@ public class FunctionDesc {
             return this;
         }
 
-        public NonRtn3pWrapper<T1, T2, T3> addHandle(Class<Exception> exType, Consumer<Exception> handle) {
+        public <Ex extends Exception> NonRtn3pWrapper<T1, T2, T3> addHandle(Class<Ex> exType,
+                                                                            Consumer<Ex> handle) {
             super.xAddHandle(exType, handle);
             return this;
         }
@@ -276,7 +267,7 @@ public class FunctionDesc {
             return this;
         }
 
-        public NonRtn4pWrapper<T1, T2, T3, T4> addHandle(Class<Exception> exType, Consumer<Exception> handle) {
+        public <Ex extends Exception> NonRtn4pWrapper<T1, T2, T3, T4> addHandle(Class<Ex> exType, Consumer<Ex> handle) {
             super.xAddHandle(exType, handle);
             return this;
         }
@@ -301,7 +292,7 @@ public class FunctionDesc {
             return this;
         }
 
-        public Rtn0pWrapper<R> addHandle(Class<Exception> exType, Consumer<Exception> handle) {
+        public <Ex extends Exception> Rtn0pWrapper<R> addHandle(Class<Ex> exType, Consumer<Ex> handle) {
             super.xAddHandle(exType, handle);
             return this;
         }
@@ -340,7 +331,7 @@ public class FunctionDesc {
             return this;
         }
 
-        public Rtn1pWrapper<R, T> addHandle(Class<Exception> exType, Consumer<Exception> handle) {
+        public <Ex extends Exception> Rtn1pWrapper<R, T> addHandle(Class<Ex> exType, Consumer<Ex> handle) {
             super.xAddHandle(exType, handle);
             return this;
         }
@@ -379,7 +370,7 @@ public class FunctionDesc {
             return this;
         }
 
-        public Rtn2pWrapper<R, T1, T2> addHandle(Class<Exception> exType, Consumer<Exception> handle) {
+        public <Ex extends Exception> Rtn2pWrapper<R, T1, T2> addHandle(Class<Ex> exType, Consumer<Ex> handle) {
             super.xAddHandle(exType, handle);
             return this;
         }
@@ -418,7 +409,8 @@ public class FunctionDesc {
             return this;
         }
 
-        public Rtn3pWrapper<R, T1, T2, T3> addHandle(Class<Exception> exType, Consumer<Exception> handle) {
+        public <Ex extends Exception> Rtn3pWrapper<R, T1, T2, T3> addHandle(Class<Ex> exType,
+                                                                            Consumer<Ex> handle) {
             super.xAddHandle(exType, handle);
             return this;
         }
@@ -457,7 +449,8 @@ public class FunctionDesc {
             return this;
         }
 
-        public Rtn4pWrapper<R, T1, T2, T3, T4> addHandle(Class<Exception> exType, Consumer<Exception> handle) {
+        public <Ex extends Exception> Rtn4pWrapper<R, T1, T2, T3, T4> addHandle(Class<Ex> exType,
+                                                                                Consumer<Ex> handle) {
             super.xAddHandle(exType, handle);
             return this;
         }
@@ -486,17 +479,24 @@ public class FunctionDesc {
     }
 
     /** 异常处理模型 */
-    public static class ExceptionHandle {
-        private final Class<Exception> type;
-        private final Consumer<Exception> consumer;
+    public static class ExceptionHandler<Ex extends Exception> {
+        private final Class<Ex> type;
+        private final Consumer<Ex> consumer;
 
-        public ExceptionHandle(Consumer<Exception> consumer) {
-            this(Exception.class, consumer);
-        }
-
-        public ExceptionHandle(Class<Exception> type, Consumer<Exception> consumer) {
+        public ExceptionHandler(Class<Ex> type, Consumer<Ex> consumer) {
             this.type = type;
             this.consumer = consumer;
+        }
+
+        @SuppressWarnings({ "unchecked", "hiding" })
+        public void handle(Exception e) {
+            if (ClassUtils.isExtendForm(e, type)) {
+                consumer.accept((Ex) e);
+            }
+        }
+
+        public static ExceptionHandler<Exception> getDefault(Consumer<Exception> consumer) {
+            return new ExceptionHandler<>(Exception.class, consumer);
         }
 
     }

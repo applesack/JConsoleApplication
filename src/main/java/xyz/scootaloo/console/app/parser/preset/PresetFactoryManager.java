@@ -1,7 +1,6 @@
 package xyz.scootaloo.console.app.parser.preset;
 
 import xyz.scootaloo.console.app.config.ConsoleConfig;
-import xyz.scootaloo.console.app.util.FunctionDesc;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -29,7 +28,6 @@ public final class PresetFactoryManager {
         factories.add(() -> BackstageTask.INSTANCE);          // 4
         factories.add(() -> SubParameterParser.INSTANCE);     // 5
         factories.add(() -> VariableSetter.INSTANCE);         // 6
-        factories.add(FunctionDesc::getInvokeProxyInstance);  // 7
 
         factories.addAll(config.getFactories());
         return factories;

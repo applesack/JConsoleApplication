@@ -1,7 +1,5 @@
 package xyz.scootaloo.console.app.parser;
 
-import xyz.scootaloo.console.app.common.Factory;
-
 import java.util.List;
 
 /**
@@ -12,7 +10,7 @@ import java.util.List;
  * @since 2021/1/16 22:59
  */
 @FunctionalInterface
-public interface ParameterParser extends Factory {
+public interface ParameterParser {
 
     /**
      * 根据命令行参数获取方法的参数

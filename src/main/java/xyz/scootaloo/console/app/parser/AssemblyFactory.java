@@ -552,7 +552,7 @@ public final class AssemblyFactory {
         }
 
         // 打印此 方法/命令 的帮助信息
-        public String printInfo() {
+        public String getHelpInfo() {
             String body = HELP_MAP.get(this.cmdName);
             if (body == null) {
                 return "没有此命令的帮助信息";

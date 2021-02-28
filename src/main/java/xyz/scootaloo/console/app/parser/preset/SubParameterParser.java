@@ -113,7 +113,7 @@ public final class SubParameterParser implements NameableParameterParser {
      * @return 解析成功 返回对象； 解析失败 返回异常对象
      */
     private Object exTransform(String source, Class<?> type) {
-        Exception[] exContainer = {null};
+        final Exception[] exContainer = {null};
         Object res = InvokeProxy.fun(TransformFactory::simpleTrans)
                         .addHandle((ex) -> exContainer[0] = ex)
                         .call(source, type);
