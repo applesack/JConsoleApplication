@@ -1,9 +1,11 @@
 package xyz.scootaloo.console.app.error;
 
+import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.parser.MethodMeta;
 import xyz.scootaloo.console.app.parser.ParameterParser;
 import xyz.scootaloo.console.app.util.ClassUtils;
 
+import java.io.PrintStream;
 import java.util.List;
 
 /**
@@ -21,6 +23,7 @@ public abstract class ConsoleAppRuntimeException extends RuntimeException {
     private String methodDescribe;  // 被执行的方法的描述
     private String input;           // 命令行的输入(参数部分)
     private Class<? extends ParameterParser> parser; // 解析此命令行使用的解析器
+    private ErrorCode errorCode = ErrorCode.DEFAULT_ERROR;
 
     public ConsoleAppRuntimeException() {
         this("");
@@ -41,9 +44,21 @@ public abstract class ConsoleAppRuntimeException extends RuntimeException {
                                                    List<String> input,
                                                    Class<? extends ParameterParser> parserClass) {
         this.methodDescribe = ClassUtils.getMethodDescribe(meta.method);
-        this.input = String.join(" ", input);
+        if (input != null)
+            this.input = String.join(" ", input);
         this.parser = parserClass;
         return this;
+    }
+
+    public ConsoleAppRuntimeException setErrorInfo(ErrorCode code) {
+        this.errorCode = code;
+        return this;
+    }
+
+    @Override
+    public void printStackTrace(PrintStream s) {
+        ResourceManager.getConsole().err(errorCode);
+        super.printStackTrace(s);
     }
 
     // getter
@@ -68,4 +83,7 @@ public abstract class ConsoleAppRuntimeException extends RuntimeException {
         return parser;
     }
 
+    public ErrorCode getErrorCode() {
+        return errorCode;
+    }
 }

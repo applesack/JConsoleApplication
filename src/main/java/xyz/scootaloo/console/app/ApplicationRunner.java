@@ -26,7 +26,7 @@ public final class ApplicationRunner {
     private static Interpreter INTERPRETER_SINGLETON;
 
     /**
-     * 使用一个配置对象启动获取控制台应用<br>
+     * 使用一个配置对象启动并获取控制台应用对象<br>
      * 框架中获取配置通常是使用java代码设置工厂，结合配置文件(classpath:/console.yml)<br>
      * @see Console#factories() 请参考示例代码中的配置方式
      * @param config 一个配置对象
@@ -40,7 +40,7 @@ public final class ApplicationRunner {
     /**
      * 无参运行<br>
      * 当调用{@code ApplicationRunner.consoleApplication()}时，框架会实例化调用者，将调用者做为工厂注册到框架。
-     * @see Main 请参考默认的启动实例，这里使用了无参运行，这里{@code Main}这个类被实例化，其中{@link Main#hello()}这个方法被扫描到。
+     * @see Main 请参考默认的启动实例，这里使用了无参运行，这里{@code Main}这个类被实例化，其中{@link Main#hello(CPrinter)}这个方法被扫描到。
      * 默认配置文件，请参考 classpath:/console.yml
      * 假如 classpath下不包含这个文件，则使用构建者的默认配置 {@link DefaultValueConfigBuilder}
      * @return 基于默认配置生成的控制台应用

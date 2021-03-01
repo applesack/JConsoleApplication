@@ -6,6 +6,7 @@ import xyz.scootaloo.console.app.common.*;
 import xyz.scootaloo.console.app.config.Author;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.error.CommandInvokeException;
+import xyz.scootaloo.console.app.error.ErrorCode;
 import xyz.scootaloo.console.app.error.ParameterResolveException;
 import xyz.scootaloo.console.app.event.AppListener;
 import xyz.scootaloo.console.app.event.EventPublisher;
@@ -392,11 +393,14 @@ public final class AssemblyFactory {
                     FilterMessage filterMessage = FilterMethodWrapper.doFilterChain();
                     if (!filterMessage.success) {
                         CommandInvokeException commandInvokeException;
-                        if (filterMessage.hasException)
+                        if (filterMessage.hasException) {
                             commandInvokeException = new CommandInvokeException(filterMessage.errorMsg,
                                     filterMessage.exception);
-                        else
+                            commandInvokeException.setErrorInfo(ErrorCode.FILTER_ON_EXCEPTION);
+                        } else {
                             commandInvokeException = new CommandInvokeException(filterMessage.errorMsg);
+                            commandInvokeException.setErrorInfo(ErrorCode.FILTER_INTERCEPT);
+                        }
                         return InvokeInfo.failed(rtnType, cmdArgs, commandInvokeException
                                 .appendExData(methodMeta, obj, cmdArgs, parser.getClass()));
                     } else {
@@ -450,7 +454,8 @@ public final class AssemblyFactory {
             } catch (Exception paramResolveEx) {
                 // 这里一般是参数解析异常
                 return info.onException(new ParameterResolveException("不能将命令行参数映射到方法参数", paramResolveEx)
-                        .appendExData(methodMeta, obj, cmdArgs, parser.getClass()), null);
+                        .appendExData(methodMeta, obj, cmdArgs, parser.getClass())
+                            .setErrorInfo(ErrorCode.PARAMETER_PARSER_ERROR), null);
             }
             // 如果解析成功
             if (wrapper.isSuccess()) {
@@ -464,7 +469,7 @@ public final class AssemblyFactory {
                     // 执行方法时方法内部发生错误，或者参数不匹配，错误信息填充给info对象
                     info.onException(new CommandInvokeException("方法调用异常:" + e.getMessage(), e)
                             .appendExData(methodMeta, obj, cmdArgs, parser.getClass())
-                            , wrapper.getArgs());
+                                .setErrorInfo(ErrorCode.METHOD_INVOKE_ERROR), wrapper.getArgs());
                 }
                 // 记录最近一次的执行信息
                 Interpreter.lastInvokeInfo = info;
@@ -494,7 +499,8 @@ public final class AssemblyFactory {
                 return info;
             } catch (Exception e) {
                 info.onException(new CommandInvokeException("方法调用异常", e)
-                        .appendExData(methodMeta, obj, null, null), args);
+                        .appendExData(methodMeta, obj, null, null)
+                            .setErrorInfo(ErrorCode.METHOD_INVOKE_ERROR), args);
                 return info;
             }
         }

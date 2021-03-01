@@ -2,6 +2,7 @@ package xyz.scootaloo.console.app;
 
 import xyz.scootaloo.console.app.anno.Boot;
 import xyz.scootaloo.console.app.anno.Cmd;
+import xyz.scootaloo.console.app.common.CPrinter;
 
 /**
  * 示例
@@ -24,9 +25,9 @@ public class Main {
      * 尝试在控制台输入<br>
      * hello
      */
-    @Cmd(parser = "sub")
-    public void hello() {
-        System.out.println("hello world!!");
+    @Cmd
+    public void hello(CPrinter printer) {
+        printer.println("hello world!!");
     }
 
 }

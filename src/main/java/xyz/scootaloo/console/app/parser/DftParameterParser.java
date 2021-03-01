@@ -1,6 +1,7 @@
 package xyz.scootaloo.console.app.parser;
 
 import xyz.scootaloo.console.app.anno.Opt;
+import xyz.scootaloo.console.app.error.ErrorCode;
 import xyz.scootaloo.console.app.error.ParameterResolveException;
 import xyz.scootaloo.console.app.util.StringUtils;
 
@@ -55,7 +56,8 @@ public final class DftParameterParser {
                 }
                 if (remainList.isEmpty())
                     return ParameterWrapper.fail(
-                            new ParameterResolveException("命令不完整，在第" + (i + 1) + "个参数，" + "参数类型: "));
+                            new ParameterResolveException("命令不完整，在第" + (i + 1) + "个参数，" + "参数类型: ")
+                                .setErrorInfo(ErrorCode.LACK_PARAMETER));
                 args.add(resolveArgument(remainList.remove(0), argTypes[i], genericTypes[i]));
                 continue;
             }
@@ -71,7 +73,8 @@ public final class DftParameterParser {
             if (getAndRemove(args, paramsSet, curArgType, genericTypes[i], optMap)) {
                 if (option.required())
                     return ParameterWrapper.fail(
-                            new ParameterResolveException("缺少必要的参数: -" + option.value()));
+                            new ParameterResolveException("缺少必要的参数: -" + option.value())
+                                .setErrorInfo(ErrorCode.LACK_REQUIRED_PARAMETERS));
 
                 // 给这个位置的参数做一个标记，假如处理完还有多余的参数就填补到这个位置来
                 wildcardArguments.add(new WildcardArgument(i, curArgType, genericTypes[i], option.joint()));

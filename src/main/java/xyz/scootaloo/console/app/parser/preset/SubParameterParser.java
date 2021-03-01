@@ -1,6 +1,7 @@
 package xyz.scootaloo.console.app.parser.preset;
 
 import xyz.scootaloo.console.app.anno.Opt;
+import xyz.scootaloo.console.app.error.ErrorCode;
 import xyz.scootaloo.console.app.error.ParameterResolveException;
 import xyz.scootaloo.console.app.parser.*;
 import xyz.scootaloo.console.app.util.InvokeProxy;
@@ -65,7 +66,8 @@ public final class SubParameterParser implements NameableParameterParser {
                     Object obj = exTransform(value, curParamType);
                     if (obj instanceof Exception)
                         return ParameterWrapper.fail(
-                                new ParameterResolveException("参数解析时异常", (Exception) obj));
+                                new ParameterResolveException("参数解析时异常, 类型:" + curParamType.getName(),
+                                        (Exception) obj).setErrorInfo(ErrorCode.NONSUPPORT_TYPE));
                     else
                         methodArgs.add(obj);
                 } else { // 当前参数不在参数键值对中时
@@ -73,13 +75,15 @@ public final class SubParameterParser implements NameableParameterParser {
                         Object obj = exTransform(option.dftVal(), curParamType);
                         if (obj instanceof Exception)
                             return ParameterWrapper.fail(
-                                    new ParameterResolveException("参数解析时异常", (Exception) obj));
+                                    new ParameterResolveException("参数解析时异常, 类型:" + curParamType.getName(),
+                                            (Exception) obj).setErrorInfo(ErrorCode.NONSUPPORT_TYPE));
                         else
                             methodArgs.add(obj);
                     } else {
                         if (option.required())
                             return ParameterWrapper.fail(
-                                    new ParameterResolveException("缺少必选参数 `" + option.fullName() + "`"));
+                                    new ParameterResolveException("缺少必选参数 `" + option.fullName() + "`")
+                                            .setErrorInfo(ErrorCode.LACK_REQUIRED_PARAMETERS));
                         Optional<Object> presetObjOptional = TransformFactory.getPresetVal(curParamType);
                         if (presetObjOptional.isPresent()) {
                             methodArgs.add(presetObjOptional.get());
