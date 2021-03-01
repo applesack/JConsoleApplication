@@ -11,6 +11,7 @@ import xyz.scootaloo.console.app.event.AppListener;
 import xyz.scootaloo.console.app.event.EventPublisher;
 import xyz.scootaloo.console.app.parser.preset.PresetFactoryManager;
 import xyz.scootaloo.console.app.parser.preset.SystemPresetCmd;
+import xyz.scootaloo.console.app.util.ClassUtils;
 import xyz.scootaloo.console.app.util.InvokeProxy;
 import xyz.scootaloo.console.app.util.StringUtils;
 
@@ -35,7 +36,6 @@ public final class AssemblyFactory {
     private static ConsoleBanner bannerPrinter = AssemblyFactory::welcome;
     protected static final Map<String, Actuator> strategyMap = new HashMap<>();
     protected static final List<MethodActuator> initActuators = new ArrayList<>();
-    protected static final List<MethodActuator> preActuators = new ArrayList<>();
     protected static final List<MethodActuator> destroyActuators = new ArrayList<>();
     protected static Map<String, ParameterParser> parserMap = new HashMap<>();
 
@@ -194,12 +194,12 @@ public final class AssemblyFactory {
     private static void doResolveCmd(Method method, Cmd cmdAnno, Object o) {
         // 生成一个包装执行器类对象，这个类提供了一些便捷的方法
         MethodActuator actuator = new MethodActuator(method, cmdAnno, o);
-        // 假如这个执行器某些规范不通过，则不进行装配
-        if (!actuator.checkMethod())
-            return;
         // 根据 type ，执行不同的装配方式
         switch (cmdAnno.type()) {
             case Cmd: {
+                // 假如这个执行器某些规范不通过，则不进行装配
+                if (!actuator.checkMethod())
+                    return;
                 // 处理解析模式
                 ParameterParser parser = parserMap.get(cmdAnno.parser());
                 if (parser != null)
@@ -213,7 +213,7 @@ public final class AssemblyFactory {
                 }
             } break;
             case Filter: {
-                preActuators.add(actuator);
+                FilterMethodWrapper.addFilter(actuator);
             } break;
             case Init: {
                 initActuators.add(actuator);
@@ -230,8 +230,8 @@ public final class AssemblyFactory {
     // 对有顺序要求的集合进行排序
     private static void sortActuatorLists() {
         initActuators.sort(Comparator.comparingInt(MethodActuator::getOrder));
-        preActuators.sort(Comparator.comparingInt(MethodActuator::getOrder));
         destroyActuators.sort(Comparator.comparingInt(MethodActuator::getOrder));
+        FilterMethodWrapper.sort();
     }
 
     // 假如 enable() 返回true，则装配至事件发布器
@@ -382,20 +382,25 @@ public final class AssemblyFactory {
         @Override
         public InvokeInfo invoke(List<String> cmdArgs) {
             switch (cmd.type()) {
-                // 假如是销毁、前置、初始化方法，可以直接执行
+                // 假如是销毁、过滤器、初始化方法，可以直接执行
                 case Destroy:
-                case Filter:
                 case Init: {
                     return invokeCore(cmdArgs);
                 }
-                // 普通方法，需要由前置方法执行完成后才能执行(前置方法不抛异常且不返回false)
+                // 普通命令方法，需要执行完过滤器后才能执行(过滤器不抛异常且不返回false)
                 default: {
-                    InvokeInfo info = doInvokePreProcess();
-                    if (info.isSuccess()) {
-                        return invokeCore(cmdArgs);
+                    FilterMessage filterMessage = FilterMethodWrapper.doFilterChain();
+                    if (!filterMessage.success) {
+                        CommandInvokeException commandInvokeException;
+                        if (filterMessage.hasException)
+                            commandInvokeException = new CommandInvokeException(filterMessage.errorMsg,
+                                    filterMessage.exception);
+                        else
+                            commandInvokeException = new CommandInvokeException(filterMessage.errorMsg);
+                        return InvokeInfo.failed(rtnType, cmdArgs, commandInvokeException
+                                .appendExData(methodMeta, obj, cmdArgs, parser.getClass()));
                     } else {
-                        console.onException(config, info.getException(), info.getExMsg());
-                        return InvokeInfo.simpleSuccess();
+                        return invokeCore(cmdArgs);
                     }
                 }
             }
@@ -412,16 +417,9 @@ public final class AssemblyFactory {
             CmdType type = cmd.type();
             switch (type) {
                 case Destroy:
-                case Init:
-                case Filter: {
-                    if (method.getParameterCount() != 0)
-                        return false;
-                    if (type == CmdType.Filter) {
-                        if (!(rtnType.equals(boolean.class) ||
-                                rtnType.equals(Boolean.class)))
-                            return false;
-                    }
-                } break;
+                case Init: {
+                    return checkNormalMethod();
+                }
                 case Cmd: {
                     if (!parser.check(methodMeta)) {
                         throw new RuntimeException("规范检查不通过");
@@ -431,22 +429,8 @@ public final class AssemblyFactory {
             return true;
         }
 
-        // 执行过滤链
-        protected InvokeInfo doInvokePreProcess() {
-            for (MethodActuator actuator : preActuators) {
-                // 方法执行结果
-                InvokeInfo info = actuator.invokeCore(null);
-                // 方法执行错误
-                if (!info.isSuccess()) {
-                    return info;
-                } else {
-                    boolean result = info.get();
-                    if (!result)
-                        return InvokeInfo.failed(rtnType, null,
-                                new CommandInvokeException(actuator.cmd.onError()));
-                }
-            }
-            return InvokeInfo.simpleSuccess();
+        private boolean checkNormalMethod() {
+            return method.getParameterCount() != 0;
         }
 
         /**
@@ -562,6 +546,154 @@ public final class AssemblyFactory {
                 title += "]";
                 return title + body;
             }
+        }
+
+    }
+
+    /**
+     * 过滤器方法专用包装类，主要负责对过滤器方法规范进行检查，执行过滤器方式，以及管理过滤器相关的操作。
+     * @author flutterdash@qq.com
+     * @since 2021/3/1 11:00
+     */
+    private static class FilterMethodWrapper {
+        /** 全局过滤器 */
+        private static final List<FilterMethodWrapper> filters = new ArrayList<>();
+
+        /** resources */
+        private static final FilterMessage filterMessage = new FilterMessage();
+
+        /** instance properties */
+        private final MethodMeta meta;  // 方法信息
+        private final String errorMsg;  // 对应 Cmd 注解上的 error
+        private final int order;        // 优先级
+
+        /**
+         * 按照过滤器的 order 值进行排序
+         */
+        public static void sort() {
+            if (filters.isEmpty())
+                return;
+            filters.sort(Comparator.comparingInt(FilterMethodWrapper::getOrder));
+        }
+
+        /**
+         * 主要检查此方法的返回值，返回值必须是bool类型
+         * @param method 一个过滤器的 method 对象
+         * @return 是否符合规范. true 符合; false 不符合.
+         */
+        private static boolean checkFilterMethod(Method method) {
+            Class<?> rtnType = method.getReturnType();
+            return rtnType == boolean.class || rtnType == Boolean.class;
+        }
+
+        /**
+         * 执行过滤链，这个方法会按照顺序调用所有过滤器。<br>
+         * 当其中某个过滤器返回了 false, 或者抛出了异常，则中断过滤操作。
+         * @return 过滤器执行信息
+         */
+        public static FilterMessage doFilterChain() {
+            if (filters.isEmpty())
+                return filterMessage.ok();
+            filterMessage.clear();
+            for (FilterMethodWrapper filter : filters) {
+                boolean pass = InvokeProxy.fun(filter::invoke)
+                        .addHandle(filterMessage::onException).setDefault(false).call();
+                if (!pass) { // 过滤器方法返回 false; 不放行
+                    return filterMessage.onCutOff(filter.getErrorMsg());
+                }
+            }
+            return filterMessage.ok();
+        }
+
+        /**
+         * 增加过滤器，加入这个过滤器之前，会先检查它的方法格式是否符合要求，如果不符合，则不会被添加到过滤链
+         * @param methodActuator 方法执行器，根据这个执行器生成过滤器对象
+         */
+        public static void addFilter(MethodActuator methodActuator) {
+            if (!checkFilterMethod(methodActuator.method)) {
+                console.err("过滤器方法格式错误:\n" + getSpecification());
+                return;
+            }
+            filters.add(new FilterMethodWrapper(methodActuator));
+        }
+
+        // *constructor*
+        private FilterMethodWrapper(MethodActuator methodActuator) {
+            Cmd cmdAnno = methodActuator.cmd;
+            this.errorMsg = cmdAnno.onError().isEmpty() ?
+                    "被 " + ClassUtils.getMethodDescribe(methodActuator.method) + " 拦截" : cmdAnno.onError();
+            this.order = cmdAnno.order();
+            this.meta = methodActuator.methodMeta;
+        }
+
+        // 调用过滤器方法
+        private boolean invoke() throws InvocationTargetException, IllegalAccessException {
+            // 获取参数
+            Class<?>[] paramTypes = meta.parameterTypes;
+            List<Object> methodParamList = new ArrayList<>();
+            for (Class<?> curParamType : paramTypes) {
+                // 根据类型注入值
+                if (curParamType == String.class)
+                    methodParamList.add(Interpreter.getCallingCommand());
+                else
+                    TransformFactory.getDefVal(curParamType);
+            }
+
+            this.meta.method.setAccessible(true);
+            return (boolean) meta.method.invoke(meta.obj, methodParamList.toArray());
+        }
+
+        // 获取过滤器的优先级信息
+        private int getOrder() {
+            return order;
+        }
+
+        // 此过滤器的错误时信息
+        private String getErrorMsg() {
+            return errorMsg;
+        }
+
+        // 过滤器方法的规范，当有过滤器不符合要求时输出这些内容
+        private static String getSpecification() {
+            return "1. 必须是实例方法.\n" +
+                    "2. 方法上必须有`@Cmd`注解.\n" +
+                    "3. @Cmd 的 type 属性必须是 Filter.\n" +
+                    "4. 方法返回值必须是布尔值.\n" +
+                    "5. 方法参数目前仅支持 String 类型，用于接受当前输入的命令\n";
+        }
+
+    }
+
+    // pojo
+    private static class FilterMessage {
+
+        private boolean success;        // 是否成功
+        private String errorMsg;        // 错误信息
+        private boolean hasException;   // 是否有异常
+        private Exception exception;    // 异常
+
+        public void clear() {
+            this.success = false;
+            this.errorMsg = null;
+            this.exception = null;
+            this.hasException = false;
+        }
+
+        public void onException(Exception ex) {
+            this.success = false;
+            this.exception = ex;
+            this.hasException = true;
+        }
+
+        public FilterMessage onCutOff(String msg) {
+            this.success = false;
+            this.errorMsg = msg;
+            return this;
+        }
+
+        public FilterMessage ok() {
+            this.success = true;
+            return this;
         }
 
     }

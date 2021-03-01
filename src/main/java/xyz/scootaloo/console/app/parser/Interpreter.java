@@ -15,6 +15,7 @@ import java.util.List;
 public final class Interpreter {
     private final ConsoleConfig config;
     protected static InvokeInfo lastInvokeInfo;
+    protected static String CALLING_COMMAND;
 
     public Interpreter(ConsoleConfig config) {
         if (!AssemblyFactory.hasInit) {
@@ -71,6 +72,14 @@ public final class Interpreter {
     public boolean set(String key, String cmd) {
         interpret("set " + key);
         return interpret(cmd).isSuccess();
+    }
+
+    public void setCurrentCallingCommand(String cmd) {
+        CALLING_COMMAND = cmd;
+    }
+
+    protected static String getCallingCommand() {
+        return CALLING_COMMAND;
     }
 
     // 获取当前解释器的配置对象

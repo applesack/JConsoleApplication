@@ -81,7 +81,7 @@ public abstract class AbstractConsoleApplication {
      * @param exceptionHandle 异常处理器
      * @return 返回控制台应用对象，可以继续进行配置
      */
-    public AbstractConsoleApplication setExceptionHandle(Consumer<ConsoleAppRuntimeException> exceptionHandle) {
+    public AbstractConsoleApplication setGlobalExHandle(Consumer<ConsoleAppRuntimeException> exceptionHandle) {
         if (exceptionHandle != null)
             this.exceptionHandle = exceptionHandle;
         return this;

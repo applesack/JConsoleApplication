@@ -2,11 +2,12 @@ package xyz.scootaloo.test;
 
 import org.junit.jupiter.api.Test;
 import xyz.scootaloo.console.app.error.CommandInvokeException;
-import xyz.scootaloo.console.app.util.InvokeProxy;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import static xyz.scootaloo.console.app.util.InvokeProxy.fun;
 
 /**
  * @author flutterdash@qq.com
@@ -16,7 +17,7 @@ public class FunctionTest {
 
     @Test
     public void test0() {
-        Optional<Integer> count = InvokeProxy.fun(this::rtn2p)
+        Optional<Integer> count = fun(this::rtn2p)
                 .addHandle(IllegalArgumentException.class, ex -> {
                     System.out.println("Ill异常");
                 }).addHandle(CommandInvokeException.class, (ex) -> {
@@ -37,6 +38,18 @@ public class FunctionTest {
         if (map.isEmpty())
             throw new IllegalArgumentException("1212");
         return map.size();
+    }
+
+    @Test
+    public void test1() {
+        int rsl = fun(this::exFun).setDefault(0).call(1, '1');
+        System.out.println(rsl);
+    }
+
+    public int exFun(int a, char b) throws Exception {
+        if (a == 2)
+            throw new Exception();
+        return a + b;
     }
 
 }

@@ -44,7 +44,7 @@ public final class ConsoleApplication extends AbstractConsoleApplication {
         this.prompt = getPrompt();
 
         // 设置默认的异常处理方式
-        setExceptionHandle((e) -> console.onException(config, e));
+        setGlobalExHandle((e) -> console.onException(config, e));
         // 执行初始化命令
         doInit(config.getInitCommands());
     }
@@ -112,6 +112,7 @@ public final class ConsoleApplication extends AbstractConsoleApplication {
      */
     @Override
     protected boolean simpleRunCommand(String command) {
+        interpreter.setCurrentCallingCommand(command);
         List<String> cmdItems = StringUtils.toList(command);
         String cmdName = getCmdName(cmdItems);
         if (isExitCmd(cmdName))

@@ -16,7 +16,7 @@ import java.util.function.Supplier;
  * @author flutterdash@qq.com
  * @since 2021/2/13 17:07
  */
-public class FunctionDesc {
+public final class FunctionDesc {
 
     /** 描述有返回值，没有参数的方法 */
     @FunctionalInterface
