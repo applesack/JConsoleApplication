@@ -79,7 +79,8 @@ public final class FunctionDesc {
     }
 
     /**
-     * <方法包装>
+     * *方法包装*
+     * <pre>
      * 一下的所有类都可以分为两种类型:
      *      1. 有返回值的方法包装，且参数少于等于4个
      *      2. 没有返回值的方法包装，参数少于等于4个
@@ -90,6 +91,7 @@ public final class FunctionDesc {
      *      setDefault 在被代理的方法抛出异常时，自动应用默认值
      *      setSupplier 在被代理的方法抛出异常时，自动应用默认值(通过lambda表达式得到)
      *      getOptional 返回Optional对象，其中包含方法调用结果，假如方法抛出异常，则其中是默认值，假如没有默认值，则得到Optional.empty()
+     * </pre>
      */
     public static abstract class NonRtnMethod {
         /** 一个异常处理器队列 */

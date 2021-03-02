@@ -1,6 +1,6 @@
 package xyz.scootaloo.console.app.parser.preset;
 
-import xyz.scootaloo.console.app.anno.Opt;
+import xyz.scootaloo.console.app.annotation.Opt;
 import xyz.scootaloo.console.app.error.ErrorCode;
 import xyz.scootaloo.console.app.error.ParameterResolveException;
 import xyz.scootaloo.console.app.parser.*;

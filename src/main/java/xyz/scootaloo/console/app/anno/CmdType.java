@@ -1,4 +1,4 @@
-package xyz.scootaloo.console.app.anno;
+package xyz.scootaloo.console.app.annotation;
 
 /**
  * 命令类型，不同的类型决定了不同的装配方式和调用时机

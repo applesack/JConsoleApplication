@@ -1,4 +1,4 @@
-package xyz.scootaloo.console.app.anno;
+package xyz.scootaloo.console.app.annotation;
 
 import xyz.scootaloo.console.app.common.Console;
 

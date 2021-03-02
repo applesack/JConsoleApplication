@@ -1,7 +1,7 @@
 package xyz.scootaloo.console.app.parser;
 
-import xyz.scootaloo.console.app.anno.Cmd;
-import xyz.scootaloo.console.app.anno.CmdType;
+import xyz.scootaloo.console.app.annotation.Cmd;
+import xyz.scootaloo.console.app.annotation.CmdType;
 import xyz.scootaloo.console.app.common.*;
 import xyz.scootaloo.console.app.config.Author;
 import xyz.scootaloo.console.app.config.ConsoleConfig;

@@ -79,8 +79,8 @@ public final class InvokeInfo {
 
     /**
      * 获取返回值
-     * 建议在获取返回值之前检查 success 属性是否为 true，对方法执行失败的情况做一定处理。
-     * 否则方法执行失败时 get() 方法返回null，会与正常结果混淆。
+     * <pre>建议在获取返回值之前检查 success 属性是否为 true，对方法执行失败的情况做一定处理。
+     * 否则方法执行失败时 get() 方法返回null，会与正常结果混淆。</pre>
      * @param <T> 免除手动类型转换
      * @return 命令方法的返回值
      */
