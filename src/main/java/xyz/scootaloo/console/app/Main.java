@@ -1,7 +1,7 @@
 package xyz.scootaloo.console.app;
 
-import xyz.scootaloo.console.app.annotation.Boot;
-import xyz.scootaloo.console.app.annotation.Cmd;
+import xyz.scootaloo.console.app.anno.Cmd;
+import xyz.scootaloo.console.app.anno.mark.Boot;
 import xyz.scootaloo.console.app.common.CPrinter;
 
 /**
@@ -28,6 +28,11 @@ public class Main {
     @Cmd
     public void hello(CPrinter printer) {
         printer.println("hello world!!");
+    }
+
+    @Cmd
+    public void xx() {
+
     }
 
 }

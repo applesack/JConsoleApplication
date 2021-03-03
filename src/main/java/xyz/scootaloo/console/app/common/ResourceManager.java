@@ -4,6 +4,7 @@ import xyz.scootaloo.console.app.util.BackstageTaskManager;
 
 import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * 资源管理，管理一些常用可通用的资源，例如单例
@@ -17,7 +18,7 @@ public enum ResourceManager {
     static Scanner SCANNER = new Scanner(System.in);
     static ClassLoader LOADER = ResourceManager.class.getClassLoader();
     static Console CONSOLE = DefaultConsole.INSTANCE;
-    static Random random = new Random();
+    static Random random = ThreadLocalRandom.current();
     static CPrinterSupplier cPrinterFactory = BackstageTaskManager::getPrinter;
 
     // getter

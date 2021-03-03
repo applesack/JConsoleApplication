@@ -1,5 +1,6 @@
 package xyz.scootaloo.console.app.parser.preset;
 
+import xyz.scootaloo.console.app.anno.mark.NoStatus;
 import xyz.scootaloo.console.app.parser.MethodMeta;
 import xyz.scootaloo.console.app.parser.NameableParameterParser;
 import xyz.scootaloo.console.app.parser.ParameterWrapper;
@@ -14,6 +15,7 @@ import java.util.List;
  * @author flutterdash@qq.com
  * @since 2021/1/16 23:03
  */
+@NoStatus
 public final class SimpleParameterParser implements NameableParameterParser {
     /** singleton */
     protected static final SimpleParameterParser INSTANCE = new SimpleParameterParser();

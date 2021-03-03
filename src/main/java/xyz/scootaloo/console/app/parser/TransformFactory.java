@@ -1,5 +1,6 @@
 package xyz.scootaloo.console.app.parser;
 
+import xyz.scootaloo.console.app.anno.mark.NoStatus;
 import xyz.scootaloo.console.app.common.CPrinter;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.util.ClassUtils;
@@ -16,6 +17,7 @@ import java.util.function.Supplier;
  * @author flutterdash@qq.com
  * @since 2020/12/29 21:47
  */
+@NoStatus("如果保证在执行命令之前完成所有的装配，就不会有并发问题")
 public final class TransformFactory {
     /** resource */
     private static final Map<Class<?>, Object> DEFAULT_VALUE_MAP = new HashMap<>(16);

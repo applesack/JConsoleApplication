@@ -1,18 +1,13 @@
 package xyz.scootaloo.console.app.parser;
 
-import xyz.scootaloo.console.app.annotation.Cmd;
-import xyz.scootaloo.console.app.annotation.CmdType;
+import xyz.scootaloo.console.app.anno.Cmd;
 import xyz.scootaloo.console.app.common.*;
 import xyz.scootaloo.console.app.config.Author;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
-import xyz.scootaloo.console.app.error.CommandInvokeException;
-import xyz.scootaloo.console.app.error.ErrorCode;
-import xyz.scootaloo.console.app.error.ParameterResolveException;
 import xyz.scootaloo.console.app.event.AppListener;
 import xyz.scootaloo.console.app.event.EventPublisher;
+import xyz.scootaloo.console.app.parser.Interpreter.MethodActuator;
 import xyz.scootaloo.console.app.parser.preset.PresetFactoryManager;
-import xyz.scootaloo.console.app.parser.preset.SystemPresetCmd;
-import xyz.scootaloo.console.app.util.ClassUtils;
 import xyz.scootaloo.console.app.util.InvokeProxy;
 import xyz.scootaloo.console.app.util.StringUtils;
 
@@ -20,57 +15,49 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * 框架核心装配工厂
- * <p>框架中所有工厂的处理入口 {@link  #init(ConsoleConfig)}</p>
- * <p>负责对所有工厂进行装配，并管理一些工厂资源</p>
+ * <p>框架中所有工厂的处理入口 {@link  #init(ConsoleConfig, Interpreter)}</p>
+ * <pre>
+ * 负责对所有工厂进行装配，并管理一些工厂资源
+ * 管理的资源有:
+ *      初始化方法列表;
+ *      销毁方法列表;
+ *      参数解析器集合;
+ *      命令帮助信息集合;
+ * </pre>
  * @author flutterdash@qq.com
  * @since 2020/12/28 10:05
  */
 public final class AssemblyFactory {
     /** resources */
-    private static final Colorful color = ResourceManager.getColorful();
     private static final Console console = ResourceManager.getConsole();
     private static ConsoleBanner bannerPrinter = AssemblyFactory::welcome;
-    protected static final Map<String, Actuator> strategyMap = new HashMap<>();
-    protected static final List<MethodActuator> initActuators = new ArrayList<>();
+
+    protected static final List<MethodActuator>    initActuators = new ArrayList<>();
     protected static final List<MethodActuator> destroyActuators = new ArrayList<>();
-    protected static Map<String, ParameterParser> parserMap = new HashMap<>();
+    protected static Map<String, ParameterParser>      parserMap = new HashMap<>();
+    private final static Map<String, String>            HELP_MAP = new HashMap<>();
 
     // 所有可调用的命令
-    private static final List<MethodActuator> ALL_COMMANDS = new ArrayList<>();
-    // 帮助信息map
-    private static final Map<String, String> HELP_MAP = new HashMap<>();
+    private static final List<MethodActuator> ALL_COMMANDS = new LinkedList<>();
+    // 与装配工厂绑定的解释器
+    private static Interpreter interpreter;
 
-    // config
+    // 配置
     private static ConsoleConfig config;
     protected static boolean hasInit = false;
 
-    // 根据配置进行初始化
-    public static void init(ConsoleConfig conf) {
-        config = conf;
-        doInitStrategyFactories();
-    }
-
     /**
-     * 根据一个命令名，返回对应的执行器
-     * @param cmdName 命令名，或者方法名
-     * @return 执行器对象，当没有找到执行器时，返回一个空的执行器实现，这个执行器调用不会触发事件
+     * 根据配置进行初始化
+     * @param conf 控制台配置
+     * @param interpreter_ 解释器
      */
-    public static Actuator findActuator(String cmdName) {
-        cmdName = cmdName.toLowerCase(Locale.ROOT);
-        Actuator actuator = strategyMap.get(cmdName);
-        if (actuator != null)
-            return actuator;
-        if (!cmdName.equals(""))
-            console.println(color.blue("没有这个命令`" + cmdName + "`"));
-        return cmd -> {
-            // do nothing ...
-            return InvokeInfo.simpleSuccess();
-        };
+    public static void init(ConsoleConfig conf, Interpreter interpreter_) {
+        config = conf;
+        interpreter = interpreter_;
+        doInitStrategyFactories();
     }
 
     /**
@@ -82,15 +69,17 @@ public final class AssemblyFactory {
     }
 
     /**
-     * 返回可调用的系统命令集
-     * @return 命令名称集合
+     * 根据名称查找指定的执行器
+     * @param name 执行器的名称
+     * @return 执行器
      */
-    public static Set<String> getSysCommands() {
-        return getAllCommands().stream()
-                .filter(methodActuator -> methodActuator.getCmd().tag().equals(SystemPresetCmd.SYS_TAG))
-                .flatMap(methodActuator -> Stream.of(methodActuator.getCmdName(),
-                        methodActuator.cmd.name().toLowerCase(Locale.ROOT)))
-                .collect(Collectors.toSet());
+    public static Actuator findActuator(String name) {
+        if (interpreter == null)
+            throw new RuntimeException("启动方式错误");
+        Optional<MethodActuator> methodActuator = interpreter.findActuatorByName(name);
+        if (methodActuator.isPresent())
+            return methodActuator.get();
+        return (cmdArgs) -> InvokeInfo.simpleSuccess();
     }
 
     /**
@@ -103,7 +92,9 @@ public final class AssemblyFactory {
      * 5. 将 destroy 方法注册到关闭钩子上
      */
     private static void doInitStrategyFactories() {
-        if (config == null) {
+        if (hasInit) // 假如已经初始化过，则退出
+            return;
+        if (config == null || interpreter == null) {
             console.exit0("未加载到配置");
             return;
         } else {
@@ -124,7 +115,7 @@ public final class AssemblyFactory {
                 continue;
             // 全局输出实现工厂方法
             if (factoryInstance instanceof CPrinterSupplier)
-                doGetPrinterFactory((CPrinterSupplier) factoryInstance);
+                loadPrinterFactory((CPrinterSupplier) factoryInstance);
             // banner printer
             if (factoryInstance instanceof ConsoleBanner)
                 bannerPrinter = (ConsoleBanner) factoryInstance;
@@ -145,7 +136,7 @@ public final class AssemblyFactory {
             } else {
                 retainSet.add(factoryInstance);
                 if (factoryInstance instanceof AppListener)
-                    doGetListener((AppListener) factoryInstance);
+                    loadListener((AppListener) factoryInstance);
             }
         }
 
@@ -166,13 +157,13 @@ public final class AssemblyFactory {
         }
 
         // 处理帮助工厂
-        for (Object helpDoc : helpFactories) {
-            doGetHelpFactory(helpDoc);
+        for (HelpDoc helpDoc : helpFactories) {
+            loadHelpFactory(helpDoc);
         }
 
         // 发布应用启动事件
         EventPublisher.onAppStarted(config);
-        sortActuatorLists();
+        sortResources();
 
         // 执行初始化方法，遇到异常则退出应用
         try {
@@ -206,15 +197,11 @@ public final class AssemblyFactory {
                 if (parser != null)
                     if (!actuator.setParser(parser))
                         return;
-                strategyMap.put(actuator.cmdName, actuator);
                 ALL_COMMANDS.add(actuator);
-                Cmd cmd = method.getAnnotation(Cmd.class);
-                if (!cmd.name().equals("")) {
-                    strategyMap.put(cmd.name().toLowerCase(Locale.ROOT), actuator);
-                }
+                interpreter.loadCommandMethod(actuator);
             } break;
             case Filter: {
-                FilterMethodWrapper.addFilter(actuator);
+                interpreter.loadFilter(actuator);
             } break;
             case Init: {
                 initActuators.add(actuator);
@@ -223,36 +210,41 @@ public final class AssemblyFactory {
                 destroyActuators.add(actuator);
             } break;
             case Parser: {
-                doGetParser(method, cmdAnno, o);
+                loadParser(method, cmdAnno, o);
             }
         }
     }
 
-    // 对有顺序要求的集合进行排序
-    private static void sortActuatorLists() {
+    /**
+     * 对有顺序要求的资源进行排序
+     */
+    private static void sortResources() {
         initActuators.sort(Comparator.comparingInt(MethodActuator::getOrder));
         destroyActuators.sort(Comparator.comparingInt(MethodActuator::getOrder));
-        FilterMethodWrapper.sort();
+        interpreter.sortFilter();
     }
 
-    // 假如 enable() 返回true，则装配至事件发布器
-    private static void doGetListener(AppListener listenerObj) {
+    /**
+     * 装配事件监听器
+     * @param listenerObj 假如 enable() 返回true，则装配至事件发布器
+     */
+    private static void loadListener(AppListener listenerObj) {
         if (listenerObj.enable())
             EventPublisher.regListener(listenerObj);
     }
 
     /**
-     * 假如 @Cmd 注解的 type 属性为 Parser 则装配至转换工厂
+     * <pre>假如 @Cmd 注解的 type 属性为 Parser 则装配至转换工厂
      * 检查 parser 方法的方法参数和返回值是否符合要求
      * 即
      *      方法参数只有一个，String 类型
      *      范围值不为空
-     *      返回值和 @Cmd 注解的target()属性可以进行相互转换(不强制要求，如果不能则有可能在运行时抛出异常)
+     *      返回值和 @Cmd 注解的target()属性可以进行相互转换(不强制要求，如果不能则有可能在运行时抛出异常) </pre>
      * @param method -
      * @param cmdAnno -
      * @param o -
      */
-    private static void doGetParser(Method method, Cmd cmdAnno, Object o) {
+    private static void loadParser(Method method, Cmd cmdAnno, Object o) {
         if (cmdAnno.targets().length == 0)
             return;
         Class<?>[] types = cmdAnno.targets();
@@ -277,13 +269,16 @@ public final class AssemblyFactory {
      * @see xyz.scootaloo.console.app.common.DefaultConsole 默认实现
      * @param printerFactory 自定义实现工厂方法实现
      */
-    private static void doGetPrinterFactory(CPrinterSupplier printerFactory) {
+    private static void loadPrinterFactory(CPrinterSupplier printerFactory) {
         ResourceManager.setPrinterFactory(printerFactory);
         DefaultConsole.setPrinter(printerFactory.get());
     }
 
-    // 装配Help工厂
-    private static void doGetHelpFactory(Object factory) {
+    /**
+     * 加载Help工厂
+     * @param factory 包含帮助信息的类
+     */
+    private static void loadHelpFactory(HelpDoc factory) {
         Class<?> helpObjClass = factory.getClass();
         Method[] methods = helpObjClass.getDeclaredMethods();
         for (Method method : methods) {
@@ -300,9 +295,9 @@ public final class AssemblyFactory {
             try {
                 String helpInfo = (String) method.invoke(factory);
                 // 已经执行成功得到了返回值，现在将结果保存到对于的位置
-                Actuator actuator = findActuator(methodName);
-                if (actuator instanceof MethodActuator) {
-                    MethodActuator methodActuator = (MethodActuator) actuator;
+                Optional<MethodActuator> actuatorWrapper = interpreter.findActuatorByName(methodName);
+                if (actuatorWrapper.isPresent()) {
+                    MethodActuator methodActuator = actuatorWrapper.get();
                     HELP_MAP.put(methodActuator.getCmdName(), helpInfo);
                 }
             } catch (IllegalAccessException | InvocationTargetException e) {
@@ -350,358 +345,9 @@ public final class AssemblyFactory {
         return Optional.of(greetings + username);
     }
 
-    /**
-     * 对 Actuator 进行包装 <br>
-     * 对于同包下的类提供一些便捷方法
-     * @author flutterdash@qq.com
-     * @since 2020/12/29 11:00
-     */
-    public static class MethodActuator implements Actuator {
-        // 元信息，方法对象，注解，方法所在的类的实例，解析器，以及已经从方法中提取出来的一些信息
-        private final Method method;
-        private final Cmd cmd;
-        private final Object obj;
-        private ParameterParser parser;
-        private final MethodMeta methodMeta;
 
-        // 返回值类型，方法名
-        private final Class<?> rtnType;
-        private final String cmdName;
-
-        // construct
-        public MethodActuator(Method m, Cmd c, Object o) {
-            this.cmd = c;
-            this.method = m;
-            this.obj = o;
-            this.parser = DftParameterParser::transform;
-
-            this.cmdName = method.getName().toLowerCase(Locale.ROOT);
-            this.rtnType = method.getReturnType();
-            this.methodMeta = MethodMeta.getInstance(method, obj);
-        }
-
-        @Override
-        public InvokeInfo invoke(List<String> cmdArgs) {
-            switch (cmd.type()) {
-                // 假如是销毁、过滤器、初始化方法，可以直接执行
-                case Destroy:
-                case Init: {
-                    return invokeCore(cmdArgs);
-                }
-                // 普通命令方法，需要执行完过滤器后才能执行(过滤器不抛异常且不返回false)
-                default: {
-                    FilterMessage filterMessage = FilterMethodWrapper.doFilterChain();
-                    if (!filterMessage.success) {
-                        CommandInvokeException commandInvokeException;
-                        if (filterMessage.hasException) {
-                            commandInvokeException = new CommandInvokeException(filterMessage.errorMsg,
-                                    filterMessage.exception);
-                            commandInvokeException.setErrorInfo(ErrorCode.FILTER_ON_EXCEPTION);
-                        } else {
-                            commandInvokeException = new CommandInvokeException(filterMessage.errorMsg);
-                            commandInvokeException.setErrorInfo(ErrorCode.FILTER_INTERCEPT);
-                        }
-                        return InvokeInfo.failed(rtnType, cmdArgs, commandInvokeException
-                                .appendExData(methodMeta, obj, cmdArgs, parser.getClass()));
-                    } else {
-                        return invokeCore(cmdArgs);
-                    }
-                }
-            }
-        }
-
-        /**
-         * 初始化方法、销毁方法、前置方法，不能有参数
-         * 前置方法返回值必须是bool类型
-         * Parser解析器已经交由doGetParser处理了
-         * @see #doGetParser(Method, Cmd, Object)
-         * @return -
-         */
-        protected boolean checkMethod() {
-            CmdType type = cmd.type();
-            switch (type) {
-                case Destroy:
-                case Init: {
-                    return checkNormalMethod();
-                }
-                case Cmd: {
-                    if (!parser.check(methodMeta)) {
-                        throw new RuntimeException("规范检查不通过");
-                    }
-                }
-            }
-            return true;
-        }
-
-        private boolean checkNormalMethod() {
-            return method.getParameterCount() != 0;
-        }
-
-        /**
-         * *字符串命令调用的核心实现入口*
-         * @param cmdArgs 执行命令时使用的参数，以按照空格分割成列表
-         * @return 执行结果信息
-         */
-        protected InvokeInfo invokeCore(List<String> cmdArgs) {
-            // 在方法执行之前先获取此方法的一些信息
-            InvokeInfo info = InvokeInfo.beforeInvoke(cmdName, rtnType, cmdArgs);
-            // 发布命令解析前事件
-            EventPublisher.onResolveInput(cmdName, cmdArgs);
-            // 由解析工厂将字符串命令解析成Object数组供method对象调用，结果由wrapper包装
-            ResultWrapper wrapper;
-            try {
-                wrapper = parser.parse(methodMeta, cmdArgs);
-            } catch (Exception paramResolveEx) {
-                // 这里一般是参数解析异常
-                return info.onException(new ParameterResolveException("不能将命令行参数映射到方法参数", paramResolveEx)
-                        .appendExData(methodMeta, obj, cmdArgs, parser.getClass())
-                            .setErrorInfo(ErrorCode.PARAMETER_PARSER_ERROR), null);
-            }
-            // 如果解析成功
-            if (wrapper.isSuccess()) {
-                try {
-                    method.setAccessible(true);
-                    // 用解析后的参数对method进行调用
-                    Object rtnVal = method.invoke(obj, wrapper.getArgs());
-                    // 得到结果填充给info对象
-                    info.finishInvoke(rtnVal, wrapper.getArgs());
-                } catch (Exception e) {
-                    // 执行方法时方法内部发生错误，或者参数不匹配，错误信息填充给info对象
-                    info.onException(new CommandInvokeException("方法调用异常:" + e.getMessage(), e)
-                            .appendExData(methodMeta, obj, cmdArgs, parser.getClass())
-                                .setErrorInfo(ErrorCode.METHOD_INVOKE_ERROR), wrapper.getArgs());
-                }
-                // 记录最近一次的执行信息
-                Interpreter.lastInvokeInfo = info;
-            }
-            // 解析失败: 这里一般是命令行中缺省了必要参数，或者命令行不完整等
-            else {
-                // 将错误信息填充至info
-                info.onException(wrapper.getEx(), null);
-            }
-            // 发布输入解析完成事件
-            EventPublisher.onInputResolved(cmdName, info);
-            // 返回调用信息
-            return info;
-        }
-
-        /**
-         * 使用传入参数的方式执行
-         * @param args 调用方法用的参数
-         * @return 调用信息
-         */
-        protected InvokeInfo invokeByArgs(Object ... args) {
-            method.setAccessible(true);
-            InvokeInfo info = InvokeInfo.beforeInvoke(cmdName, rtnType, null);
-            try {
-                Object rtnVal = method.invoke(obj, args);
-                info.finishInvoke(rtnVal, args);
-                return info;
-            } catch (Exception e) {
-                info.onException(new CommandInvokeException("方法调用异常", e)
-                        .appendExData(methodMeta, obj, null, null)
-                            .setErrorInfo(ErrorCode.METHOD_INVOKE_ERROR), args);
-                return info;
-            }
-        }
-
-        // 设置解析器
-        public boolean setParser(ParameterParser parser) {
-            if (parser != null) {
-                this.parser = parser;
-                return parser.check(this.methodMeta);
-            }
-            return true;
-        }
-
-        // getter
-
-        // 获取此方法对应的类的实例
-        public Object getInstance() {
-            return this.obj;
-        }
-
-        // 获取方法对象
-        public Method getMethod() {
-            return this.method;
-        }
-
-        // 获取方法的名称
-        public String getCmdName() {
-            return this.cmdName;
-        }
-
-        // 获取此命令方法上的注解
-        public Cmd getCmd() {
-            return this.cmd;
-        }
-
-        // 获取执行方法的优先级
-        public int getOrder() {
-            return cmd.order();
-        }
-
-        // 打印此 方法/命令 的帮助信息
-        public String getHelpInfo() {
-            String body = HELP_MAP.get(this.cmdName);
-            if (body == null) {
-                return "没有此命令的帮助信息";
-            } else {
-                String title = "\n[" + cmdName;
-                title += !cmd.name().equals("") ? ", " + cmd.name() : "";
-                title += "]";
-                return title + body;
-            }
-        }
-
-    }
-
-    /**
-     * 过滤器方法专用包装类，主要负责对过滤器方法规范进行检查，执行过滤器方式，以及管理过滤器相关的操作。
-     * @author flutterdash@qq.com
-     * @since 2021/3/1 11:00
-     */
-    private static class FilterMethodWrapper {
-        /** 全局过滤器 */
-        private static final List<FilterMethodWrapper> filters = new ArrayList<>();
-
-        /** resources */
-        private static final FilterMessage filterMessage = new FilterMessage();
-
-        /** instance properties */
-        private final MethodMeta meta;  // 方法信息
-        private final String errorMsg;  // 对应 Cmd 注解上的 error
-        private final int order;        // 优先级
-
-        /**
-         * 按照过滤器的 order 值进行排序
-         */
-        public static void sort() {
-            if (filters.isEmpty())
-                return;
-            filters.sort(Comparator.comparingInt(FilterMethodWrapper::getOrder));
-        }
-
-        /**
-         * 主要检查此方法的返回值，返回值必须是bool类型
-         * @param method 一个过滤器的 method 对象
-         * @return 是否符合规范. true 符合; false 不符合.
-         */
-        private static boolean checkFilterMethod(Method method) {
-            Class<?> rtnType = method.getReturnType();
-            return rtnType == boolean.class || rtnType == Boolean.class;
-        }
-
-        /**
-         * 执行过滤链，这个方法会按照顺序调用所有过滤器。<br>
-         * 当其中某个过滤器返回了 false, 或者抛出了异常，则中断过滤操作。
-         * @return 过滤器执行信息
-         */
-        public static FilterMessage doFilterChain() {
-            if (filters.isEmpty())
-                return filterMessage.ok();
-            filterMessage.clear();
-            for (FilterMethodWrapper filter : filters) {
-                boolean pass = InvokeProxy.fun(filter::invoke)
-                        .addHandle(filterMessage::onException).setDefault(false).call();
-                if (!pass) { // 过滤器方法返回 false; 不放行
-                    return filterMessage.onCutOff(filter.getErrorMsg());
-                }
-            }
-            return filterMessage.ok();
-        }
-
-        /**
-         * 增加过滤器，加入这个过滤器之前，会先检查它的方法格式是否符合要求，如果不符合，则不会被添加到过滤链
-         * @param methodActuator 方法执行器，根据这个执行器生成过滤器对象
-         */
-        public static void addFilter(MethodActuator methodActuator) {
-            if (!checkFilterMethod(methodActuator.method)) {
-                console.err("过滤器方法格式错误:\n" + getSpecification());
-                return;
-            }
-            filters.add(new FilterMethodWrapper(methodActuator));
-        }
-
-        // *constructor*
-        private FilterMethodWrapper(MethodActuator methodActuator) {
-            Cmd cmdAnno = methodActuator.cmd;
-            this.errorMsg = cmdAnno.onError().isEmpty() ?
-                    "被 " + ClassUtils.getMethodDescribe(methodActuator.method) + " 拦截" : cmdAnno.onError();
-            this.order = cmdAnno.order();
-            this.meta = methodActuator.methodMeta;
-        }
-
-        // 调用过滤器方法
-        private boolean invoke() throws InvocationTargetException, IllegalAccessException {
-            // 获取参数
-            Class<?>[] paramTypes = meta.parameterTypes;
-            List<Object> methodParamList = new ArrayList<>();
-            for (Class<?> curParamType : paramTypes) {
-                // 根据类型注入值
-                if (curParamType == String.class)
-                    methodParamList.add(Interpreter.getCallingCommand());
-                else
-                    TransformFactory.getDefVal(curParamType);
-            }
-
-            this.meta.method.setAccessible(true);
-            return (boolean) meta.method.invoke(meta.obj, methodParamList.toArray());
-        }
-
-        // 获取过滤器的优先级信息
-        private int getOrder() {
-            return order;
-        }
-
-        // 此过滤器的错误时信息
-        private String getErrorMsg() {
-            return errorMsg;
-        }
-
-        // 过滤器方法的规范，当有过滤器不符合要求时输出这些内容
-        private static String getSpecification() {
-            return "1. 必须是实例方法.\n" +
-                    "2. 方法上必须有`@Cmd`注解.\n" +
-                    "3. @Cmd 的 type 属性必须是 Filter.\n" +
-                    "4. 方法返回值必须是布尔值.\n" +
-                    "5. 方法参数目前仅支持 String 类型，用于接受当前输入的命令\n";
-        }
-
-    }
-
-    // pojo
-    private static class FilterMessage {
-
-        private boolean success;        // 是否成功
-        private String errorMsg;        // 错误信息
-        private boolean hasException;   // 是否有异常
-        private Exception exception;    // 异常
-
-        public void clear() {
-            this.success = false;
-            this.errorMsg = null;
-            this.exception = null;
-            this.hasException = false;
-        }
-
-        public void onException(Exception ex) {
-            this.success = false;
-            this.exception = ex;
-            this.hasException = true;
-        }
-
-        public FilterMessage onCutOff(String msg) {
-            this.success = false;
-            this.errorMsg = msg;
-            return this;
-        }
-
-        public FilterMessage ok() {
-            this.success = true;
-            return this;
-        }
-
+    protected static Optional<String> getHelp(String cmdName) {
+        return Optional.ofNullable(HELP_MAP.get(cmdName));
     }
 
 }

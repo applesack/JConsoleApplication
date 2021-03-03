@@ -1,6 +1,6 @@
 package xyz.scootaloo.console.app.parser;
 
-import xyz.scootaloo.console.app.annotation.Opt;
+import xyz.scootaloo.console.app.anno.Opt;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;

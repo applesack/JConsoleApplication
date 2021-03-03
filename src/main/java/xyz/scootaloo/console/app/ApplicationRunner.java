@@ -33,7 +33,7 @@ public final class ApplicationRunner {
      * @return 控制台应用对象
      */
     public static AbstractConsoleApplication consoleApplication(ConsoleConfig config) {
-        AssemblyFactory.init(config);
+        AssemblyFactory.init(config, getInterpreter(config));
         return new ConsoleApplication(config, getInterpreter(config));
     }
 
@@ -59,8 +59,12 @@ public final class ApplicationRunner {
      */
     public static Interpreter getInterpreter(ConsoleConfig config) {
         if (INTERPRETER_SINGLETON == null) {
-            INTERPRETER_SINGLETON = new Interpreter(config);
-            ExtraOptionHandler.setInterpreter(INTERPRETER_SINGLETON);
+            synchronized (ApplicationRunner.class) {
+                if (INTERPRETER_SINGLETON == null) {
+                    INTERPRETER_SINGLETON = new Interpreter(config);
+                    ExtraOptionHandler.setInterpreter(INTERPRETER_SINGLETON);
+                }
+            }
         }
         return INTERPRETER_SINGLETON;
     }

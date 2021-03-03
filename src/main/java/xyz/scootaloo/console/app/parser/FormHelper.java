@@ -1,8 +1,8 @@
 package xyz.scootaloo.console.app.parser;
 
 import xyz.scootaloo.console.app.common.Console;
-import xyz.scootaloo.console.app.annotation.Form;
-import xyz.scootaloo.console.app.annotation.Prop;
+import xyz.scootaloo.console.app.anno.Form;
+import xyz.scootaloo.console.app.anno.Prop;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.util.ClassUtils;
 

@@ -1,6 +1,7 @@
 package xyz.scootaloo.console.app.parser;
 
-import xyz.scootaloo.console.app.annotation.Opt;
+import xyz.scootaloo.console.app.anno.Opt;
+import xyz.scootaloo.console.app.anno.mark.NoStatus;
 import xyz.scootaloo.console.app.error.ErrorCode;
 import xyz.scootaloo.console.app.error.ParameterResolveException;
 import xyz.scootaloo.console.app.util.StringUtils;
@@ -19,6 +20,7 @@ import java.util.*;
  * @author flutterdash@qq.com
  * @since 2020/12/29 11:21
  */
+@NoStatus
 public final class DftParameterParser {
     // 临时占位符
     private static final String PLACEHOLDER = "*";

@@ -1,4 +1,4 @@
-package xyz.scootaloo.console.app.annotation;
+package xyz.scootaloo.console.app.anno.mark;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

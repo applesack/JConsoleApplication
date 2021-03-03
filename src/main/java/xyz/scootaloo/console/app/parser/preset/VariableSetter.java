@@ -1,5 +1,6 @@
 package xyz.scootaloo.console.app.parser.preset;
 
+import xyz.scootaloo.console.app.anno.mark.NoStatus;
 import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.parser.Interpreter;
@@ -14,6 +15,7 @@ import java.util.List;
  * @author flutterdash@qq.com
  * @since 2021/2/7 9:40
  */
+@NoStatus
 public final class VariableSetter implements OptionHandler {
     /** singleton */
     protected static final VariableSetter INSTANCE = new VariableSetter();

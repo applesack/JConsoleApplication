@@ -1,5 +1,6 @@
 package xyz.scootaloo.console.app.parser.preset;
 
+import xyz.scootaloo.console.app.anno.mark.NoStatus;
 import xyz.scootaloo.console.app.parser.Interpreter;
 import xyz.scootaloo.console.app.parser.OptionHandler;
 import xyz.scootaloo.console.app.util.BackstageTaskManager;
@@ -16,6 +17,7 @@ import java.util.List;
  * @author flutterdash@qq.com
  * @since 2021/2/5 21:13
  */
+@NoStatus
 public final class BackstageTask implements OptionHandler {
     /** singleton */
     protected static final BackstageTask INSTANCE = new BackstageTask();

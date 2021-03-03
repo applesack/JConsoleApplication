@@ -1,21 +1,25 @@
 package xyz.scootaloo.console.app.util;
 
+import xyz.scootaloo.console.app.common.ResourceManager;
+
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * Id 生成器,
  * 通过自增的方式产生id
- * @deprecated 预计将废弃这个类
  * @author flutterdash@qq.com
  * @since 2021/2/7 20:16
  */
-@Deprecated
 public final class IdGenerator {
     // 16 进制码表
     private static final char[] table = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                                             'A', 'B', 'C', 'D', 'E', 'F'};
     // 数字长度不够时用于补齐
     private static final String[] lack_zeros = {"", "0", "00", "000"};
+    private static final Random random = ResourceManager.getRandom();
 
-    private long id;
+    private final AtomicLong id = new AtomicLong();
     private final StringBuilder sb;
 
     // 长度为3的16进制Id
@@ -42,12 +46,13 @@ public final class IdGenerator {
         return increase();
     }
 
-    private long increase() {
-        return id++;
+    private synchronized long increase() {
+        return id.addAndGet(random.nextInt(13) + 5);
     }
 
     public long reset() {
-        return id = 0;
+        id.set(0);
+        return 0;
     }
 
     public static IdGenerator create() {
@@ -60,7 +65,7 @@ public final class IdGenerator {
 
     // constructor
     private IdGenerator(long start) {
-        this.id = start;
+        id.set(start);
         this.sb = new StringBuilder();
     }
 

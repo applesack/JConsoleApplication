@@ -1,6 +1,7 @@
 package xyz.scootaloo.console.app.parser.preset;
 
-import xyz.scootaloo.console.app.annotation.Opt;
+import xyz.scootaloo.console.app.anno.Opt;
+import xyz.scootaloo.console.app.anno.mark.NoStatus;
 import xyz.scootaloo.console.app.error.ErrorCode;
 import xyz.scootaloo.console.app.error.ParameterResolveException;
 import xyz.scootaloo.console.app.parser.*;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
  * @author flutterdash@qq.com
  * @since 2021/2/6 14:47
  */
+@NoStatus
 public final class SubParameterParser implements NameableParameterParser {
     /** singleton */
     protected static final SubParameterParser INSTANCE = new SubParameterParser();
