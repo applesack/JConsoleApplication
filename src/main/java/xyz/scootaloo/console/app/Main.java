@@ -30,9 +30,4 @@ public class Main {
         printer.println("hello world!!");
     }
 
-    @Cmd
-    public void xx() {
-
-    }
-
 }

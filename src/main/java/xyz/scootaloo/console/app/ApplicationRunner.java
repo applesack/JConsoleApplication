@@ -2,10 +2,9 @@ package xyz.scootaloo.console.app;
 
 import xyz.scootaloo.console.app.application.AbstractConsoleApplication;
 import xyz.scootaloo.console.app.application.ConsoleApplication;
-import xyz.scootaloo.console.app.common.*;
+import xyz.scootaloo.console.app.common.CPrinter;
+import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
-import xyz.scootaloo.console.app.parser.AssemblyFactory;
-import xyz.scootaloo.console.app.parser.ExtraOptionHandler;
 import xyz.scootaloo.console.app.parser.Interpreter;
 import xyz.scootaloo.console.app.util.ClassUtils;
 
@@ -22,8 +21,6 @@ import static xyz.scootaloo.console.app.config.ConsoleConfigProvider.DefaultValu
  * @since 2020/12/27 15:04
  */
 public final class ApplicationRunner {
-    // 单例: 命令解释器
-    private static Interpreter INTERPRETER_SINGLETON;
 
     /**
      * 使用一个配置对象启动并获取控制台应用对象<br>
@@ -33,7 +30,6 @@ public final class ApplicationRunner {
      * @return 控制台应用对象
      */
     public static AbstractConsoleApplication consoleApplication(ConsoleConfig config) {
-        AssemblyFactory.init(config, getInterpreter(config));
         return new ConsoleApplication(config, getInterpreter(config));
     }
 
@@ -58,15 +54,7 @@ public final class ApplicationRunner {
      * @return 解释器对象
      */
     public static Interpreter getInterpreter(ConsoleConfig config) {
-        if (INTERPRETER_SINGLETON == null) {
-            synchronized (ApplicationRunner.class) {
-                if (INTERPRETER_SINGLETON == null) {
-                    INTERPRETER_SINGLETON = new Interpreter(config);
-                    ExtraOptionHandler.setInterpreter(INTERPRETER_SINGLETON);
-                }
-            }
-        }
-        return INTERPRETER_SINGLETON;
+        return Interpreter.getInstance(config);
     }
 
 }

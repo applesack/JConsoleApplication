@@ -47,7 +47,7 @@ public final class AssemblyFactory {
 
     // 配置
     private static ConsoleConfig config;
-    protected static boolean hasInit = false;
+    protected static volatile boolean hasInit = false;
 
     /**
      * 根据配置进行初始化

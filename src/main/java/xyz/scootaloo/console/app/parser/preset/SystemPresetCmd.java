@@ -13,12 +13,13 @@ import xyz.scootaloo.console.app.parser.Interpreter.MethodActuator;
 import xyz.scootaloo.console.app.util.BackstageTaskManager;
 import xyz.scootaloo.console.app.util.BackstageTaskManager.BackstageTaskInfo;
 import xyz.scootaloo.console.app.util.ClassUtils;
-import xyz.scootaloo.console.app.util.StringUtils;
 import xyz.scootaloo.console.app.util.VariableManager;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import static xyz.scootaloo.console.app.util.VariableManager.*;
@@ -147,7 +148,8 @@ public final class SystemPresetCmd implements AppListenerAdapter {
                                      @Opt(value = 'g', fullName = "args"    ) boolean args,
                                      @Opt(value = 't', fullName = "invokeAt") boolean invokeAt,
                                      @Opt(value = 'i', fullName = "interval") boolean interval) {
-        return History.select(name, size, isAll, success, rtnVal, args, invokeAt, interval);
+        return Interpreter.getCurrentUser().getResources().getHistory()
+                .select(name, size, isAll, success, rtnVal, args, invokeAt, interval);
     }
 
     @Cmd(tag = SYS_TAG)
@@ -289,7 +291,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
                     setOpen--;
                 }
             }
-            History.add(info);
+            Interpreter.getCurrentUser().getResources().getHistory().add(info);
         }
     }
 
@@ -299,134 +301,6 @@ public final class SystemPresetCmd implements AppListenerAdapter {
     }
 
     //----------------------------------------------------------------------------------
-
-    // 实现历史记录功能时使用，前提条件是sys监听器已经启用
-    public static final class History {
-        // 历史记录
-        private static final LinkedList<InvokeInfo> history = new LinkedList<>();
-        // 日期转换器 执行时间
-        private static final SimpleDateFormat time_sdf = new SimpleDateFormat("hh:mm");
-
-        // 向容器增加新的命令
-        private static void add(InvokeInfo info) {
-            if (history.size() >= config.getMaxHistory())
-                history.removeFirst();
-            history.addLast(info);
-        }
-
-        // 筛选出符合条件的记录，并按照规则显示出来
-        private static List<InvokeInfo> select(String name, int size, boolean isAll, boolean success, boolean rtnVal,
-                                  boolean args, boolean invokeAt, boolean interval) {
-            boolean matchByName = true;
-            if (name == null)
-                matchByName = false;
-            if (size < 0)
-                size = history.size();
-            else
-                size = Math.min(history.size(), size);
-            LinkedList<InvokeInfo> targetInfos = new LinkedList<>();
-            ListIterator<InvokeInfo> it = history.listIterator(history.size());
-            while (it.hasPrevious()) {
-                if (size <= 0)
-                    break;
-                InvokeInfo info = it.previous();
-                if (matchByName) {
-                    if (info.getName().equals(name)) {
-                        targetInfos.addFirst(info);
-                        size--;
-                    }
-                } else {
-                    targetInfos.addFirst(info);
-                    size--;
-                }
-            }
-
-            for (InvokeInfo inf : targetInfos) {
-                printInfo(inf, isAll, success, rtnVal, args, invokeAt, interval);
-            }
-            return targetInfos;
-        }
-
-        // 显示这些信息
-        private static void printInfo(InvokeInfo info, boolean isAll, boolean success,
-                                     boolean rtnVal, boolean args,
-                                     boolean invokeAt, boolean interval) {
-            StringBuilder sb = new StringBuilder();
-            // 执行的日期
-            if (isAll || invokeAt)
-                sb.append('[').append(time_sdf.format(new Date(info.getInvokeAt()))).append("] ");
-            // 执行用时
-            if (isAll || interval)
-                sb.append('[').append(StringUtils.trimNumberSizeTo4(info.getInterval())).append("] ");
-            // 命令/方法名
-            sb.append("[name: ").append(StringUtils.trimSizeTo7(info.getName())).append("] ");
-            // 是否成功
-            if (isAll || success)
-                sb.append('[').append(info.isSuccess() ? "success" : "failed_").append("] ");
-            // 使用的参数
-            if (isAll || args)
-                sb.append("[args: ").append(String.join(" ", info.getCmdArgs())).append("] ");
-            // 返回值
-            if (isAll || rtnVal)
-                sb.append("[rtn = ").append(getRtnValue(info)).append(']');
-            console.println(sb);
-        }
-
-        private static String getRtnValue(InvokeInfo info) {
-            Object rtn = info.get();
-            if (rtn == null)
-                return null;
-            if (!(rtn instanceof String))
-                return rtn.toString();
-            String lines = (String) rtn;
-            StringBuilder stringBuilder = new StringBuilder();
-            for (int i = 0; i<lines.length(); i++) {
-                char c = lines.charAt(i);
-                if (c == '\n')
-                    stringBuilder.append("\\n");
-                else
-                    stringBuilder.append(c);
-            }
-            return stringBuilder.toString();
-        }
-
-        protected static ListIterator<InvokeInfo> getCursor() {
-            return history.listIterator(history.size());
-        }
-
-    }
-
-    // 游标
-    public static final class Cursor {
-        private ListIterator<InvokeInfo> cursor;
-        private Cursor(ListIterator<InvokeInfo> cursor) {
-            this.cursor = cursor;
-        }
-
-        // 获取前一条输入的命令
-        public Optional<String> getPre() {
-            if (cursor.hasPrevious())
-                return Optional.of(getCommand(cursor.previous()));
-            return Optional.empty();
-        }
-
-        // 获取后一条输入的命令
-        public Optional<String> getNext() {
-            if (cursor.hasNext())
-                return Optional.of(getCommand(cursor.next()));
-            return Optional.empty();
-        }
-
-        // 更新输入列表
-        public void gotoEnd() {
-            this.cursor = History.getCursor();
-        }
-
-        private String getCommand(InvokeInfo info) {
-            return info.getName() + " " + String.join(" ", info.getCmdArgs());
-        }
-
-    }
 
     //--------------------------------------------------------------------------------
 

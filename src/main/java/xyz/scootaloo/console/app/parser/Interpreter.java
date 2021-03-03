@@ -3,6 +3,8 @@ package xyz.scootaloo.console.app.parser;
 import xyz.scootaloo.console.app.anno.Cmd;
 import xyz.scootaloo.console.app.anno.CmdType;
 import xyz.scootaloo.console.app.anno.mark.Public;
+import xyz.scootaloo.console.app.client.ClientCenter;
+import xyz.scootaloo.console.app.client.ClientCenter.User;
 import xyz.scootaloo.console.app.common.Colorful;
 import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
@@ -30,23 +32,74 @@ import java.util.stream.Stream;
 @Public
 public final class Interpreter {
     private final ConsoleConfig config;
-    protected static InvokeInfo lastInvokeInfo;
-    protected static String CALLING_COMMAND;
+    protected ThreadLocal<InvokeInfo> lastInvokeInfo = new ThreadLocal<>();
 
-    private final static Map<String, MethodActuator> strategyMap = new HashMap<>();
-    private final static Console console = ResourceManager.getConsole();
-    private final static Colorful color = ResourceManager.getColorful();
+    private static volatile Interpreter INSTANCE; // singleton
+    private static final Map<String, MethodActuator> strategyMap = new HashMap<>();
+    private static final Console console = ResourceManager.getConsole();
+    private static final Colorful color = ResourceManager.getColorful();
+
+    private final ClientCenter clientCenter;
+    private final ThreadLocal<User> localUser = new ThreadLocal<>();
 
     /**
      * 获取解释器的引用，请从 {@link xyz.scootaloo.console.app.ApplicationRunner#getInterpreter(ConsoleConfig)} 处获取
      * @param config 配置
      */
-    public Interpreter(ConsoleConfig config) {
+    private Interpreter(ConsoleConfig config) {
+        this.config = config;
         if (!AssemblyFactory.hasInit) {
             AssemblyFactory.init(config, this);
             AssemblyFactory.hasInit = true;
         }
-        this.config = config;
+        this.clientCenter = ClientCenter.getInstance(this);
+        newUser("ROOT");
+    }
+
+    public static Interpreter getInstance(ConsoleConfig config) {
+        if (INSTANCE == null) {
+            synchronized (Interpreter.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new Interpreter(config);
+                }
+            }
+        }
+        return INSTANCE;
+    }
+
+    public static User getCurrentUser() {
+        if (INSTANCE == null)
+            throw new RuntimeException("解释器未初始化");
+        return INSTANCE.localUser.get();
+    }
+
+    /**
+     * 返回可调用的系统命令集
+     * @return 命令名称集合
+     */
+    public static Set<String> getSysCommands() {
+        return strategyMap.values().stream()
+                .filter(methodActuator -> methodActuator.getCmd().tag().equals(SystemPresetCmd.SYS_TAG))
+                .flatMap(methodActuator -> Stream.of(methodActuator.getCmdName(),
+                        methodActuator.cmd.name().toLowerCase(Locale.ROOT)))
+                .collect(Collectors.toSet());
+    }
+
+    //----------------------------------------核心功能------------------------------------------
+
+    public ClientCenter.DestroyResources createUser(String userKey) {
+        User user = newUser(userKey);
+        return user.shutdown();
+    }
+
+    public User getCurrentResource() {
+        return localUser.get();
+    }
+
+    private User newUser(String userKey) {
+        User user = clientCenter.createUser(userKey);
+        this.localUser.set(user);
+        return user;
     }
 
     /**
@@ -115,6 +168,12 @@ public final class Interpreter {
         return interpret(cmd).isSuccess();
     }
 
+    public ConsoleConfig getConsoleConfig() {
+        return config;
+    }
+
+    //----------------------------------------------------------------------------------------------
+
     /**
      * 执行过滤链
      * @param actuator 方法执行器
@@ -140,29 +199,9 @@ public final class Interpreter {
         }
     }
 
-    public void setCurrentCallingCommand(String cmd) {
-        CALLING_COMMAND = cmd;
-    }
-
-    /**
-     * 返回可调用的系统命令集
-     * @return 命令名称集合
-     */
-    public static Set<String> getSysCommands() {
-        return strategyMap.values().stream()
-                .filter(methodActuator -> methodActuator.getCmd().tag().equals(SystemPresetCmd.SYS_TAG))
-                .flatMap(methodActuator -> Stream.of(methodActuator.getCmdName(),
-                        methodActuator.cmd.name().toLowerCase(Locale.ROOT)))
-                .collect(Collectors.toSet());
-    }
-
     protected InvokeInfo lackCommandException() {
         return InvokeInfo.failed(null, null,
                 new CommandInvokeException("没有这个命令").setErrorInfo(ErrorCode.LACK_COMMAND_HANDLER));
-    }
-
-    protected static String getCallingCommand() {
-        return CALLING_COMMAND;
     }
 
     // 获取当前解释器的配置对象
@@ -305,7 +344,7 @@ public final class Interpreter {
                             .setErrorInfo(ErrorCode.METHOD_INVOKE_ERROR), wrapper.getArgs());
                 }
                 // 记录最近一次的执行信息
-                Interpreter.lastInvokeInfo = info;
+                Interpreter.INSTANCE.lastInvokeInfo.set(info);
             }
             // 解析失败: 这里一般是命令行中缺省了必要参数，或者命令行不完整等
             else {
@@ -473,7 +512,7 @@ public final class Interpreter {
             for (Class<?> curParamType : paramTypes) {
                 // 根据类型注入值
                 if (curParamType == String.class)
-                    methodParamList.add(Interpreter.getCallingCommand());
+                    methodParamList.add(INSTANCE.localUser.get().getResources().getCallingCommand());
                 else
                     TransformFactory.getDefVal(curParamType);
             }
