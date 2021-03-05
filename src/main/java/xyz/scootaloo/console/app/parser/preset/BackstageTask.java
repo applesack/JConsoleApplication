@@ -31,7 +31,9 @@ public final class BackstageTask implements OptionHandler {
     public void runWithParameter(String cmd, String optionParameter,
                                  List<String> argItems, Interpreter interpreter) {
         String completeCmd = getCompleteCommand(cmd, argItems);
-        BackstageTaskManager.submit(optionParameter, () -> interpreter.interpret(completeCmd));
+        BackstageTaskManager.submit(optionParameter,
+                () -> interpreter.interpret(completeCmd),
+                    Interpreter.getCurrentUser().getResources().getTaskList());
     }
 
 }

@@ -16,10 +16,7 @@ import xyz.scootaloo.console.app.util.ClassUtils;
 import xyz.scootaloo.console.app.util.VariableManager;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static xyz.scootaloo.console.app.util.VariableManager.*;
@@ -35,7 +32,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
     private static final Console console = ResourceManager.getConsole();
     private static ConsoleConfig config;
 
-    private static final String version = "v0.3.2";
+    private static final String version = "v0.3.3";
     public static final String SYS_TAG = "sys";
 
     // 使用方法返回值做为属性资源
@@ -66,12 +63,12 @@ public final class SystemPresetCmd implements AppListenerAdapter {
     }
 
     @Cmd(name = "tks", tag = SYS_TAG)
-    public List<BackstageTaskInfo> tasks() {
+    public Set<BackstageTaskInfo> tasks() {
         try {
-            List<BackstageTaskInfo> taskLists = BackstageTaskManager.list();
             StringBuilder stringBuilder = new StringBuilder();
-            taskLists.forEach(task -> task.showTask(stringBuilder));
-            return taskLists;
+            Set<BackstageTaskInfo> taskList = Interpreter.getCurrentUser().getResources().getTaskList();
+            taskList.forEach(task -> task.showTask(stringBuilder));
+            return taskList;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -82,15 +79,16 @@ public final class SystemPresetCmd implements AppListenerAdapter {
     public void task(@Opt(value = 's', fullName = "name", dftVal = "*") String taskName,
                      @Opt(value = 'n', fullName = "size", dftVal = "-1") int size,
                      @Opt(value = 'c', fullName = "clear", dftVal = "*") String clear) {
+        Set<BackstageTaskInfo> taskList = Interpreter.getCurrentUser().getResources().getTaskList();
         if (!clear.equals("*")) {
             BackstageTaskManager
-                    .clearHistory(clear.toLowerCase(Locale.ROOT).startsWith("a"));
+                    .clearHistory(taskList, clear.toLowerCase(Locale.ROOT).startsWith("a"));
         } else {
             if (taskName.equals("*")) {
                 console.println("没有输入任务名");
                 return;
             }
-            BackstageTaskManager.showLogs(taskName, size);
+            BackstageTaskManager.showLogs(taskList, taskName, size);
         }
     }
 
@@ -218,13 +216,13 @@ public final class SystemPresetCmd implements AppListenerAdapter {
 
     @Cmd(tag = SYS_TAG)
     private Object get(@Opt(value = 'k', fullName = "key") String key) {
-        Object val = VariableManager.get(key);
-        if (val == null) {
+        Optional<Object> val = VariableManager.get(key);
+        if (!val.isPresent()) {
             console.println("没有这个键的信息");
             return null;
         } else {
-            console.println(val);
-            return val;
+            console.println(val.get());
+            return val.get();
         }
     }
 
@@ -279,6 +277,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
     @Override
     public void onInputResolved(String cmdName, InvokeInfo info) {
         if (info != null) {
+            // 处理变量
             if (setOpen <= 1) {
                 if (setOpen <= 0) {
                     if (info.isSuccess() && info.getRtnType() != void.class)
@@ -291,6 +290,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
                     setOpen--;
                 }
             }
+            // 记录命令行执行信息
             Interpreter.getCurrentUser().getResources().getHistory().add(info);
         }
     }

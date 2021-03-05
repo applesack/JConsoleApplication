@@ -6,7 +6,6 @@ import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.event.EventPublisher;
-import xyz.scootaloo.console.app.parser.ExtraOptionHandler;
 import xyz.scootaloo.console.app.parser.Interpreter;
 import xyz.scootaloo.console.app.parser.InvokeInfo;
 import xyz.scootaloo.console.app.util.StringUtils;
@@ -112,20 +111,19 @@ public final class ConsoleApplication extends AbstractConsoleApplication {
      */
     @Override
     protected boolean simpleRunCommand(String command) {
-        Interpreter.getCurrentUser().getResources().setCallingCommand(command);
         List<String> cmdItems = StringUtils.toList(command);
+        // 获取命令名称，查看是否是退出命令
         String cmdName = getCmdName(cmdItems);
         if (isExitCmd(cmdName))
             return true;
-        // 查看是否有需要额外处理
-        if (ExtraOptionHandler.handle(cmdName, cmdItems))
-            return false;
+        // 执行命令行，得到结果，并交给后处理器处理
         InvokeInfo info = interpreter.interpret(command);
         if (!postProcessors.isEmpty() && enableProcessor) {
             for (PostProcessor processor : postProcessors) {
                 processor.process(info);
             }
         }
+        // 方法调用出现异常，将异常抛出
         if (!info.isSuccess()) {
             throw info.getException();
         }

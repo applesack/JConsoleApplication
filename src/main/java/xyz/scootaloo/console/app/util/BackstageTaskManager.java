@@ -19,7 +19,6 @@ import java.util.function.Consumer;
 public final class BackstageTaskManager {
     /** 线程池 Size : 3 */
     private static final ExecutorService threadPool = Executors.newFixedThreadPool(3);
-    private static final LinkedHashSet<BackstageTaskInfo> taskList = new LinkedHashSet<>();
     private static final Console console = ResourceManager.getConsole();
 
     private static PrinterImpl curOutput = PrinterImpl.DFT_PRINTER;
@@ -28,13 +27,16 @@ public final class BackstageTaskManager {
      * 提交一个任务到后台
      * @param taskName 给后台任务一个名称，用于查找
      * @param callable 后台任务要运行的内容
+     * @param taskList 任务列表
      */
-    public static void submit(String taskName, Callable<InvokeInfo> callable) {
-        bind(threadPool.submit(callable), taskName);
+    public static void submit(String taskName, Callable<InvokeInfo> callable,
+                              Set<BackstageTaskInfo> taskList) {
+        bind(threadPool.submit(callable), taskName, taskList);
     }
 
     // 防重排序
-    private static synchronized void bind(Future<InvokeInfo> future, String taskName) {
+    private static synchronized void bind(Future<InvokeInfo> future, String taskName,
+                                          Set<BackstageTaskInfo> taskList) {
         PrinterImpl newOutPrinter = new PrinterImpl(new StringBuffer());
         curOutput = newOutPrinter;
         BackstageTaskInfo needToAdd = new BackstageTaskInfo(taskName, future, newOutPrinter);
@@ -58,13 +60,8 @@ public final class BackstageTaskManager {
         return PrinterImpl.DFT_PRINTER;
     }
 
-    // 显示所有任务
-    public static List<BackstageTaskInfo> list() {
-        return new ArrayList<>(taskList);
-    }
-
     // isDone 清除已完成的任务或者清除已完成的任务
-    public static void clearHistory(boolean isDone) {
+    public static void clearHistory(Set<BackstageTaskInfo> taskList, boolean isDone) {
         if (isDone) {
             taskList.clear();
             return;
@@ -77,7 +74,7 @@ public final class BackstageTaskManager {
      * @param taskName 任务名
      * @param size 最后多少条
      */
-    public static void showLogs(String taskName, int size) {
+    public static void showLogs(Set<BackstageTaskInfo> taskList, String taskName, int size) {
         BackstageTaskInfo taskInfo = null;
         for (BackstageTaskInfo info : taskList) {
             if (info.taskName.equalsIgnoreCase(taskName)) {

@@ -4,6 +4,7 @@ import xyz.scootaloo.console.app.anno.mark.Private;
 import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.parser.InvokeInfo;
+import xyz.scootaloo.console.app.util.BackstageTaskManager.BackstageTaskInfo;
 import xyz.scootaloo.console.app.util.StringUtils;
 
 import java.text.SimpleDateFormat;
@@ -37,10 +38,6 @@ public class Client {
         return resources;
     }
 
-    public String getUserKey() {
-        return userKey;
-    }
-
     protected void destroy() {
         resources.shutdown();
     }
@@ -60,10 +57,12 @@ public class Client {
         return other.userKey.equals(this.userKey);
     }
 
+    @Private
     public static class Resources {
-        private Object property;
+        private Object value;
         private String callingCommand;
         private final History history = new History();
+        private final Set<BackstageTaskInfo> taskList = new LinkedHashSet<>();
         private Resources() {
         }
 
@@ -79,17 +78,22 @@ public class Client {
             return history;
         }
 
-        @SuppressWarnings({ "unchecked", "hiding" })
-        public <T> T getProperty() {
-            return (T) property;
+        public Set<BackstageTaskInfo> getTaskList() {
+            return taskList;
         }
 
-        public void setProperty(Object property) {
-            this.property = property;
+        @SuppressWarnings({ "unchecked", "hiding" })
+        public <T> T getValue() {
+            return (T) value;
+        }
+
+        public void setValue(Object value) {
+            this.value = value;
         }
 
         private void shutdown() {
             history.hisInfoList.clear();
+            taskList.clear();
             callingCommand = "";
         }
 

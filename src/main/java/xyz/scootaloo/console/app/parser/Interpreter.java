@@ -38,7 +38,7 @@ public final class Interpreter {
     private static final        Console console = ResourceManager.getConsole();
     private static final       Colorful color   = ResourceManager.getColorful();
 
-    // 解释器中维护了一个Map用户管理注册到框架中的方法执行器，也就是标记有 @Cmd 注解的方法
+    // 解释器中维护了一个Map用于管理注册到框架中的方法执行器，也就是标记有 @Cmd 注解的方法
     private static final Map<String, MethodActuator> strategyMap = new HashMap<>();
 
     private final ConsoleConfig       config;
@@ -53,6 +53,7 @@ public final class Interpreter {
             AssemblyFactory.hasInit = true;
         }
         this.clientCenter = ClientCenter.getInstance(this);
+        ExtraOptionHandler.setInterpreter(this);
     }
 
     // 双重检查的单例
@@ -112,18 +113,30 @@ public final class Interpreter {
      */
     public InvokeInfo interpret(String cmd) {
         checkAndSet();
+        // 空命令，不做处理
         if (cmd.trim().isEmpty())
             return InvokeInfo.simpleSuccess();
+        // 记录当前执行的命令行
+        localUser.get().getResources().setCallingCommand(cmd);
+        // 获取命令名 和 命令参数
         List<String> allTheCmdItem = StringUtils.toList(cmd);
         String cmdName = getCmdName(allTheCmdItem);
+        // 检查是否能使用其他方式处理，假如这里返回true，表示已经处理过，则这里可以直接退出
+        if (ExtraOptionHandler.handle(cmdName, allTheCmdItem))
+            return InvokeInfo.simpleSuccess();
+        // 找到命令方法，执行，得到结果
         Optional<MethodActuator> actuatorWrapper = findActuatorByName(cmdName);
         if (actuatorWrapper.isPresent()) {
+            // 执行命令方法之前，先执行过滤器
             InvokeInfo filterChainInfo = doFilterChain(actuatorWrapper.get(), allTheCmdItem);
             if (!filterChainInfo.isSuccess())
+                // 过滤器未通过，返回出错原因
                 return filterChainInfo;
         } else {
+            // 没有找到能处理命令行的方法
             return lackCommandException(cmdName);
         }
+        // 最终执行
         return actuatorWrapper.get().invoke(allTheCmdItem);
     }
 

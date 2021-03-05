@@ -39,6 +39,8 @@ public final class VariableManager {
      * @param value 变量值
      */
     public static void set(String key, Object value) {
+        if (key == null || value == null)
+            return;
         if (key.startsWith(".")) {
             properties.clear();
             return;

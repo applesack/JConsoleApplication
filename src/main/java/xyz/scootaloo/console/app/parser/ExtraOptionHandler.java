@@ -23,7 +23,7 @@ public final class ExtraOptionHandler {
      * 一个比较容易想到的办法就是通过 setter 将解释器注入进来，缺点是暴露了一个没什么用的API
      * @param zInterpreter -
      */
-    public static void setInterpreter(Interpreter zInterpreter) {
+    protected static void setInterpreter(Interpreter zInterpreter) {
         if (zInterpreter != null)
             interpreter = zInterpreter;
     }
@@ -44,7 +44,7 @@ public final class ExtraOptionHandler {
      * @param args 参数
      * @return 是否被处理过
      */
-    public static boolean handle(String cmdName, List<String> args) {
+    protected static boolean handle(String cmdName, List<String> args) {
         if (!cmdName.contains(DELIMITER))
             return false;
         String[] segments = cmdName.split(DELIMITER);
