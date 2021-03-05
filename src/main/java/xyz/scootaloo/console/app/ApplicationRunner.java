@@ -49,6 +49,17 @@ public final class ApplicationRunner {
     }
 
     /**
+     * 无参获取解释器，默认将调用者实例化，将调用者做为工厂使用
+     * @return 解释器对象
+     */
+    public static Interpreter getInterpreter() {
+        Object instance = ClassUtils.instance(false);
+        return getInterpreter(Console.factories()
+                .add(instance, true)
+                .ok());
+    }
+
+    /**
      * 根据配置生成解释器对象，此解释器可以使用字符串命令行执行所有注册到框架中的方法
      * @param config 一个配置
      * @return 解释器对象

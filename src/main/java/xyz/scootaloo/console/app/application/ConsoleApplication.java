@@ -112,7 +112,7 @@ public final class ConsoleApplication extends AbstractConsoleApplication {
      */
     @Override
     protected boolean simpleRunCommand(String command) {
-        interpreter.getCurrentUser().getResources().setCallingCommand(command);
+        Interpreter.getCurrentUser().getResources().setCallingCommand(command);
         List<String> cmdItems = StringUtils.toList(command);
         String cmdName = getCmdName(cmdItems);
         if (isExitCmd(cmdName))

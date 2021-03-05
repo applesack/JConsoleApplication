@@ -1,5 +1,6 @@
 package xyz.scootaloo.console.app.util;
 
+import xyz.scootaloo.console.app.anno.mark.Public;
 import xyz.scootaloo.console.app.common.ResourceManager;
 
 import java.lang.reflect.Field;
@@ -12,6 +13,7 @@ import java.util.*;
  * @author flutterdash@qq.com
  * @since 2021/1/14 20:19
  */
+@Public("多个线程访问此功能时，线程之间会相互影响；多线程环境下不建议使用此功能")
 public final class VariableManager {
     /* 需要启动此功能，需要在设置中开启 */
     public static final String msg = "设置中已关闭此功能";

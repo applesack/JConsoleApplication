@@ -23,7 +23,7 @@ public abstract class Console extends CPrinter {
     }
 
     /**
-     * 使用此工厂方法向配置中注册工厂。<br>
+     * 使用此工厂方法获取配置工厂的构建者。<br>
      * <p>一个简单的启动示例，这里演示如何将工厂注册进框架并启动一个控制台应用。<br>
      * 假设 {@code Test} 类是一个工厂，它实现了框架的某个接口。</p>
      * <pre> {@code

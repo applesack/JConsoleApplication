@@ -72,7 +72,7 @@ public final class TransformFactory {
     /**
      * 向工厂中放置预设的值
      * @param type 指定一个类型
-     * @param supplier 此类型的工厂
+     * @param supplier 此类型的工厂方法
      * @param <T> 类型
      */
     @SuppressWarnings({ "unchecked", "hiding" })

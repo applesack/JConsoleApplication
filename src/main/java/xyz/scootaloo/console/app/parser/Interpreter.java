@@ -5,6 +5,7 @@ import xyz.scootaloo.console.app.anno.CmdType;
 import xyz.scootaloo.console.app.anno.mark.Public;
 import xyz.scootaloo.console.app.client.ClientCenter;
 import xyz.scootaloo.console.app.client.ClientCenter.User;
+import xyz.scootaloo.console.app.client.ResourcesHandler;
 import xyz.scootaloo.console.app.common.Colorful;
 import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
@@ -26,6 +27,9 @@ import java.util.stream.Stream;
 
 /**
  * 解释器
+ * <pre>整个框架的核心功能实现类，
+ * 负责解释执行命令行，提供接口调用框架中管理的方法。
+ * </pre>
  * @author flutterdash@qq.com
  * @since 2021/1/6 23:00
  */
@@ -53,7 +57,6 @@ public final class Interpreter {
             AssemblyFactory.hasInit = true;
         }
         this.clientCenter = ClientCenter.getInstance(this);
-        newUser("ROOT");
     }
 
     public static Interpreter getInstance(ConsoleConfig config) {
@@ -70,6 +73,7 @@ public final class Interpreter {
     public static User getCurrentUser() {
         if (INSTANCE == null)
             throw new RuntimeException("解释器未初始化");
+        INSTANCE.checkAndSet();
         return INSTANCE.localUser.get();
     }
 
@@ -87,13 +91,15 @@ public final class Interpreter {
 
     //----------------------------------------核心功能------------------------------------------
 
-    public ClientCenter.DestroyResources createUser(String userKey) {
+    /**
+     * 为一个用户创建资源<br>
+     * 每当有用户需要访问解释器功能时，都应该调用此方法，为此用户分配资源<br>
+     * @param userKey 用户标识，此标识必须是唯一的
+     * @return 一个资源处理器回调，这个回调将销毁为此用户分配的资源
+     */
+    public ResourcesHandler createUser(String userKey) {
         User user = newUser(userKey);
         return user.shutdown();
-    }
-
-    public User getCurrentResource() {
-        return localUser.get();
     }
 
     private User newUser(String userKey) {
@@ -108,6 +114,9 @@ public final class Interpreter {
      * @return 方法调用信息
      */
     public InvokeInfo interpret(String cmd) {
+        checkAndSet();
+        if (cmd.trim().isEmpty())
+            return InvokeInfo.simpleSuccess();
         List<String> allTheCmdItem = StringUtils.toList(cmd);
         String cmdName = getCmdName(allTheCmdItem);
         Optional<MethodActuator> actuatorWrapper = findActuatorByName(cmdName);
@@ -116,7 +125,7 @@ public final class Interpreter {
             if (!filterChainInfo.isSuccess())
                 return filterChainInfo;
         } else {
-            return lackCommandException();
+            return lackCommandException(cmdName);
         }
         return actuatorWrapper.get().invoke(allTheCmdItem);
     }
@@ -127,15 +136,7 @@ public final class Interpreter {
      * @return 调用信息
      */
     public InvokeInfo call(String name) {
-        Optional<MethodActuator> actuatorWrapper = findActuatorByName(name);
-        if (actuatorWrapper.isPresent()) {
-            InvokeInfo filterChainInfo = doFilterChain(actuatorWrapper.get(), null);
-            if (!filterChainInfo.isSuccess())
-                return filterChainInfo;
-        } else {
-            return lackCommandException();
-        }
-        return actuatorWrapper.get().invokeByArgs();
+        return call(name, new Object[0]);
     }
 
     /**
@@ -146,13 +147,14 @@ public final class Interpreter {
      * @return 调用信息
      */
     public InvokeInfo call(String name, Object ... args) {
+        checkAndSet();
         Optional<MethodActuator> actuatorWrapper = findActuatorByName(name);
         if (actuatorWrapper.isPresent()) {
             InvokeInfo filterChainInfo = doFilterChain(actuatorWrapper.get(), null);
             if (!filterChainInfo.isSuccess())
                 return filterChainInfo;
         } else {
-            return lackCommandException();
+            return lackCommandException(name);
         }
         return actuatorWrapper.get().invokeByArgs(args);
     }
@@ -164,12 +166,9 @@ public final class Interpreter {
      * @return 是否设置成功
      */
     public boolean set(String key, String cmd) {
+        checkAndSet();
         interpret("set " + key);
         return interpret(cmd).isSuccess();
-    }
-
-    public ConsoleConfig getConsoleConfig() {
-        return config;
     }
 
     //----------------------------------------------------------------------------------------------
@@ -199,9 +198,19 @@ public final class Interpreter {
         }
     }
 
-    protected InvokeInfo lackCommandException() {
+    protected InvokeInfo lackCommandException(String cmdName) {
         return InvokeInfo.failed(null, null,
-                new CommandInvokeException("没有这个命令").setErrorInfo(ErrorCode.LACK_COMMAND_HANDLER));
+                new CommandInvokeException("没有这个命令: `" + cmdName + "`")
+                        .setErrorInfo(ErrorCode.LACK_COMMAND_HANDLER));
+    }
+
+    /**
+     * 当此线程没有设置用户信息时，默认分配到默认用户
+     */
+    private void checkAndSet() {
+        User user = this.localUser.get();
+        if (user == null)
+            this.localUser.set(clientCenter.getPublicUser());
     }
 
     // 获取当前解释器的配置对象

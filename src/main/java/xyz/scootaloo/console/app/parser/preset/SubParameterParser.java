@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 /**
  * 当你想要的很简单的命令参数输入，请将@Cmd注解的parser标记为sub
- * <p><pre>注意: 不处理集合，不处理泛型，也不处理@Opt注解的value
+ * <p><pre>注意: 不处理集合，不处理泛型
  * 解析格式为:
  *      参数名 参数值 ...
  * 其中参数值不需要以’-‘做为前缀

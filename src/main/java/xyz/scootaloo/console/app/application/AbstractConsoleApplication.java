@@ -1,5 +1,6 @@
 package xyz.scootaloo.console.app.application;
 
+import xyz.scootaloo.console.app.application.processor.CallBack;
 import xyz.scootaloo.console.app.application.processor.PostProcessor;
 import xyz.scootaloo.console.app.error.ConsoleAppRuntimeException;
 import xyz.scootaloo.console.app.util.StringUtils;
@@ -18,7 +19,7 @@ public abstract class AbstractConsoleApplication {
     // 提供一个异常处理器
     protected Consumer<ConsoleAppRuntimeException> exceptionHandle;
     // 默认退出动作，调用 System.exit(0) 退出程序
-    protected ExitAction exitAction = () -> System.exit(0);
+    protected CallBack callBack = () -> System.exit(0);
 
     // 获取字符串输入
     protected abstract String getInput();
@@ -58,8 +59,8 @@ public abstract class AbstractConsoleApplication {
 
     // 退出时调用
     protected void shutdown() {
-        if (exitAction != null)
-            exitAction.shutdown();
+        if (callBack != null)
+            callBack.call();
     }
 
     // 异常处理器
@@ -89,11 +90,11 @@ public abstract class AbstractConsoleApplication {
 
     /**
      * 指定一个其他的退出方法
-     * @param exitAction 这将是系统的最后一个方法，调用完这个方法后，程序退出。
+     * @param callBack 这将是系统的最后一个方法，调用完这个方法后，程序退出。
      * @return 返回控制台应用对象，可以继续进行配置
      */
-    public AbstractConsoleApplication setExitAction(ExitAction exitAction) {
-        this.exitAction = exitAction;
+    public AbstractConsoleApplication setExitAction(CallBack callBack) {
+        this.callBack = callBack;
         return this;
     }
 
@@ -120,11 +121,6 @@ public abstract class AbstractConsoleApplication {
             return "";
         String cmdName = items.get(0).trim();
         return StringUtils.customizeToLowerCase0(cmdName);
-    }
-
-    @FunctionalInterface
-    public interface ExitAction {
-        void shutdown();
     }
 
 }

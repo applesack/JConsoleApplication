@@ -18,15 +18,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ClientCenter {
     private final Map<String, User> users;
     private static final Console console = ResourceManager.getConsole();
-    private final Interpreter interpreter;
+    private final User PUBLIC_SPACE = new User("ROOT");
     private final int maxHistory;
 
     private static volatile ClientCenter SINGLETON;
 
     private ClientCenter(Interpreter interpreter) {
         this.users = new ConcurrentHashMap<>();
-        this.interpreter = interpreter;
-        this.maxHistory = interpreter.getConsoleConfig().getMaxHistory();
+        this.maxHistory = interpreter.getConfig().getMaxHistory();
+        this.users.put(PUBLIC_SPACE.userKey, PUBLIC_SPACE);
     }
 
     public static ClientCenter getInstance(Interpreter interpreter) {
@@ -40,7 +40,9 @@ public class ClientCenter {
         return SINGLETON;
     }
 
+    @Deprecated
     public static void show() {
+        // 在此处插入断点，观察用户状态
         System.out.println();
     }
 
@@ -60,6 +62,17 @@ public class ClientCenter {
         return user;
     }
 
+    public User getPublicUser() {
+        return PUBLIC_SPACE;
+    }
+
+    protected static void destroyUserResources(String userKey) {
+        synchronized (SINGLETON.users) {
+            Optional.ofNullable(SINGLETON.users.remove(userKey))
+                    .ifPresent(User::destroy);
+        }
+    }
+
     /**
      * 定义一个连接的用户信息
      * @author flutterdash@qq.com
@@ -71,20 +84,15 @@ public class ClientCenter {
 
         public User(String userKey) {
             this.userKey = userKey;
-            this.resources = new Resources(this);
+            this.resources = new Resources();
         }
 
         /**
          * 清空为此用户创建的所有资源
          * @return 一个回调，调用此方法可以实现清空
          */
-        public DestroyResources shutdown() {
-            return () -> {
-                synchronized (SINGLETON.users) {
-                    Optional.ofNullable(SINGLETON.users.remove(userKey))
-                            .ifPresent(User::destroy);
-                }
-            };
+        public ResourcesHandler shutdown() {
+            return new ResourcesHandler(this.userKey, ClientCenter::destroyUserResources);
         }
 
         public Resources getResources() {
@@ -117,11 +125,9 @@ public class ClientCenter {
     }
 
     public static class Resources {
-        private final User user;
         private String callingCommand;
-        private History history = new History();
-        private Resources(User user) {
-            this.user = user;
+        private final History history = new History();
+        private Resources() {
         }
 
         public String getCallingCommand() {
@@ -137,26 +143,28 @@ public class ClientCenter {
         }
 
         private void shutdown() {
-            history.history.clear();
-            callingCommand = null;
+            history.hisInfoList.clear();
+            callingCommand = "";
         }
 
     }
+
+
 
     // 实现历史记录功能时使用，前提条件是sys监听器已经启用
     @Private
     public static class History {
 //        private final Cursor cursor = new Cursor(this);
         // 历史记录
-        private final LinkedList<InvokeInfo> history = new LinkedList<>();
+        private final LinkedList<InvokeInfo> hisInfoList = new LinkedList<>();
         // 日期转换器 执行时间
         private static final SimpleDateFormat time_sdf = new SimpleDateFormat("hh:mm");
 
         // 向容器增加新的命令
         public void add(InvokeInfo info) {
-            if (history.size() >= SINGLETON.maxHistory)
-                history.removeFirst();
-            history.addLast(info);
+            if (hisInfoList.size() >= SINGLETON.maxHistory)
+                hisInfoList.removeFirst();
+            hisInfoList.addLast(info);
         }
 
         // 筛选出符合条件的记录，并按照规则显示出来
@@ -166,11 +174,11 @@ public class ClientCenter {
             if (name == null)
                 matchByName = false;
             if (size < 0)
-                size = history.size();
+                size = hisInfoList.size();
             else
-                size = Math.min(history.size(), size);
+                size = Math.min(hisInfoList.size(), size);
             LinkedList<InvokeInfo> targetInfos = new LinkedList<>();
-            ListIterator<InvokeInfo> it = history.listIterator(history.size());
+            ListIterator<InvokeInfo> it = hisInfoList.listIterator(hisInfoList.size());
             while (it.hasPrevious()) {
                 if (size <= 0)
                     break;
@@ -236,7 +244,7 @@ public class ClientCenter {
         }
 
         public List<InvokeInfo> getInvokeHistory() {
-            return this.history;
+            return this.hisInfoList;
         }
 
         protected Cursor getCursor() {
@@ -278,13 +286,6 @@ public class ClientCenter {
         private String getCommand(InvokeInfo info) {
             return info.getName() + " " + String.join(" ", info.getCmdArgs());
         }
-
-    }
-
-    @FunctionalInterface
-    public interface DestroyResources {
-
-        void shutdown();
 
     }
 

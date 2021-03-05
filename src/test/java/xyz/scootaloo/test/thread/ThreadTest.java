@@ -1,11 +1,16 @@
 package xyz.scootaloo.test.thread;
 
-import org.junit.jupiter.api.Test;
 import xyz.scootaloo.console.app.ApplicationRunner;
 import xyz.scootaloo.console.app.anno.Cmd;
 import xyz.scootaloo.console.app.client.ClientCenter;
-import xyz.scootaloo.console.app.common.Console;
+import xyz.scootaloo.console.app.client.ResourcesHandler;
 import xyz.scootaloo.console.app.parser.Interpreter;
+import xyz.scootaloo.console.app.parser.InvokeInfo;
+
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * @author flutterdash@qq.com
@@ -13,70 +18,76 @@ import xyz.scootaloo.console.app.parser.Interpreter;
  */
 public class ThreadTest {
 
+    private static final String[][] commands = {
+            {"a", "b", "c"},
+            {"c", "c"},
+            {"c", "a", "a"},
+            {"b", "b", "c", "a"}
+    };
+
     public static void main(String[] args) throws InterruptedException {
-        Interpreter interpreter = ApplicationRunner.getInterpreter(
-                Console.factories().add(ThreadTest.class).ok());
-        Thread thread1 = new Thread(() -> {
-            interpreter.createUser("test1");
-            interpreter.interpret("a");
-            interpreter.interpret("c");
-            System.out.println("-------------------" + Thread.currentThread().getName());
-            interpreter.interpret("his");
-        }, "A");
+        final int threadNumber = commands.length;
+        final CountDownLatch cdl = new CountDownLatch(threadNumber);
+        final Interpreter interpreter = ApplicationRunner.getInterpreter();
+        final Map<String, List<InvokeInfo>> hisMap = new ConcurrentHashMap<>();
 
-        Thread thread2 = new Thread(() -> {
-            ClientCenter.DestroyResources callback = interpreter.createUser("test3");
-            interpreter.interpret("b");
-            interpreter.interpret("b");
-            System.out.println("-------------------" + Thread.currentThread().getName());
-            interpreter.interpret("his");
-            callback.shutdown();
-            ClientCenter.show();
-        }, "B");
+        Thread[] threads = new Thread[threadNumber];
+        for (int i = 0; i<threadNumber; i++) {
+            int finalRow = i;
+            threads[i] = new Thread(() -> {
+                String userKey = String.valueOf(finalRow);
+                // 创建一个用户，获得一个销毁用户资源的回调
+                ResourcesHandler resourcesHandler = interpreter.createUser(userKey);
+                for (int j = 0; j<commands[finalRow].length; j++)
+                  interpreter.interpret(commands[finalRow][j]);
+                // 当此线程结束后，此用户的资源将被销毁
+                resourcesHandler.shutdown();
+                // 历史记录已经被清除，所以his得到的是一个空的列表
+                List<InvokeInfo> his = interpreter.interpret("his").get();
+                hisMap.put(userKey, his);
+               cdl.countDown();
+            });
+        }
 
-        Thread thread3 = new Thread(() -> {
-            interpreter.createUser("test2");
-            interpreter.interpret("c");
-            interpreter.interpret("c");
-            System.out.println("-------------------" + Thread.currentThread().getName());
-            interpreter.interpret("his");
-        }, "C");
+        for (Thread thread : threads)
+            thread.start();
 
-        thread1.start();
-        Thread.sleep(100);
-        thread2.start();
-        Thread.sleep(100);
-        thread3.start();
-
-        thread1.join();
-        thread2.join();
-        thread3.join();
-
+        cdl.await();
+        // 通过debug观察各个连接的信息
+        System.out.println("PAUSE");
         ClientCenter.show();
     }
 
-    @Test
-    public void testThread() {
-        new Thread(() -> {
-            System.out.println(Thread.currentThread().getName());
-        }, "1").start();
-        new Thread(() -> {
-            System.out.println(Thread.currentThread().getName());
-        }, "1").start();
-    }
-
     @Cmd
-    public void a() {
+    public void a(StringPool pool) {
 
     }
 
     @Cmd
-    public void b() {
+    public void b(StringPool pool) {
 
     }
 
     @Cmd
-    public void c() {
+    public void c(StringPool pool) {
+
+    }
+
+    private static class StringPool {
+        private final StringBuilder pool;
+        public StringPool() {
+            this.pool = new StringBuilder();
+        }
+
+        public void write(String content) {
+            synchronized (this) {
+                pool.append(content).append('\n');
+            }
+        }
+
+        public void show() {
+            System.out.println(pool.toString());
+        }
 
     }
 

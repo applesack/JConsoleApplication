@@ -1,6 +1,7 @@
 package xyz.scootaloo.console.app.parser;
 
 import xyz.scootaloo.console.app.anno.Cmd;
+import xyz.scootaloo.console.app.application.processor.CallBack;
 import xyz.scootaloo.console.app.common.*;
 import xyz.scootaloo.console.app.config.Author;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
@@ -8,6 +9,7 @@ import xyz.scootaloo.console.app.event.AppListener;
 import xyz.scootaloo.console.app.event.EventPublisher;
 import xyz.scootaloo.console.app.parser.Interpreter.MethodActuator;
 import xyz.scootaloo.console.app.parser.preset.PresetFactoryManager;
+import xyz.scootaloo.console.app.util.FunctionDesc;
 import xyz.scootaloo.console.app.util.InvokeProxy;
 import xyz.scootaloo.console.app.util.StringUtils;
 
@@ -35,10 +37,10 @@ public final class AssemblyFactory {
     private static final Console console = ResourceManager.getConsole();
     private static ConsoleBanner bannerPrinter = AssemblyFactory::welcome;
 
-    protected static final List<MethodActuator>    initActuators = new ArrayList<>();
-    protected static final List<MethodActuator> destroyActuators = new ArrayList<>();
-    protected static Map<String, ParameterParser>      parserMap = new HashMap<>();
-    private final static Map<String, String>            HELP_MAP = new HashMap<>();
+    protected static final List<CallBack>     initActuators = new ArrayList<>();
+    protected static final List<CallBack>  destroyActuators = new ArrayList<>();
+    protected static Map<String, ParameterParser> parserMap = new HashMap<>();
+    private final static Map<String, String>       HELP_MAP = new HashMap<>();
 
     // 所有可调用的命令
     private static final List<MethodActuator> ALL_COMMANDS = new LinkedList<>();
@@ -167,22 +169,23 @@ public final class AssemblyFactory {
 
         // 执行初始化方法，遇到异常则退出应用
         try {
-            for (MethodActuator actuator : initActuators) {
-                actuator.invokeCore(null);
-            }
+            initActuators.forEach(CallBack::call);
         } catch (Exception e) {
             console.onException(config, e, "初始化失败, msg: " + e.getMessage() + "\n", true);
         }
 
         // 将销毁方法注册到系统关闭钩子中
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            for (Actuator actuator : destroyActuators) {
-                InvokeProxy.fun(actuator::invoke).call(null);
-            }
-        }));
+        Runtime.getRuntime().addShutdownHook(new Thread(() ->
+                initActuators.forEach(CallBack::call)));
     }
 
-    // 解析带有 @Cmd 注解的方法
+    /**
+     * 解析带有 @Cmd 注解的方法
+     * <p>在这里会按照 @Cmd 注解的类型type进行装配</p>
+     * @param method 一个标记有 @Cmd 注解的实例方法
+     * @param cmdAnno 注解对象
+     * @param o method对象所属的实例
+     */
     private static void doResolveCmd(Method method, Cmd cmdAnno, Object o) {
         // 生成一个包装执行器类对象，这个类提供了一些便捷的方法
         MethodActuator actuator = new MethodActuator(method, cmdAnno, o);
@@ -204,10 +207,10 @@ public final class AssemblyFactory {
                 interpreter.loadFilter(actuator);
             } break;
             case Init: {
-                initActuators.add(actuator);
+                SimpleCallableMethod.checkAndAdd(method, o, cmdAnno, initActuators);
             } break;
             case Destroy: {
-                destroyActuators.add(actuator);
+                SimpleCallableMethod.checkAndAdd(method, o, cmdAnno, destroyActuators);
             } break;
             case Parser: {
                 loadParser(method, cmdAnno, o);
@@ -219,8 +222,8 @@ public final class AssemblyFactory {
      * 对有顺序要求的资源进行排序
      */
     private static void sortResources() {
-        initActuators.sort(Comparator.comparingInt(MethodActuator::getOrder));
-        destroyActuators.sort(Comparator.comparingInt(MethodActuator::getOrder));
+        initActuators.sort(Comparator.comparingInt(CallBack::getOrder));
+        destroyActuators.sort(Comparator.comparingInt(CallBack::getOrder));
         interpreter.sortFilter();
     }
 
@@ -276,6 +279,12 @@ public final class AssemblyFactory {
 
     /**
      * 加载Help工厂
+     * <p>这个方法将会遍历实现了 HelpDoc 接口的类的所有方法，找出它的所有实例方法，
+     * 将其中无参且返回值是字符串类型的方法依次调用，获取返回值做为帮助文档信息，按照该实例方法的名称装配到指定的命令行处理器上。<br>
+     * 你可以使用 {@code help xx} 命令来查看被注册进来的帮助文档信息。</p>
+     *
+     * <p>为了将帮助文档方法和 Cmd 方法区分开来，可以在方法名中插入下划线，这个用法在以下示例</p>
+     * @see xyz.scootaloo.console.app.parser.preset.SystemPresetCmd.Help 框架中使用 HelpDoc 的示例
      * @param factory 包含帮助信息的类
      */
     private static void loadHelpFactory(HelpDoc factory) {
@@ -345,9 +354,48 @@ public final class AssemblyFactory {
         return Optional.of(greetings + username);
     }
 
-
     protected static Optional<String> getHelp(String cmdName) {
         return Optional.ofNullable(HELP_MAP.get(cmdName));
+    }
+
+    /**
+     * 对无参方法的简单封装，使其可以直接调用
+     * @author flutterdash@qq.com
+     * @since 2020/3/3 21:45
+     */
+    private static class SimpleCallableMethod implements CallBack {
+        final Method method;
+        final Object object;
+        final int order;
+
+        private SimpleCallableMethod(Method method, Object o, int order) {
+            this.method = method;
+            this.object = o;
+            this.order = order;
+        }
+
+        public static void checkAndAdd(Method method, Object obj, Cmd cmd, Collection<CallBack> collection) {
+            if (!checkMethod(method))
+                return;
+            collection.add(new SimpleCallableMethod(method, obj, cmd.order()));
+        }
+
+        // 只有方法无参数时，才返回true
+        private static boolean checkMethod(Method method) {
+            return method.getParameterCount() == 0;
+        }
+
+        @Override
+        public int getOrder() {
+            return order;
+        }
+
+        @Override
+        public void call() {
+            method.setAccessible(true);
+            InvokeProxy.fun((FunctionDesc.Rtn1P<Object, Object>) method::invoke).call(object);
+        }
+
     }
 
 }

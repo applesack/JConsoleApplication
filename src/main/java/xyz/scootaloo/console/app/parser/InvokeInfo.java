@@ -2,10 +2,11 @@ package xyz.scootaloo.console.app.parser;
 
 import xyz.scootaloo.console.app.error.ConsoleAppRuntimeException;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
- * 包含 java方法 执行结果的信息
+ * 包含 java方法 执行结果的信息, 由 {@link Interpreter} 产生
  * @author flutterdash@qq.com
  * @since 2021/1/7 9:32
  */
@@ -134,8 +135,17 @@ public final class InvokeInfo {
     @Override
     public String toString() {
         return "InvokeInfo{" +
-                "rtnType=" + rtnType +
+                "name='" + name + '\'' +
                 ", rtnVal=" + rtnVal +
+                ", rtnType=" + rtnType +
+                ", cmdArgs=" + cmdArgs +
+                ", methodArgs=" + Arrays.toString(methodArgs) +
+                ", interval=" + interval +
+                ", invokeAt=" + invokeAt +
+                ", success=" + success +
+                ", exMsg='" + exMsg + '\'' +
+                ", exception=" + exception +
                 '}';
     }
+
 }

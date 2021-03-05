@@ -13,7 +13,7 @@ import java.util.List;
  *          Actuator --> ParameterParser --> methodObject
  * }</pre>
  * @see NameableParameterParser 参数解析器接口
- * @see xyz.scootaloo.console.app.parser.AssemblyFactory.MethodActuator 框架中此接口的实现
+ * @see xyz.scootaloo.console.app.parser.Interpreter.MethodActuator 框架中此接口的实现
  * @author flutterdash@qq.com
  * @since 2020/12/27 22:34
  */
