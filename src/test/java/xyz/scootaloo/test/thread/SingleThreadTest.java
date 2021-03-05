@@ -8,6 +8,7 @@ import xyz.scootaloo.console.app.client.ResourcesHandler;
 import xyz.scootaloo.console.app.parser.Interpreter;
 
 /**
+ * 单线程多用户测试
  * @author flutterdash@qq.com
  * @since 2021/3/4 9:33
  */
@@ -15,11 +16,11 @@ public class SingleThreadTest {
 
     public static void main(String[] args) {
         Interpreter interpreter = ApplicationRunner.getInterpreter();
-        ResourcesHandler resourcesHandler = interpreter.createUser("A");
+        ResourcesHandler resourcesHandler = interpreter.setUser("A");
         interpreter.interpret("a");
         interpreter.interpret("a");
         resourcesHandler.shutdown();
-        interpreter.createUser("A");
+        interpreter.setUser("A");
         interpreter.interpret("b");
         interpreter.interpret("b");
         interpreter.interpret("his");
@@ -29,16 +30,16 @@ public class SingleThreadTest {
     public void testDoubleThread() throws InterruptedException {
         Interpreter interpreter = ApplicationRunner.getInterpreter();
         Thread t1 = new Thread(() -> {
-            ResourcesHandler resourcesHandler = interpreter.createUser("A");
+            ResourcesHandler resourcesHandler = interpreter.setUser("A");
             interpreter.interpret("a");
             interpreter.interpret("a");
 //            resourcesHandler.shutdown(); // 假如取消这行注释，则输出 bb， 代表线程t2中的执行记录，此时t1的执行记录已经清除
         });
         Thread t2 = new Thread(() -> {
-            interpreter.createUser("A");
+            interpreter.setUser("A"); // 与线程 t1 相同的用户名
             interpreter.interpret("b");
             interpreter.interpret("b");
-            interpreter.interpret("his");
+            interpreter.interpret("his -a");
         });
 
         t1.start();

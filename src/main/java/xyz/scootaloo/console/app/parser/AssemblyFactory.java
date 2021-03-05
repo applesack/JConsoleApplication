@@ -192,9 +192,6 @@ public final class AssemblyFactory {
         // 根据 type ，执行不同的装配方式
         switch (cmdAnno.type()) {
             case Cmd: {
-                // 假如这个执行器某些规范不通过，则不进行装配
-                if (!actuator.checkMethod())
-                    return;
                 // 处理解析模式
                 ParameterParser parser = parserMap.get(cmdAnno.parser());
                 if (parser != null)
@@ -300,8 +297,8 @@ public final class AssemblyFactory {
             if (method.getReturnType() != String.class)
                 continue;
 
-            method.setAccessible(true);
             try {
+                method.setAccessible(true);
                 String helpInfo = (String) method.invoke(factory);
                 // 已经执行成功得到了返回值，现在将结果保存到对于的位置
                 Optional<MethodActuator> actuatorWrapper = interpreter.findActuatorByName(methodName);
@@ -375,7 +372,7 @@ public final class AssemblyFactory {
         }
 
         public static void checkAndAdd(Method method, Object obj, Cmd cmd, Collection<CallBack> collection) {
-            if (!checkMethod(method))
+            if (!checkMethod(method) || collection == null)
                 return;
             collection.add(new SimpleCallableMethod(method, obj, cmd.order()));
         }

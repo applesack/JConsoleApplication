@@ -1,10 +1,9 @@
 package xyz.scootaloo.console.app.parser;
 
 import xyz.scootaloo.console.app.anno.Cmd;
-import xyz.scootaloo.console.app.anno.CmdType;
 import xyz.scootaloo.console.app.anno.mark.Public;
+import xyz.scootaloo.console.app.client.Client;
 import xyz.scootaloo.console.app.client.ClientCenter;
-import xyz.scootaloo.console.app.client.ClientCenter.User;
 import xyz.scootaloo.console.app.client.ResourcesHandler;
 import xyz.scootaloo.console.app.common.Colorful;
 import xyz.scootaloo.console.app.common.Console;
@@ -27,29 +26,26 @@ import java.util.stream.Stream;
 
 /**
  * 解释器
- * <pre>整个框架的核心功能实现类，
- * 负责解释执行命令行，提供接口调用框架中管理的方法。
- * </pre>
+ * <p>整个框架的核心功能实现类，
+ * 负责解释执行命令行，提供API调用框架中管理的方法。</p>
  * @author flutterdash@qq.com
  * @since 2021/1/6 23:00
  */
 @Public
 public final class Interpreter {
-    private final ConsoleConfig config;
-    protected ThreadLocal<InvokeInfo> lastInvokeInfo = new ThreadLocal<>();
+    // 单例资源
+    private static volatile Interpreter INSTANCE;
+    private static final        Console console = ResourceManager.getConsole();
+    private static final       Colorful color   = ResourceManager.getColorful();
 
-    private static volatile Interpreter INSTANCE; // singleton
+    // 解释器中维护了一个Map用户管理注册到框架中的方法执行器，也就是标记有 @Cmd 注解的方法
     private static final Map<String, MethodActuator> strategyMap = new HashMap<>();
-    private static final Console console = ResourceManager.getConsole();
-    private static final Colorful color = ResourceManager.getColorful();
 
-    private final ClientCenter clientCenter;
-    private final ThreadLocal<User> localUser = new ThreadLocal<>();
+    private final ConsoleConfig       config;
+    private final ClientCenter        clientCenter;
+    protected ThreadLocal<InvokeInfo> lastInvokeInfo = new ThreadLocal<>();
+    private final ThreadLocal<Client> localUser      = new ThreadLocal<>();
 
-    /**
-     * 获取解释器的引用，请从 {@link xyz.scootaloo.console.app.ApplicationRunner#getInterpreter(ConsoleConfig)} 处获取
-     * @param config 配置
-     */
     private Interpreter(ConsoleConfig config) {
         this.config = config;
         if (!AssemblyFactory.hasInit) {
@@ -59,6 +55,7 @@ public final class Interpreter {
         this.clientCenter = ClientCenter.getInstance(this);
     }
 
+    // 双重检查的单例
     public static Interpreter getInstance(ConsoleConfig config) {
         if (INSTANCE == null) {
             synchronized (Interpreter.class) {
@@ -70,7 +67,7 @@ public final class Interpreter {
         return INSTANCE;
     }
 
-    public static User getCurrentUser() {
+    public static Client getCurrentUser() {
         if (INSTANCE == null)
             throw new RuntimeException("解释器未初始化");
         INSTANCE.checkAndSet();
@@ -92,18 +89,18 @@ public final class Interpreter {
     //----------------------------------------核心功能------------------------------------------
 
     /**
-     * 为一个用户创建资源<br>
-     * 每当有用户需要访问解释器功能时，都应该调用此方法，为此用户分配资源<br>
+     * 为当前线程创建一个新的用户
+     * <p>假如是多用户环境，为了区别不同的用户，需要为使用解释器功能的用户分配一些独立的资源</p>
      * @param userKey 用户标识，此标识必须是唯一的
      * @return 一个资源处理器回调，这个回调将销毁为此用户分配的资源
      */
-    public ResourcesHandler createUser(String userKey) {
-        User user = newUser(userKey);
+    public ResourcesHandler setUser(String userKey) {
+        Client user = newUser(userKey);
         return user.shutdown();
     }
 
-    private User newUser(String userKey) {
-        User user = clientCenter.createUser(userKey);
+    private Client newUser(String userKey) {
+        Client user = clientCenter.createUser(userKey);
         this.localUser.set(user);
         return user;
     }
@@ -174,6 +171,13 @@ public final class Interpreter {
     //----------------------------------------------------------------------------------------------
 
     /**
+     * @return 获取当前解释器的配置对象
+     */
+    public ConsoleConfig getConfig() {
+        return this.config;
+    }
+
+    /**
      * 执行过滤链
      * @param actuator 方法执行器
      * @param cmdArgs 方法参数
@@ -198,7 +202,8 @@ public final class Interpreter {
         }
     }
 
-    protected InvokeInfo lackCommandException(String cmdName) {
+    // 返回一个异常描述
+    private InvokeInfo lackCommandException(String cmdName) {
         return InvokeInfo.failed(null, null,
                 new CommandInvokeException("没有这个命令: `" + cmdName + "`")
                         .setErrorInfo(ErrorCode.LACK_COMMAND_HANDLER));
@@ -208,16 +213,16 @@ public final class Interpreter {
      * 当此线程没有设置用户信息时，默认分配到默认用户
      */
     private void checkAndSet() {
-        User user = this.localUser.get();
+        Client user = this.localUser.get();
         if (user == null)
             this.localUser.set(clientCenter.getPublicUser());
     }
 
-    // 获取当前解释器的配置对象
-    public ConsoleConfig getConfig() {
-        return this.config;
-    }
-
+    /**
+     * 获取命令行中的命令名称
+     * @param items 已按照空格分割的命令行
+     * @return 命令名称
+     */
     private String getCmdName(List<String> items) {
         if (items.isEmpty()) {
             return "";
@@ -241,6 +246,7 @@ public final class Interpreter {
         return Optional.empty();
     }
 
+    // 加载方法执行器到解释器中来
     protected void loadCommandMethod(MethodActuator actuator) {
         strategyMap.put(actuator.cmdName, actuator);
         Cmd cmdAnno = actuator.cmd;
@@ -249,10 +255,12 @@ public final class Interpreter {
         }
     }
 
+    // 执行过滤链
     protected void loadFilter(MethodActuator actuator) {
         FilterMethodWrapper.addFilter(actuator);
     }
 
+    // 排序过滤器
     protected void sortFilter() {
         FilterMethodWrapper.sort();
     }
@@ -290,32 +298,6 @@ public final class Interpreter {
         @Override
         public InvokeInfo invoke(List<String> cmdArgs) {
             return invokeCore(cmdArgs);
-        }
-
-        /**
-         * 初始化方法、销毁方法、前置方法，不能有参数
-         * 前置方法返回值必须是bool类型
-         * Parser解析器已经交由doGetParser处理了
-         * @return -
-         */
-        protected boolean checkMethod() {
-            CmdType type = cmd.type();
-            switch (type) {
-                case Destroy:
-                case Init: {
-                    return checkNormalMethod();
-                }
-                case Cmd: {
-                    if (!parser.check(methodMeta)) {
-                        throw new RuntimeException("规范检查不通过");
-                    }
-                }
-            }
-            return true;
-        }
-
-        private boolean checkNormalMethod() {
-            return method.getParameterCount() != 0;
         }
 
         /**
@@ -415,11 +397,6 @@ public final class Interpreter {
         // 获取此命令方法上的注解
         public Cmd getCmd() {
             return this.cmd;
-        }
-
-        // 获取执行方法的优先级
-        public int getOrder() {
-            return cmd.order();
         }
 
         // 打印此 方法/命令 的帮助信息

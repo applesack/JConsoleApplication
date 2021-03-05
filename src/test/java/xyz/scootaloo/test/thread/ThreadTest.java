@@ -37,7 +37,7 @@ public class ThreadTest {
             threads[i] = new Thread(() -> {
                 String userKey = String.valueOf(finalRow);
                 // 创建一个用户，获得一个销毁用户资源的回调
-                ResourcesHandler resourcesHandler = interpreter.createUser(userKey);
+                ResourcesHandler resourcesHandler = interpreter.setUser(userKey);
                 for (int j = 0; j<commands[finalRow].length; j++)
                   interpreter.interpret(commands[finalRow][j]);
                 // 当此线程结束后，此用户的资源将被销毁

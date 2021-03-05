@@ -45,8 +45,8 @@ public abstract class AbstractConsoleApplication {
                 printPrompt();
                 if (simpleRunCommand(getInput()))
                     break;
-            } catch (ConsoleAppRuntimeException e) {
-                exceptionHandle(e);
+            } catch (ConsoleAppRuntimeException consoleAppRuntimeException) {
+                exceptionHandle(consoleAppRuntimeException);
             } catch (Exception otherException) {
                 otherException.printStackTrace();
             }
