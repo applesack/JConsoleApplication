@@ -46,6 +46,10 @@ public final class Interpreter {
     protected ThreadLocal<InvokeInfo> lastInvokeInfo = new ThreadLocal<>();
     private final ThreadLocal<Client> localUser      = new ThreadLocal<>();
 
+    /**
+     * 单例，并初始化了几个工厂(这些工厂在整个框架生命周期中只会被初始化一次)
+     * @param config 配置
+     */
     private Interpreter(ConsoleConfig config) {
         this.config = config;
         if (!AssemblyFactory.hasInit) {
@@ -68,6 +72,10 @@ public final class Interpreter {
         return INSTANCE;
     }
 
+    /**
+     * 获取当前用户的客户端对象，可以通过这个对象操作给当前用户分配的资源
+     * @return 客户端对象
+     */
     public static Client getCurrentUser() {
         if (INSTANCE == null)
             throw new RuntimeException("解释器未初始化");
@@ -117,7 +125,7 @@ public final class Interpreter {
         if (cmd.trim().isEmpty())
             return InvokeInfo.simpleSuccess();
         // 记录当前执行的命令行
-        localUser.get().getResources().setCallingCommand(cmd);
+        getCurrentUser().getResources().setCallingCommand(cmd);
         // 获取命令名 和 命令参数
         List<String> allTheCmdItem = StringUtils.toList(cmd);
         String cmdName = getCmdName(allTheCmdItem);
@@ -170,15 +178,13 @@ public final class Interpreter {
     }
 
     /**
-     * 将一个命令方法的返回值设置到指定的key上
+     * 将一个键值对放置到当前用户的变量池中
      * @param key 键
-     * @param cmd 命令
-     * @return 是否设置成功
+     * @param value 值
      */
-    public boolean set(String key, String cmd) {
+    public void set(String key, Object value) {
         checkAndSet();
-        interpret("set " + key);
-        return interpret(cmd).isSuccess();
+        getCurrentUser().getResources().getVariablePool().put(key, value);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -355,7 +361,7 @@ public final class Interpreter {
                 // 将错误信息填充至info
                 info.onException(wrapper.getEx(), null);
             }
-            // 发布输入解析完成事件
+            // 发布命令行解析完成事件
             EventPublisher.onInputResolved(cmdName, info);
             // 返回调用信息
             return info;

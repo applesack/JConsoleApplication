@@ -18,17 +18,19 @@ public class ExtraOptionalInThread {
         new Thread(() -> {
             ResourcesHandler handler = interpreter.setUser("A");
             System.out.println("------------线程A---------------");
-            interpreter.interpret("set num 12");
-            String number = interpreter.interpret("get num").get();
+            interpreter.interpret("set num1 12");
+            interpreter.interpret("set num2 13");
+            String number = interpreter.interpret("get num1").get();
             System.out.println("线程A中得到的结果是: " + number);
             System.out.println("--------------------------------");
-            handler.shutdown(); // 销毁用户A的资源
+//            handler.shutdown(); // 销毁用户A的资源；假如取消这行注释，则存储在用户A资源中已经存储的变量池被清空，第33行代码因为占位符不能替换而抛出异常
         }, "A").start();
         Thread.sleep(100);
         new Thread(() -> {
             // 让用户A重新进入
             ResourcesHandler handler = interpreter.setUser("A");
             System.out.println("------------线程B---------------");
+            interpreter.interpret("B ${num1} ${num2}");
             System.out.println("--------------------------------");
         }, "B").start();
     }
@@ -62,7 +64,8 @@ public class ExtraOptionalInThread {
     }
 
     @Cmd
-    public void B() {
+    public void B(int a, int b) {
+        System.out.println("[" + Thread.currentThread().getName() + "] a + b = " + (a + b));
     }
 
 }

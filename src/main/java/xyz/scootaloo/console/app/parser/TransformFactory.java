@@ -1,6 +1,7 @@
 package xyz.scootaloo.console.app.parser;
 
 import xyz.scootaloo.console.app.anno.mark.NoStatus;
+import xyz.scootaloo.console.app.client.ReplacementRecord;
 import xyz.scootaloo.console.app.common.CPrinter;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.util.ClassUtils;
@@ -168,7 +169,8 @@ public final class TransformFactory {
         if (!key.startsWith(VariableManager.placeholder))
             return Optional.empty();
         int keyId = Integer.parseInt(key.substring(VariableManager.placeholder.length()));
-        Optional<Object> placeholderObj = VariableManager.get(keyId);
+        ReplacementRecord replacementRecord = Interpreter.getCurrentUser().getResources().getReplacementRecord();
+        Optional<Object> placeholderObj = VariableManager.get(replacementRecord, keyId);
         if (placeholderObj.isPresent() && placeholderObj.get().getClass() == type) {
             return placeholderObj;
         }

@@ -31,7 +31,8 @@ public final class VariableSetter implements OptionHandler {
         String completeCmd = getCompleteCommand(cmd, argItems);
         InvokeInfo info = interpreter.interpret(completeCmd);
         if (info.isSuccess()) {
-            VariableManager.set(optionParameter, info.get());
+            VariableManager.set(optionParameter, info.get(),
+                    Interpreter.getCurrentUser().getResources().getVariablePool());
         } else {
             console.println("方法执行错误");
         }

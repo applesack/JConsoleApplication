@@ -63,6 +63,9 @@ public class Client {
         private String callingCommand;
         private final History history = new History();
         private final Set<BackstageTaskInfo> taskList = new LinkedHashSet<>();
+        private final Map<String, Object> variablePool = new HashMap<>();
+        private final ReplacementRecord replacementRecord = new ReplacementRecord();
+
         private Resources() {
         }
 
@@ -82,6 +85,14 @@ public class Client {
             return taskList;
         }
 
+        public ReplacementRecord getReplacementRecord() {
+            return replacementRecord;
+        }
+
+        public Map<String, Object> getVariablePool() {
+            return this.variablePool;
+        }
+
         @SuppressWarnings({ "unchecked", "hiding" })
         public <T> T getValue() {
             return (T) value;
@@ -94,6 +105,8 @@ public class Client {
         private void shutdown() {
             history.hisInfoList.clear();
             taskList.clear();
+            variablePool.clear();
+            replacementRecord.refresh();
             callingCommand = "";
         }
 

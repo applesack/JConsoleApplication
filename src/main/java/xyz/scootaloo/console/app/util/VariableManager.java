@@ -1,6 +1,8 @@
 package xyz.scootaloo.console.app.util;
 
 import xyz.scootaloo.console.app.anno.mark.Public;
+import xyz.scootaloo.console.app.client.ReplacementRecord;
+import xyz.scootaloo.console.app.client.ReplacementRecord.KVPair;
 import xyz.scootaloo.console.app.common.ResourceManager;
 
 import java.lang.reflect.Field;
@@ -24,10 +26,8 @@ public final class VariableManager {
      * {@code "student" -> new Student} 在引用的时候
      * {@code the name is ${student.name}}
      */
-    private static final Map<String, Object> properties = new HashMap<>(16);
     private static final String DFT_RAND_STR = "0";
     private static final Random rand = ResourceManager.getRandom();
-    private static int keyId = 0;
 
     // getter and setter ---------------------------------------------------------------------------
 
@@ -37,18 +37,20 @@ public final class VariableManager {
      * 如果值是小数点 '.', 则这个变量会被从变量池中移除</p>
      * @param key 变量名
      * @param value 变量值
+     * @return 对变量的更新是否生效
      */
-    public static void set(String key, Object value) {
+    public static boolean set(String key, Object value, Map<String, Object> variablePool) {
         if (key == null || value == null)
-            return;
+            return false;
         if (key.startsWith(".")) {
-            properties.clear();
-            return;
+            variablePool.clear();
+            return true;
         }
         if (value.equals("."))
-            properties.remove(key);
+            variablePool.remove(key);
         else
-            properties.put(key, value);
+            variablePool.put(key, value);
+        return true;
     }
 
     /**
@@ -56,8 +58,8 @@ public final class VariableManager {
      * @param key 变量值
      * @return Optional对象
      */
-    public static Optional<Object> get(String key) {
-        return Optional.ofNullable(properties.get(key));
+    public static Optional<Object> get(String key,  Map<String, Object> variablePool) {
+        return Optional.ofNullable(variablePool.get(key));
     }
 
     /**
@@ -66,8 +68,8 @@ public final class VariableManager {
      * @param tKeyId 这条替换记录的id
      * @return 返回这个变量值，假如没有这个id的信息，则返回空。
      */
-    public static Optional<Object> get(int tKeyId) {
-        Optional<KVPairs> rsl = KVPairs.hisKVs.stream()
+    public static Optional<Object> get(ReplacementRecord record, int tKeyId) {
+        Optional<KVPair> rsl = record.getRecords().stream()
                 .filter(kvPairs -> kvPairs.id == tKeyId)
                 .findAny();
         if (rsl.isPresent()) {
@@ -78,32 +80,18 @@ public final class VariableManager {
         }
     }
 
-    /**
-     * @return 返回整个变量池的信息
-     */
-    public static Map<String, Object> getKVs() {
-        return properties;
-    }
-
     //----------------------------------------------------------------------------------------------
-
-    /**
-     * 清除上一次解析命令行的占位符替换记录
-     */
-    public static void reset() {
-        keyId = 0;
-        KVPairs.hisKVs.clear();
-    }
 
     /**
      * 将字符串中的占位符替换成Properties中的value
      * @see xyz.scootaloo.console.app.parser.preset.SystemPresetCmd#onResolveInput 使用点
-     * 这里当命令行参数按照空格分段以后，每个部分假如有占位符，都会被替换成变量的“@#@”加上id，同时每次替换都会在 {@link KVPairs} 做记录。
+     * 这里当命令行参数按照空格分段以后，每个部分假如有占位符，都会被替换成变量的“@#@”加上id，同时每次替换都会在 {@link KVPair} 做记录。
      * @param text 文本
      * @return 替换占位符后的文本
      */
-    public static String resolvePlaceholders(String text) {
-        KVPairs curKV = new KVPairs();
+    public static String resolvePlaceholders(String text, ReplacementRecord replacementRecord,
+                                             Map<String, Object> variablePool) {
+        KVPair curKV = new KVPair();
         StringBuilder sb = new StringBuilder();
         boolean isOpen = false;
         int lSign = -1;
@@ -133,7 +121,7 @@ public final class VariableManager {
                 // 这段内容做为变量的key
                 curKV.key = key;
                 // 尝试在变量池中找到对应的值，假如没有则保持原样
-                String value = getValueOrDefault(key, "${"+ key + "}", curKV);
+                String value = getValueOrDefault(key, "${"+ key + "}", curKV, variablePool);
                 sb.append(value);
                 continue;
             }
@@ -141,9 +129,7 @@ public final class VariableManager {
                 sb.append(c);
         }
         if (curKV.hasVar) {
-            curKV.id = keyId;
-            KVPairs.hisKVs.add(curKV);
-            keyId++;
+            replacementRecord.add(curKV);
         }
         return sb.toString();
     }
@@ -154,9 +140,10 @@ public final class VariableManager {
      * @param curKV 替换过程中的信息会记录到这个对象中
      * @return 参考defaultValue的描述
      */
-    private static String getValueOrDefault(String key, String defaultValue, KVPairs curKV) {
+    private static String getValueOrDefault(String key, String defaultValue, KVPair curKV,
+                                            Map<String, Object> variablePool) {
         // 从变量池中尝试查找这个键
-        Object value = properties.get(key);
+        Object value = variablePool.get(key);
         curKV.hasVar = true;
         if (value != null) {
             // 键不为空，且是String类型，直接返回
@@ -167,7 +154,7 @@ public final class VariableManager {
             // 是一个非字符串类型的对象，这里返回占位符，交给其他使用者处理
             else {
                 curKV.value = value;
-                return getPlaceholderWithId();
+                return getPlaceholderWithId(curKV);
             }
         }
 
@@ -182,12 +169,12 @@ public final class VariableManager {
             return doRandom(fields[1], curKV);
 
         // 它可能是一个对象中的一个属性，进行递归操作找到这个目标属性值
-        Object obj = properties.get(fields[0]);
+        Object obj = variablePool.get(fields[0]);
         if (obj == null)
             return defaultValue;
         String[] res = new String[1];
         if (dfs(obj, fields, 1, res, curKV))
-            return getPlaceholderWithId();
+            return getPlaceholderWithId(curKV);
         else
             // 查找失败，返回默认值
             return defaultValue;
@@ -199,7 +186,7 @@ public final class VariableManager {
      * @param curKV 替换过程中的信息会记录到这个对象中
      * @return 随机值代表的字符串
      */
-    private static String doRandom(String option, KVPairs curKV) {
+    private static String doRandom(String option, KVPair curKV) {
         option = option.toLowerCase(Locale.ROOT);
         if (option.startsWith("int")) {
             option = option.substring(3);
@@ -240,16 +227,16 @@ public final class VariableManager {
         }
     }
 
-    private static String setAndReturn(Object res, KVPairs curKV) {
+    private static String setAndReturn(Object res, KVPair curKV) {
         curKV.value = res;
         return String.valueOf(res);
     }
 
-    private static String getPlaceholderWithId() {
-        return placeholder + keyId;
+    private static String getPlaceholderWithId(KVPair kvPair) {
+        return placeholder + kvPair.id;
     }
 
-    private static boolean dfs(Object obj, String[] fields, int idx, String[] res, KVPairs curKV) {
+    private static boolean dfs(Object obj, String[] fields, int idx, String[] res, KVPair curKV) {
         if (idx == fields.length) {
             curKV.value = obj;
             res[0] = obj.toString();
@@ -264,38 +251,6 @@ public final class VariableManager {
             return dfs(fieldObj, fields, idx + 1, res, curKV);
         } catch (Exception e) {
             return false;
-        }
-    }
-
-    // 命令行中被替换的键值对，在这里记录，每次解析新的命令行的时候，之前的记录会被清除
-    public static class KVPairs {
-
-        // 一条命令中如果有多个占位符，那么它们按照顺序存储在这个集合中
-        public static final Set<KVPairs> hisKVs = new LinkedHashSet<>();
-
-        // 是否有变量: 做为存储到集合的依据，假如占位符中包含的key没有对应的值，则为false
-        private boolean hasVar;
-
-        // 此变量的key
-        public String key;
-
-        // 此变量的值
-        public Object value;
-
-        // 标记
-        public Integer id;
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            KVPairs kvPairs = (KVPairs) o;
-            return Objects.equals(id, kvPairs.id);
-        }
-
-        @Override
-        public int hashCode() {
-            return id.hashCode();
         }
     }
 

@@ -56,7 +56,7 @@ public final class AssemblyFactory {
      * @param conf 控制台配置
      * @param interpreter_ 解释器
      */
-    public static void init(ConsoleConfig conf, Interpreter interpreter_) {
+    protected static void init(ConsoleConfig conf, Interpreter interpreter_) {
         config = conf;
         interpreter = interpreter_;
         doInitStrategyFactories();

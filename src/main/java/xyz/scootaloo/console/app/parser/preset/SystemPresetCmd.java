@@ -2,6 +2,9 @@ package xyz.scootaloo.console.app.parser.preset;
 
 import xyz.scootaloo.console.app.anno.Cmd;
 import xyz.scootaloo.console.app.anno.Opt;
+import xyz.scootaloo.console.app.anno.mark.Public;
+import xyz.scootaloo.console.app.client.Client;
+import xyz.scootaloo.console.app.client.ReplacementRecord.KVPair;
 import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
@@ -19,13 +22,15 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static xyz.scootaloo.console.app.util.VariableManager.*;
+import static xyz.scootaloo.console.app.util.VariableManager.msg;
+import static xyz.scootaloo.console.app.util.VariableManager.resolvePlaceholders;
 
 /**
  * 系统预设的命令，可以使用 find -t sys 命令查看到
  * @author flutterdash@qq.com
  * @since 2020/12/29 19:43
  */
+@Public("所有用户都能使用这些命令")
 public final class SystemPresetCmd implements AppListenerAdapter {
     /** singleton */
     protected static final SystemPresetCmd INSTANCE = new SystemPresetCmd();
@@ -36,8 +41,6 @@ public final class SystemPresetCmd implements AppListenerAdapter {
     public static final String SYS_TAG = "sys";
 
     // 使用方法返回值做为属性资源
-    private byte setOpen = 2;
-    private String propKey;
 
     private SystemPresetCmd() {
     }
@@ -190,33 +193,29 @@ public final class SystemPresetCmd implements AppListenerAdapter {
         }
     }
 
-    @Cmd(tag = SYS_TAG)
+    @Cmd(tag = SYS_TAG, parser = "sub")
     private boolean set(@Opt(value = 'k', fullName = "key") String key,
                      @Opt(value = 'v', fullName = "value") String value) {
         if (!config.isEnableVariableFunction()) {
             console.println(msg);
             return false;
         }
+        Map<String, Object> variablePool = Interpreter.getCurrentUser().getResources().getVariablePool();
         if (key == null) {
             console.println("未选中键");
             return false;
         }
         if (key.startsWith(".")) {
-            VariableManager.set(".", null);
+            VariableManager.set(".", ".", variablePool);
             return true;
         }
-        if (value != null) {
-            VariableManager.set(key, value);
-        } else {
-            setOpen = 1;
-            propKey = key;
-        }
-        return true;
+        return VariableManager.set(key, value, variablePool);
     }
 
     @Cmd(tag = SYS_TAG)
     private Object get(@Opt(value = 'k', fullName = "key") String key) {
-        Optional<Object> val = VariableManager.get(key);
+        Map<String, Object> variablePool = Interpreter.getCurrentUser().getResources().getVariablePool();
+        Optional<Object> val = VariableManager.get(key, variablePool);
         if (!val.isPresent()) {
             console.println("没有这个键的信息");
             return null;
@@ -228,16 +227,21 @@ public final class SystemPresetCmd implements AppListenerAdapter {
 
     @Cmd(tag = SYS_TAG)
     private Map<String, Object> keys() {
-        getKVs().forEach((k, v) -> console.println("[" + k + "]: " + v));
-        return getKVs();
+        Map<String, Object> kvMap = Interpreter.getCurrentUser()
+                .getResources()
+                .getVariablePool();
+        kvMap.forEach((k, v) -> console.println("[" + k + "]: " + v));
+        return kvMap;
     }
 
     @Cmd(tag = SYS_TAG)
     private void echo(@Opt(value = 'v', fullName = "value") String val) {
-        KVPairs.hisKVs.forEach(this::echoPrint);
+        Interpreter.getCurrentUser().getResources()
+                .getReplacementRecord().getRecords()
+                    .forEach(this::echoPrint);
     }
 
-    private void echoPrint(KVPairs kv) {
+    private void echoPrint(KVPair kv) {
         console.println(kv.key + " [type: " + kv.value.getClass()
                 .getSimpleName() + "] " + kv.value);
     }
@@ -266,10 +270,12 @@ public final class SystemPresetCmd implements AppListenerAdapter {
 
     @Override
     public void onResolveInput(String cmdName, List<String> cmdItems) {
-        VariableManager.reset();
+        Client.Resources resources = Interpreter.getCurrentUser().getResources();
+        resources.getReplacementRecord().refresh();
         if (cmdItems != null) {
             for (int i = 0; i<cmdItems.size(); i++) {
-                cmdItems.set(i, resolvePlaceholders(cmdItems.get(i)));
+                cmdItems.set(i, resolvePlaceholders(cmdItems.get(i),
+                        resources.getReplacementRecord(), resources.getVariablePool()));
             }
         }
     }
@@ -277,19 +283,6 @@ public final class SystemPresetCmd implements AppListenerAdapter {
     @Override
     public void onInputResolved(String cmdName, InvokeInfo info) {
         if (info != null) {
-            // 处理变量
-            if (setOpen <= 1) {
-                if (setOpen <= 0) {
-                    if (info.isSuccess() && info.getRtnType() != void.class)
-                        VariableManager.set(propKey, info.get());
-                    else
-                        console.println("返回值无效，请重新设置 cmd:[" + info.getName() + "] " +
-                                "args:[" + String.join(",", info.getCmdArgs()) + "]");
-                    setOpen = 2;
-                } else {
-                    setOpen--;
-                }
-            }
             // 记录命令行执行信息
             Interpreter.getCurrentUser().getResources().getHistory().add(info);
         }

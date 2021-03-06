@@ -42,12 +42,12 @@ public final class IdGenerator {
         return sb.toString();
     }
 
-    public long get() {
+    public Long get() {
         return increase();
     }
 
-    private synchronized long increase() {
-        return id.addAndGet(random.nextInt(13) + 5);
+    private synchronized Long increase() {
+        return id.getAndAdd(random.nextInt(13) + 5);
     }
 
     public long reset() {
