@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 
 /**
  * 配置提供者
+ *
  * @author flutterdash@qq.com
  * @since 2020/12/27 15:33
  */

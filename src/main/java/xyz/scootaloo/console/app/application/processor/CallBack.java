@@ -2,6 +2,7 @@ package xyz.scootaloo.console.app.application.processor;
 
 /**
  * 框架中通用的无参无返回值的简单回调接口
+ *
  * @author flutterdash@qq.com
  * @since 2021/3/3 21:49
  */

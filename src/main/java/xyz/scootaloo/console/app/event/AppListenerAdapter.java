@@ -8,6 +8,7 @@ import java.util.List;
 
 /**
  * 监听器接口的适配器
+ *
  * @see AppListener
  * @author flutterdash@qq.com
  * @since 2020/12/30 10:26

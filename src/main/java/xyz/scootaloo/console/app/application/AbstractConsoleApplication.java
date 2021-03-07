@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * 抽象的控制台应用<br>
- * 执行 run() 方法后不断等待键入，并解析处理
+ * 抽象的控制台应用<
+ *
  * @author flutterdash@qq.com
  * @since 2020/12/27 21:54
  */
@@ -110,12 +110,16 @@ public abstract class AbstractConsoleApplication {
     /**
      * 运行命令的方式
      * @param command 字符串命令
-     * @return bool 是否是退出命令
+     * @return bool   是否是退出命令
      * @throws ConsoleAppRuntimeException 可能抛出的异常
      */
     protected abstract boolean simpleRunCommand(String command) throws ConsoleAppRuntimeException;
 
-    // 仅获取第一个被空格分隔的字符段，以小写形式返回
+    /**
+     * 获取命令行中的命令名称
+     * @param items 使用空格分隔的参数段
+     * @return 命令名称(小写处理)
+     */
     protected String getCmdName(List<String> items) {
         if (items.isEmpty())
             return "";

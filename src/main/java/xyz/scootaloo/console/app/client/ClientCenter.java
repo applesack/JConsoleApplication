@@ -7,14 +7,16 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * 用户管理中心
+ *
  * @author flutterdash@qq.com
  * @since 2021/3/2 12:14
  */
 public final class ClientCenter {
-    private final Client PUBLIC_SPACE = new Client("ROOT");
-    protected static volatile ClientCenter SINGLETON;
-    private final Map<String, Client> users;
-    protected final int maxHistory;
+    private final Client PUBLIC_SPACE = new Client("ROOT"); // 默认用户
+    protected static volatile ClientCenter SINGLETON; // 当前类的单例
+    private final Map<String, Client> users; // 用户map
+    protected final int maxHistory; // 最大历史记录大小设置
 
     protected ClientCenter(Interpreter interpreter) {
         this.users = new ConcurrentHashMap<>();
@@ -22,6 +24,12 @@ public final class ClientCenter {
         this.users.put(PUBLIC_SPACE.userKey, PUBLIC_SPACE);
     }
 
+    /**
+     * 获取用户中的单例
+     *
+     * @param interpreter 解释器
+     * @return 用户中心对象
+     */
     public static ClientCenter getInstance(Interpreter interpreter) {
         if (SINGLETON == null) {
             synchronized (ClientCenter.class) {
@@ -55,6 +63,9 @@ public final class ClientCenter {
         return user;
     }
 
+    /**
+     * @return 获取默认用户
+     */
     public Client getPublicUser() {
         return PUBLIC_SPACE;
     }

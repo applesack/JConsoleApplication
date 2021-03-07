@@ -15,10 +15,14 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface Prop {
 
-    // 输入每个属性值时候的提示
+    /**
+     * @return 输入每个属性值时候的提示
+     */
     String prompt() default "";
 
-    // 是否必须，假如为false则回车会跳过此属性的输入，否则只有在输入了有效数值才能继续
+    /**
+     * @return 是否必须，假如为false则回车会跳过此属性的输入，否则只有在输入了有效数值才能继续
+     */
     boolean isRequired() default false;
 
 }

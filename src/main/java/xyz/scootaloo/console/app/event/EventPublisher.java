@@ -11,6 +11,7 @@ import java.util.*;
 
 /**
  * 系统事件发布器，在运行的不同节点发布事件
+ *
  * @author flutterdash@qq.com
  * @since 2020/12/30 9:44
  */

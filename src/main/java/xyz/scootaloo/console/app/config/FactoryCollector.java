@@ -17,6 +17,7 @@ import static xyz.scootaloo.console.app.util.InvokeProxy.fun;
 
 /**
  * 增加命令工厂时使用的构建者类
+ *
  * @author flutterdash@qq.com
  * @since 2021/1/6 22:17
  */

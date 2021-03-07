@@ -4,6 +4,7 @@ import java.util.function.Consumer;
 
 /**
  * 定义销毁资源的方式
+ *
  * @author flutterdash@qq.com
  * @since 2021/3/4 9:34
  */

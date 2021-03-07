@@ -6,12 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 标记一个方法参数，配合参数解析器来实现特定的功能。<br>
- * 这些属性代表什么含义，取决于参数解析器的实现<br>
- * @see xyz.scootaloo.console.app.parser.NameableParameterParser 解析器接口
- * @see xyz.scootaloo.console.app.parser.DftParameterParser 默认实现
- *
- * 以下属性的描述，仅针对于默认实现
+ * 标记一个命令行的参数
  *
  * @author flutterdash@qq.com
  * @since 2020/12/29 19:12
@@ -20,19 +15,29 @@ import java.lang.annotation.Target;
 @Target(ElementType.PARAMETER)
 public @interface Opt {
 
-    // 此可选参数的标记
+    /**
+     * @return 命令行参数的简称
+     */
     char value();
 
-    // 命令参数的全称
+    /**
+     * @return 命令行参数的全称
+     */
     String fullName() default "";
 
-    // 是否是必须的
+    /**
+     * @return 此命令行参数是否是必选的
+     */
     boolean required() default false;
 
-    // 假如这个参数为 true , 则对应的方法参数将拼合余下的命令参数
+    /**
+     * @return 假如这里返回 true , 则对应的方法参数将拼合余下的命令参数
+     */
     boolean joint() default false;
 
-    // 当可选参数未选中时可以提供一个默认值
+    /**
+     * @return 当可选参数未选中时可以提供一个默认值
+     */
     String dftVal() default "";
 
 }

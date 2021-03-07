@@ -2,6 +2,7 @@ package xyz.scootaloo.console.app.event;
 
 /**
  * 对监听器进行更细粒度的配置
+ *
  * @see EventType 事件描述
  * @author flutterdash@qq.com
  * @since 2021/2/10 21:57

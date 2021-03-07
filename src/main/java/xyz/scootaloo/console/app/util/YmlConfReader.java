@@ -10,6 +10,7 @@ import java.util.function.Function;
 /**
  * 读取yml配置
  * 配置内容参考 classpath:/console.yml
+ *
  * @author flutterdash@qq.com
  * @since 2021/1/19 13:57
  */

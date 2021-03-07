@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 无状态的资源，不会因为多个连接改变状态
+ * 标记无状态的资源，不会因为多个连接改变状态
  * @author flutterdash@qq.com
  * @since 2021/3/2 17:41
  */

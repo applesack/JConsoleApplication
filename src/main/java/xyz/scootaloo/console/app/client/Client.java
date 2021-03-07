@@ -12,13 +12,16 @@ import java.util.*;
 
 /**
  * 定义一个连接的用户信息
+ *
  * @author flutterdash@qq.com
  * @since 2021/3/2 17:52
  */
 @Private
 public class Client {
     private static final Console console = ResourceManager.getConsole();
+    /** 每个连接进来的用户都会分配一个资源对象 */
     private final Resources resources;
+    /** 此用户的标识 */
     protected final String userKey;
 
     protected Client(String userKey) {
@@ -28,12 +31,15 @@ public class Client {
 
     /**
      * 清空为此用户创建的所有资源
-     * @return 一个回调，调用此方法可以实现清空
+     * @return 一个回调，调用回调方法可以实现清空资源
      */
     public ResourcesHandler shutdown() {
         return new ResourcesHandler(this.userKey, ClientCenter::destroyUserResources);
     }
 
+    /**
+     * @return 获取这个资源对象
+     */
     public Resources getResources() {
         return resources;
     }
@@ -59,45 +65,73 @@ public class Client {
 
     @Private
     public static class Resources {
-        private Object value;
-        private String callingCommand;
-        private final History history = new History();
-        private final Set<BackstageTaskInfo> taskList = new LinkedHashSet<>();
-        private final Map<String, Object> variablePool = new HashMap<>();
-        private final ReplacementRecord replacementRecord = new ReplacementRecord();
+        private Object value; // 一个属性
+        private String callingCommand; // 当前正在处理的命令行
+        private final History history = new History(); // 执行命令行的信息记录
+        private final Set<BackstageTaskInfo> taskList = new LinkedHashSet<>(); // 后台任务列表
+        private final Map<String, Object> variablePool = new HashMap<>(); // 变量池，存储一些键值对
+        private final ReplacementRecord replacementRecord = new ReplacementRecord(); // 命令行中占位符替换记录
 
         private Resources() {
         }
 
+        /**
+         * @return 获取当前正在处理的命令行
+         */
         public String getCallingCommand() {
             return callingCommand;
         }
 
+        /**
+         * @param callingCommand 设置当前正在处理的命令行
+         */
         public void setCallingCommand(String callingCommand) {
             this.callingCommand = callingCommand;
         }
 
+        /**
+         * @return 获取当前用户执行的命令行的历史记录
+         */
         public History getHistory() {
             return history;
         }
 
+        /**
+         * @return 获取当前用户提交的后台任务信息列表
+         */
         public Set<BackstageTaskInfo> getTaskList() {
             return taskList;
         }
 
+        /**
+         * @return 命令行中占位符替换记录
+         */
         public ReplacementRecord getReplacementRecord() {
             return replacementRecord;
         }
 
+        /**
+         * @return 获取当前用户的变量池
+         */
         public Map<String, Object> getVariablePool() {
             return this.variablePool;
         }
 
+        /**
+         * 获取当前用户之前存储的对象
+         * @param <T> 类型
+         * @return 拿到这个对象
+         */
         @SuppressWarnings({ "unchecked", "hiding" })
         public <T> T getValue() {
+            if (value == null)
+                return null;
             return (T) value;
         }
 
+        /**
+         * @param value 给当前这个用户设置一个对象，类似于 session 功能
+         */
         public void setValue(Object value) {
             this.value = value;
         }
@@ -115,7 +149,6 @@ public class Client {
     // 实现历史记录功能时使用，前提条件是sys监听器已经启用
     @Private
     public static class History {
-//        private final Cursor cursor = new Cursor(this);
         // 历史记录
         private final LinkedList<InvokeInfo> hisInfoList = new LinkedList<>();
         // 日期转换器 执行时间
@@ -206,46 +239,6 @@ public class Client {
 
         public List<InvokeInfo> getInvokeHistory() {
             return this.hisInfoList;
-        }
-
-        protected Cursor getCursor() {
-//            return this.cursor;
-            return null;
-        }
-
-    }
-
-    // 游标
-    public static final class Cursor {
-        private final History history;
-        private ListIterator<InvokeInfo> cursor;
-
-        public Cursor(History history) {
-            this.history = history;
-            this.cursor = history.getInvokeHistory().listIterator();
-        }
-
-        // 获取前一条输入的命令
-        public Optional<String> getPre() {
-            if (cursor.hasPrevious())
-                return Optional.of(getCommand(cursor.previous()));
-            return Optional.empty();
-        }
-
-        // 获取后一条输入的命令
-        public Optional<String> getNext() {
-            if (cursor.hasNext())
-                return Optional.of(getCommand(cursor.next()));
-            return Optional.empty();
-        }
-
-        // 更新输入列表
-        public void gotoEnd() {
-            this.cursor =  history.getInvokeHistory().listIterator();
-        }
-
-        private String getCommand(InvokeInfo info) {
-            return info.getName() + " " + String.join(" ", info.getCmdArgs());
         }
 
     }

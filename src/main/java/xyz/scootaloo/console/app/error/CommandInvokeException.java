@@ -2,6 +2,7 @@ package xyz.scootaloo.console.app.error;
 
 /**
  * 命令执行时异常
+ *
  * @author flutterdash@qq.com
  * @since 2021/2/21 23:22
  */

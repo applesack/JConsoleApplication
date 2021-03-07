@@ -8,7 +8,8 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 /**
- * 控制台最终的配置配置
+ * 控制台配置
+ *
  * @author flutterdash@qq.com
  * @since 2020/12/27 15:37
  */

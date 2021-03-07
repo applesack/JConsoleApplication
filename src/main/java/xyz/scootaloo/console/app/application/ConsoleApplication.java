@@ -16,6 +16,7 @@ import java.util.Scanner;
 
 /**
  * 对AbstractApplication的具体实现和补充
+ *
  * @see AbstractConsoleApplication
  * @author flutterdash@qq.com
  * @since 2020/12/27 23:44
@@ -33,7 +34,7 @@ public final class ConsoleApplication extends AbstractConsoleApplication {
 
     /**
      * 需要以一个配置类和一个解释器做为生成此实例的条件
-     * 生成对象时，会执行初始化命令
+     * 生成对象时，会执行配置中的初始化命令
      * @param config 控制台应用的配置
      * @param interpreter 解释器
      */
@@ -102,9 +103,8 @@ public final class ConsoleApplication extends AbstractConsoleApplication {
      * 处理字符串命令的方式
      * 1. 将字符串命令行按照空格分隔，切割成列表
      * 2. 获取命令名(列表的第一个元素)是否是退出命令
-     * 3. 检查是否此命令是否携带了额外的参数
-     * 4. 交给解释器执行，解释器将返回调用结果
-     * 5. 调用如果失败则输出调用信息
+     * 3. 交给解释器执行，解释器将返回调用结果
+     * 4. 调用如果失败则输出调用信息
      *
      * @param command 字符串命令行
      * @return 是否是退出命令

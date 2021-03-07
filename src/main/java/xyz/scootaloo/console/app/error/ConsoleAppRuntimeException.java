@@ -10,6 +10,7 @@ import java.util.List;
 
 /**
  * 控制台应用运行期间产生的异常
+ *
  * @see CommandInvokeException 命令执行时的异常
  * @see ParameterResolveException 参数解析时的异常
  *

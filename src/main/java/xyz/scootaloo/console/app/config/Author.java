@@ -4,6 +4,7 @@ import xyz.scootaloo.console.app.config.ConsoleConfigProvider.DefaultValueConfig
 
 /**
  * 作者信息
+ *
  * @author flutterdash@qq.com
  * @since 2021/1/1 12:30
  */

@@ -8,6 +8,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * 资源管理，管理一些常用可通用的资源，例如单例
+ *
  * @author flutterdash@qq.com
  * @since 2020/12/31 16:42
  */
