@@ -22,12 +22,13 @@ public final class PresetFactoryManager {
     public static Set<Supplier<Object>> getFactories(ConsoleConfig config) {
         Set<Supplier<Object>> factories = new LinkedHashSet<>();
 
-        factories.add(() -> SimpleParameterParser.INSTANCE);  // 1
-        factories.add(() -> SystemPresetCmd.INSTANCE);        // 2
-        factories.add(() -> SystemPresetCmd.Help.INSTANCE);   // 3
-        factories.add(() -> BackstageTask.INSTANCE);          // 4
-        factories.add(() -> SubParameterParser.INSTANCE);     // 5
-        factories.add(() -> VariableSetter.INSTANCE);         // 6
+        factories.add(() -> SimpleParameterParser.INSTANCE);     // 1
+        factories.add(() -> SystemPresetCmd.INSTANCE);           // 2
+        factories.add(() -> SystemPresetCmd.Help.INSTANCE);      // 3
+        factories.add(() -> BackstageTask.INSTANCE);             // 4
+        factories.add(() -> SubParameterParser.INSTANCE);        // 5
+        factories.add(() -> VariableSetter.INSTANCE);            // 6
+        factories.add(() -> CollectionParameterParser.INSTANCE); // 7
 
         factories.addAll(config.getFactories());
         return factories;

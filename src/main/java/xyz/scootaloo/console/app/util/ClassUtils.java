@@ -1,6 +1,5 @@
 package xyz.scootaloo.console.app.util;
 
-import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.parser.TransformFactory;
@@ -9,7 +8,6 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static xyz.scootaloo.console.app.util.InvokeProxy.fun;
@@ -113,10 +111,6 @@ public final class ClassUtils {
                 console.println("拷贝属性时发生异常，已跳过，属性名:" + field.getName() + ". msg:" + e.getMessage());
             }
         }
-    }
-
-    public static Supplier<Object> facSupplier(Class<?> factory) {
-        return () -> fun(ClassUtils::newInstance).call(factory);
     }
 
     /**
@@ -227,20 +221,57 @@ public final class ClassUtils {
      * @return 泛型的实际类型的Class对象
      * @throws ClassNotFoundException 假如没有这个类
      */
-    public static Class<?> getRawType(Type type) throws ClassNotFoundException {
-        return Class.forName(((ParameterizedTypeImpl) type).getActualTypeArguments()[0].getTypeName(),
-                false, ResourceManager.getLoader());
+    public static List<Class<?>> getRawType(Type type) throws ClassNotFoundException {
+        String typeString = type.toString();
+        if (typeString.indexOf('<') == -1) {
+            List<Class<?>> singleResult = new ArrayList<>();
+            singleResult.add(Class.forName(typeString));
+            return singleResult;
+        }
+        int len = typeString.length();
+        int left = 0, right = typeString.length() - 1;
+        for (int i = 0; i<len; i++) {
+            if (typeString.charAt(i) == '<') {
+                left = i;
+                break;
+            }
+        }
+        for (int i = len - 1; i>=0; i--) {
+            if (typeString.charAt(i) == '>') {
+                right = i;
+                break;
+            }
+        }
+        String content = typeString.substring(left + 1, right);
+        String[] segments = content.split(",");
+        List<Class<?>> realTypes = new ArrayList<>();
+        len = segments.length;
+        for (int i = 0; i<len; i++) {
+            String curSeg = segments[i] = segments[i].trim();
+            if (curSeg.indexOf('<') != -1)
+                throw new RuntimeException("不能处理的复合泛型: `" + curSeg + "`");
+            realTypes.add(Class.forName(curSeg));
+        }
+
+        return realTypes;
     }
 
     //---------------------------------字符串向集合的转换----------------------------------------------
 
     // 生成泛型数组
-    @SuppressWarnings({ "unchecked", "hiding" })
+    @SuppressWarnings({"hiding" })
     public static <T> T[] genArray(Class<T> type, String theArr) {
         String[] items = theArr.split(DELIMITER);
-        T[] rArr = (T[]) Array.newInstance(type, items.length);
+        List<String> collection = new ArrayList<>(Arrays.asList(items));
+        return genArray(type, collection);
+    }
+
+    @SuppressWarnings({ "unchecked", "hiding" })
+    public static <T> T[] genArray(Class<T> type, Collection<String> collection) {
+        T[] rArr = (T[]) Array.newInstance(type, collection.size());
+        Iterator<String> iterator = collection.iterator();
         for (int i = 0; i<rArr.length; i++) {
-            rArr[i] = (T) TransformFactory.simpleTrans(items[i], type);
+            rArr[i] = (T) TransformFactory.simpleTrans(iterator.next(), type);
         }
         return rArr;
     }

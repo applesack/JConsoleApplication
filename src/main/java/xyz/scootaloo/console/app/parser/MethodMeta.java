@@ -42,7 +42,7 @@ public final class MethodMeta {
     }
 
     // 获取此方法的元数据
-    protected static MethodMeta getInstance(Method method, Object obj) {
+    public static MethodMeta getInstance(Method method, Object obj) {
         return new MethodMeta(method, obj);
     }
 

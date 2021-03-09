@@ -146,9 +146,9 @@ public final class TransformFactory {
             return ClassUtils.genArray(type.getComponentType(), (String) value);
         } else {
             if (ClassUtils.isExtendForm(type, Set.class)) { // 集
-                return ClassUtils.genSet(ClassUtils.getRawType(genericType), (String) value);
+                return ClassUtils.genSet(ClassUtils.getRawType(genericType).get(0), (String) value);
             } else if (ClassUtils.isExtendForm(type, List.class)) { // 列表
-                return ClassUtils.genList(ClassUtils.getRawType(genericType), (String) value);
+                return ClassUtils.genList(ClassUtils.getRawType(genericType).get(0), (String) value);
             } else {
                 throw new RuntimeException("暂不支持的数据结构: " + type.getName());
             }
