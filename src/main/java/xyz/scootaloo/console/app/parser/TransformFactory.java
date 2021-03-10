@@ -3,6 +3,7 @@ package xyz.scootaloo.console.app.parser;
 import xyz.scootaloo.console.app.anno.mark.NoStatus;
 import xyz.scootaloo.console.app.client.ReplacementRecord;
 import xyz.scootaloo.console.app.common.CPrinter;
+import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.util.ClassUtils;
 import xyz.scootaloo.console.app.util.VariableManager;
@@ -49,6 +50,7 @@ public final class TransformFactory {
         // 设置系统预设的一些实例
         putPresetObj(Random.class, () -> random);
         putPresetObj(CPrinter.class, ResourceManager::getPrinter);
+        putPresetObj(Console.class, ResourceManager::getConsole);
     }
 
     /**

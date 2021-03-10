@@ -2,7 +2,6 @@ package xyz.scootaloo.console.app;
 
 import xyz.scootaloo.console.app.application.AbstractConsoleApplication;
 import xyz.scootaloo.console.app.application.ConsoleApplication;
-import xyz.scootaloo.console.app.common.CPrinter;
 import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.parser.Interpreter;
@@ -37,7 +36,7 @@ public final class ApplicationRunner {
     /**
      * 无参运行<br>
      * 当调用{@code ApplicationRunner.consoleApplication()}时，框架会实例化调用者，将调用者做为工厂注册到框架。
-     * @see Main 请参考默认的启动实例，这里使用了无参运行，这里{@code Main}这个类被实例化，其中{@link Main#hello(CPrinter)}这个方法被扫描到。
+     * @see Main 请参考默认的启动实例，这里使用了无参运行，这里{@code Main}这个类被实例化，其中{@link Main#hello(Console)}这个方法被扫描到。
      * 默认配置文件，请参考 classpath:/console.yml
      * 假如 classpath下不包含这个文件，则使用构建者的默认配置 {@link DefaultValueConfigBuilder}
      * @return 基于默认配置生成的控制台应用

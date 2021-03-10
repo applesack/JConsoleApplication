@@ -2,7 +2,7 @@ package xyz.scootaloo.console.app;
 
 import xyz.scootaloo.console.app.anno.Cmd;
 import xyz.scootaloo.console.app.anno.mark.Boot;
-import xyz.scootaloo.console.app.common.CPrinter;
+import xyz.scootaloo.console.app.common.Console;
 
 /**
  * 示例
@@ -26,8 +26,8 @@ public class Main {
      * hello
      */
     @Cmd
-    public void hello(CPrinter printer) {
-        printer.println("hello world!!");
+    public void hello(Console console) {
+        console.println("hello world!!");
     }
 
 }
