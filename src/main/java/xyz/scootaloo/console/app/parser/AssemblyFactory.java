@@ -9,6 +9,7 @@ import xyz.scootaloo.console.app.event.AppListener;
 import xyz.scootaloo.console.app.event.EventPublisher;
 import xyz.scootaloo.console.app.parser.Interpreter.MethodActuator;
 import xyz.scootaloo.console.app.parser.preset.PresetFactoryManager;
+import xyz.scootaloo.console.app.parser.preset.SystemPresetCmd;
 import xyz.scootaloo.console.app.util.FunctionDesc;
 import xyz.scootaloo.console.app.util.InvokeProxy;
 import xyz.scootaloo.console.app.util.StringUtils;
@@ -281,7 +282,7 @@ public final class AssemblyFactory {
      * 你可以使用 {@code help xx} 命令来查看被注册进来的帮助文档信息。</p>
      *
      * <p>为了将帮助文档方法和 Cmd 方法区分开来，可以在方法名中插入下划线，这个用法在以下示例</p>
-     * @see xyz.scootaloo.console.app.parser.preset.SystemPresetCmd.Help 框架中使用 HelpDoc 的示例
+     * @see SystemPresetCmd.SystemCommandHelp 框架中使用 HelpDoc 的示例
      * @param factory 包含帮助信息的类
      */
     private static void loadHelpFactory(HelpDoc factory) {

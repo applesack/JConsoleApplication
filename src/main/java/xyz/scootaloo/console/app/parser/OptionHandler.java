@@ -46,4 +46,11 @@ public interface OptionHandler extends Factory {
         return cmdName + " " + args;
     }
 
+    /**
+     * @return toString()
+     */
+    default String getOptionString() {
+        return this.getClass().getName() + "##" + option() + "##";
+    }
+
 }

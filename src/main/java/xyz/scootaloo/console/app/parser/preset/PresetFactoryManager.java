@@ -24,7 +24,7 @@ public final class PresetFactoryManager {
 
         factories.add(() -> SimpleParameterParser.INSTANCE);     // 1
         factories.add(() -> SystemPresetCmd.INSTANCE);           // 2
-        factories.add(() -> SystemPresetCmd.Help.INSTANCE);      // 3
+        factories.add(() -> SystemPresetCmd.SystemCommandHelp.INSTANCE);      // 3
         factories.add(() -> BackstageTask.INSTANCE);             // 4
         factories.add(() -> SubParameterParser.INSTANCE);        // 5
         factories.add(() -> VariableSetter.INSTANCE);            // 6

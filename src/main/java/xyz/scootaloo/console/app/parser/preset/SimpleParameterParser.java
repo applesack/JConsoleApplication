@@ -44,4 +44,8 @@ public final class SimpleParameterParser implements NameableParameterParser {
         return meta.parameterTypes[0] == String.class;
     }
 
+    @Override
+    public String toString() {
+        return getParserString();
+    }
 }

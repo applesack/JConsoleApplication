@@ -239,6 +239,11 @@ public final class CollectionParameterParser implements NameableParameterParser 
         return point == closeSign[pos];
     }
 
+    @Override
+    public String toString() {
+        return getParserString();
+    }
+
     private static class CollectionParser {
         private final Converter converter;
         public CollectionParser(int type, String segment) {

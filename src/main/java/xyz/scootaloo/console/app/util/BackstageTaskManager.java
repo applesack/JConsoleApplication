@@ -171,7 +171,7 @@ public final class BackstageTaskManager {
 
         final StringBuffer sb;
         final LinkedList<String> lines;
-        final boolean immediately;
+        boolean immediately;
 
         public PrinterImpl(StringBuffer sb) {
             this(sb, false);
@@ -181,13 +181,12 @@ public final class BackstageTaskManager {
             this.sb = sb;
             this.sb.setLength(0);
             this.lines = new LinkedList<>();
-            this.immediately = immediately;
+            setMode(immediately);
         }
 
-        // 设置输出的方式，默认调用系统的 System.out.println()
-        public void setOutputMode(Consumer<String> zOutputMode) {
-            if (zOutputMode != null)
-                outputMode = zOutputMode;
+        @Override
+        public void setMode(boolean immediate) {
+            this.immediately = immediate;
         }
 
         // 显示最后 n 条输出
@@ -207,8 +206,16 @@ public final class BackstageTaskManager {
             }
         }
 
-        // 当任务执行完成，将缓存中剩余的内容清除
-        public void done() {
+        @Override
+        public void refresh() {
+            done();
+            this.lines.forEach(this::simplePrint);
+        }
+
+        /**
+         * 当任务执行完成，将缓存中剩余的内容清除
+         */
+        private void done() {
             if (immediately)
                 return;
             if (sb.length() > 0) {
@@ -256,6 +263,10 @@ public final class BackstageTaskManager {
         @Override
         public void write(int b) {
             this.print(b);
+        }
+
+        private void simplePrint(Object o) {
+            console.println(o);
         }
 
     }

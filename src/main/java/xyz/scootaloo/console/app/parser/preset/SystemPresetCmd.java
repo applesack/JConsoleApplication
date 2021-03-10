@@ -298,35 +298,35 @@ public final class SystemPresetCmd implements AppListenerAdapter {
     //--------------------------------------------------------------------------------
 
     // 对于系统预置命令的描述
-    public static final class Help implements HelpDoc {
+    public static final class SystemCommandHelp implements HelpDoc {
         /** singleton */
-        protected static final Help INSTANCE = new Help();
+        protected static final SystemCommandHelp INSTANCE = new SystemCommandHelp();
 
         public String _app() {
             return "应用信息\n" +
-                    "app [-v/--version]\n" +
-                    "-v/--version 查看应用的版本信息\n";
+                    "app [-v|--version]\n" +
+                    " 示例: app -v\n" +
+                    " 查看应用的版本信息\n";
         }
 
         public String _help() {
             return "帮助信息\n" +
-                    "help [-s/--name] \n" +
+                    "help [-s|--name] \n" +
                     "查询某命令的用法\n" +
                     "示例，查询history这个命令的用法: \n" +
                     "       help -s history\n" +
-                    "提示: 这里的`[-s]`和`[--name]`在同一行，表示同一个参数的不同写法，一个是简写一个是全称\n" +
-                    "help -s help 等于 help --name help\n";
+                    "或者    help --name history\n";
         }
 
         public String _find() {
             return "查找某命令的信息\n" +
-                    "find [-s/--name] [-t/--tag]\n" +
-                    "-s/--name 根据名称查找命令\n" +
-                    "-t/--tag  根据标签查找命令\n" +
-                    "示例，查找history命令的信息\n" +
-                    "       find -s history\n" +
-                    "示例，查找sys标签的命令\n" +
-                    "       find -t sys\n";
+                    "find [<-s/--name {cmdName}> | <-t/--tag {tagName}>]\n" +
+                    "用法一: \n" +
+                    "     查找所有可调用的命令: find\n" +
+                    "用法二:\n" +
+                    "     按照方法名查找某命令: find --name help\n" +
+                    "用法三:\n" +
+                    "     按照标签查找某命令: find --tag sys\n";
         }
 
         public String _cls() {
@@ -342,7 +342,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
 
         public String _sleep() {
             return "休眠当前程序一段时间\n" +
-                    "sleep <-m <millisecond>>\n" +
+                    "sleep [-m] <count>\n" +
                     "-m 单位毫秒\n" +
                     "示例，休眠当前程序100毫秒\n" +
                     "       sleep -m 100\n" +
@@ -352,15 +352,15 @@ public final class SystemPresetCmd implements AppListenerAdapter {
 
         public String _history() {
             return "查询历史记录\n" +
-                    "his [-n/--size] [-s/--name] [-a/--all] [-u/--success] [-r/--rtnVal] [-g/--args] [-t/--invokeAt] [-i/--interval]\n" +
-                    "-n/--size     需要展示历史记录的数量，显示最近的记录\n" +
-                    "-s/--name     查找指定的命令调用记录\n" +
-                    "-a/--all      显示命令调用的所有信息\n" +
-                    "-u/--success  显示命令调用是否成功\n" +
-                    "-r/--rtnVal   显示命令调用时的返回值\n" +
-                    "-g/--args     显示调用此命令时使用的参数\n" +
-                    "-t/--invokeAt 显示何时调用的此命令\n" +
-                    "-i/--interval 显示执行此命令所花费的时间\n" +
+                    "his [-n|--size] [-s|--name] [-a|--all] [-u|--success] [-r|--rtnVal] [-g|--args] [-t|--invokeAt] [-i|--interval]\n" +
+                    "-n|--size     需要展示历史记录的数量，显示最近的记录\n" +
+                    "-s|--name     查找指定的命令调用记录\n" +
+                    "-a|--all      显示命令调用的所有信息\n" +
+                    "-u|--success  显示命令调用是否成功\n" +
+                    "-r|--rtnVal   显示命令调用时的返回值\n" +
+                    "-g|--args     显示调用此命令时使用的参数\n" +
+                    "-t|--invokeAt 显示何时调用的此命令\n" +
+                    "-i|--interval 显示执行此命令所花费的时间\n" +
                     "\n" +
                     "提示: -a 参数表示 u r g t i 这几个参数全部选中\n" +
                     "示例，查询最近调用history命令的所有信息\n" +
@@ -376,15 +376,12 @@ public final class SystemPresetCmd implements AppListenerAdapter {
                     "set <key> <value>\n" +
                     "向系统中放置一个键值对\n" +
                     "\n" +
-                    "可以用命令方法的返回值做为key的value\n" +
-                    "set <key>\n" +
-                    "a command which has return value\n" +
-                    "\n" +
+                    "示例，放置一个键值对\n" +
+                    "       set name twilight\n" +
                     "清除某个key\n" +
-                    "set <key> .\n" +
-                    "\n" +
+                    "       set <key> .\n" +
                     "清除所有key\n" +
-                    "set .\n";
+                    "      set .\n";
         }
 
         public String _get() {
@@ -414,12 +411,12 @@ public final class SystemPresetCmd implements AppListenerAdapter {
         }
 
         public String _task() {
-            return "用法1\n" +
-                    "   task <taskName> <count>\n" +
+            return "用法一:\n" +
+                    "   task <taskName | clear [all]> [count]\n" +
                     "   例如: task test 7\n" +
                     "   这是查看名为test的任务最近输出的7条内容\n" +
                     "   如果不指定count，则默认为查看全部输出\n" +
-                    "用法2\n" +
+                    "用法二:\n" +
                     "   task clear all\n" +
                     "   清除后台全部任务\n" +
                     "   task clear\n" +

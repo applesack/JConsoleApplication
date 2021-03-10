@@ -186,6 +186,11 @@ public final class SubParameterParser implements NameableParameterParser {
             return opt.fullName();
     }
 
+    @Override
+    public String toString() {
+        return getParserString();
+    }
+
     // 缺省参数标记
     private static class SimpleWildcardArgument {
         private final int idx;

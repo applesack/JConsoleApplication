@@ -207,16 +207,16 @@ public final class Interpreter {
      */
     protected InvokeInfo doFilterChain(MethodActuator actuator, List<String> cmdArgs) {
         // 执行过滤链，得到执行结果
-        FilterMessage filterMessage = FilterMethodWrapper.doFilterChain();
+        FilterChainMessage filterChainMessage = FilterMethodWrapper.doFilterChain();
         // 执行不成功
-        if (!filterMessage.success) {
+        if (!filterChainMessage.isSuccess()) {
             CommandInvokeException commandInvokeException;
-            if (filterMessage.hasException) {
-                commandInvokeException = new CommandInvokeException(filterMessage.errorMsg,
-                        filterMessage.exception);
+            if (filterChainMessage.hasException()) {
+                commandInvokeException = new CommandInvokeException(filterChainMessage.getErrorMsg(),
+                        filterChainMessage.getException());
                 commandInvokeException.setErrorInfo(ErrorCode.FILTER_ON_EXCEPTION);
             } else {
-                commandInvokeException = new CommandInvokeException(filterMessage.errorMsg);
+                commandInvokeException = new CommandInvokeException(filterChainMessage.errorMsg);
                 commandInvokeException.setErrorInfo(ErrorCode.FILTER_INTERCEPT);
             }
             // 将过滤链中包含的错误信息打包传递出去
@@ -434,11 +434,24 @@ public final class Interpreter {
             } else {
                 String title = "\n[" + cmdName;
                 title += !cmd.name().equals("") ? ", " + cmd.name() : "";
-                title += "]";
+                title += "]\n";
                 return title + body.get();
             }
         }
 
+        @Override
+        public String toString() {
+            return "MethodActuator{" +
+                    "method=" + method +
+                    ", cmd=" + cmd +
+                    ", obj=" + obj +
+                    ", parser=" + parser +
+                    ", methodMeta=" + methodMeta +
+                    ", rtnType=" + rtnType +
+                    ", cmdName='" + cmdName + '\'' +
+                    '}';
+        }
+        
     }
 
     /**
@@ -479,18 +492,19 @@ public final class Interpreter {
          * 当其中某个过滤器返回了 false, 或者抛出了异常，则中断过滤操作。
          * @return 过滤器执行信息
          */
-        public static FilterMessage doFilterChain() {
-            FilterMessage filterMessage = new FilterMessage();
+        public static FilterChainMessage doFilterChain() {
+            FilterChainMessage filterChainMessage = getCurrentUser().getResources().getFilterChainMessage();
+            filterChainMessage.reset();
             if (filters.isEmpty())
-                return filterMessage.ok();
+                return filterChainMessage.ok();
             for (FilterMethodWrapper filter : filters) {
                 boolean pass = InvokeProxy.fun(filter::invoke)
-                        .addHandle(filterMessage::onException).setDefault(false).call();
+                        .addHandle(filterChainMessage::onException).setDefault(false).call();
                 if (!pass) { // 过滤器方法返回 false; 不放行
-                    return filterMessage.onCutOff(filter.getErrorMsg());
+                    return filterChainMessage.onCutOff(filter.getErrorMsg());
                 }
             }
-            return filterMessage.ok();
+            return filterChainMessage.ok();
         }
 
         /**
@@ -550,16 +564,32 @@ public final class Interpreter {
                     "5. 方法参数目前仅支持 String 类型，用于接受当前输入的命令\n";
         }
 
+        @Override
+        public String toString() {
+            return "FilterMethodWrapper{" +
+                    "meta=" + meta +
+                    ", errorMsg='" + errorMsg + '\'' +
+                    ", order=" + order +
+                    '}';
+        }
+
     }
 
     /**
      * 过滤链执行信息
      */
-    private static class FilterMessage {
+    public static class FilterChainMessage {
         private boolean      success = false;   // 是否成功
         private String      errorMsg = null;    // 错误信息
         private boolean hasException = false;   // 是否有异常
         private Exception  exception = null;    // 异常
+
+        private void reset() {
+            this.success = false;
+            this.errorMsg = null;
+            this.hasException = false;
+            this.exception = null;
+        }
 
         public void onException(Exception ex) {
             this.success = false;
@@ -567,15 +597,41 @@ public final class Interpreter {
             this.hasException = true;
         }
 
-        public FilterMessage onCutOff(String msg) {
+        public FilterChainMessage onCutOff(String msg) {
             this.success = false;
             this.errorMsg = msg;
             return this;
         }
 
-        public FilterMessage ok() {
+        public FilterChainMessage ok() {
             this.success = true;
             return this;
+        }
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public String getErrorMsg() {
+            return errorMsg;
+        }
+
+        public boolean hasException() {
+            return hasException;
+        }
+
+        public Exception getException() {
+            return exception;
+        }
+
+        @Override
+        public String toString() {
+            return "FilterChainMessage{" +
+                    "success=" + success +
+                    ", errorMsg='" + errorMsg + '\'' +
+                    ", hasException=" + hasException +
+                    ", exception=" + exception +
+                    '}';
         }
 
     }

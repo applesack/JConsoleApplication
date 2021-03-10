@@ -29,4 +29,11 @@ public interface NameableParameterParser extends ParameterParser, Factory {
      */
     String name();
 
+    /**
+     * @return toString()
+     */
+    default String getParserString() {
+        return this.getClass().getName() + "##" + name() + "##";
+    }
+
 }

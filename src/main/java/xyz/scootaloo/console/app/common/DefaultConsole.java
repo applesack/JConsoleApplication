@@ -11,18 +11,18 @@ public class DefaultConsole extends Console {
     private CPrinter default_printer = CPrinterImpl.INSTANCE;
 
     @Override
-    public void print(Object z) {
-        default_printer.print(z);
+    public void print(Object o) {
+        default_printer.print(o);
     }
 
     @Override
-    public void println(Object z) {
-        default_printer.println(z);
+    public void println(Object o) {
+        default_printer.println(o);
     }
 
     @Override
-    public void err(Object z) {
-        default_printer.err(z);
+    public void err(Object o) {
+        default_printer.err(o);
     }
 
     // 默认实现，使用标准系统标准输出

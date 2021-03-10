@@ -46,13 +46,16 @@ public final class IdGenerator {
         return increase();
     }
 
+    public Long peek() {
+        return id.get();
+    }
+
     private synchronized Long increase() {
         return id.getAndAdd(random.nextInt(13) + 5);
     }
 
-    public long reset() {
+    public void reset() {
         id.set(0);
-        return 0;
     }
 
     public static IdGenerator create() {

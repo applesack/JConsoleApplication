@@ -38,4 +38,8 @@ public final class VariableSetter implements OptionHandler {
         }
     }
 
+    @Override
+    public String toString() {
+        return getOptionString();
+    }
 }

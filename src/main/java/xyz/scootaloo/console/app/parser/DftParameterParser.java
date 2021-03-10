@@ -21,7 +21,7 @@ import java.util.*;
  * @since 2020/12/29 11:21
  */
 @NoStatus
-public final class DftParameterParser {
+public final class DftParameterParser implements NameableParameterParser {
     // 临时占位符
     private static final String PLACEHOLDER = "*";
 
@@ -200,6 +200,21 @@ public final class DftParameterParser {
         }
 
         return !found;
+    }
+
+    @Override
+    public String name() {
+        return "*";
+    }
+
+    @Override
+    public ResultWrapper parse(MethodMeta meta, List<String> args) throws Exception {
+        return transform(meta, args);
+    }
+
+    @Override
+    public String toString() {
+        return getParserString();
     }
 
     // ------------------------------------POJO--------------------------------------------

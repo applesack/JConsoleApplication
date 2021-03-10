@@ -2,9 +2,11 @@ package xyz.scootaloo.console.app.util;
 
 /**
  * 键值对
+ * @deprecated 暂时用不到
  * @author flutterdash@qq.com
  * @since 2021/3/9 10:53
  */
+@Deprecated
 public class KVNode<K, V> {
 
     private K key;

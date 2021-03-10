@@ -93,4 +93,19 @@ public final class MethodMeta {
         return Optional.empty();
     }
 
+    @Override
+    public String toString() {
+        return "MethodMeta{" +
+                "obj=" + obj +
+                ", method=" + method +
+                ", size=" + size +
+                ", optionals=" + Arrays.toString(optionals) +
+                ", parameterTypes=" + Arrays.toString(parameterTypes) +
+                ", genericTypes=" + Arrays.toString(genericTypes) +
+                ", optCharSet=" + optCharSet +
+                ", fullNameSet=" + fullNameSet +
+                ", jointMarkSet=" + jointMarkSet +
+                '}';
+    }
+
 }

@@ -3,6 +3,7 @@ package xyz.scootaloo.console.app.client;
 import xyz.scootaloo.console.app.anno.mark.Private;
 import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
+import xyz.scootaloo.console.app.parser.Interpreter.FilterChainMessage;
 import xyz.scootaloo.console.app.parser.InvokeInfo;
 import xyz.scootaloo.console.app.util.BackstageTaskManager.BackstageTaskInfo;
 import xyz.scootaloo.console.app.util.StringUtils;
@@ -63,6 +64,14 @@ public class Client {
         return other.userKey.equals(this.userKey);
     }
 
+    @Override
+    public String toString() {
+        return "Client{" +
+                "resources=" + resources +
+                ", userKey='" + userKey + '\'' +
+                '}';
+    }
+
     @Private
     public static class Resources {
         private Object value; // 一个属性
@@ -71,8 +80,17 @@ public class Client {
         private final Set<BackstageTaskInfo> taskList = new LinkedHashSet<>(); // 后台任务列表
         private final Map<String, Object> variablePool = new HashMap<>(); // 变量池，存储一些键值对
         private final ReplacementRecord replacementRecord = new ReplacementRecord(); // 命令行中占位符替换记录
+        private final FilterChainMessage filterChainMessage
+                = new FilterChainMessage(); // 过滤链执行信息
 
         private Resources() {
+        }
+
+        /**
+         * @return 获取当前用户的过滤链执行情况
+         */
+        public FilterChainMessage getFilterChainMessage() {
+            return this.filterChainMessage;
         }
 
         /**
@@ -142,6 +160,19 @@ public class Client {
             variablePool.clear();
             replacementRecord.refresh();
             callingCommand = "";
+        }
+
+        @Override
+        public String toString() {
+            return "Resources{" +
+                    "value=" + value +
+                    ", callingCommand='" + callingCommand + '\'' +
+                    ", history=" + history +
+                    ", taskList=" + taskList +
+                    ", variablePool=" + variablePool +
+                    ", replacementRecord=" + replacementRecord +
+                    ", filterChainMessage=" + filterChainMessage +
+                    '}';
         }
 
     }
@@ -239,6 +270,13 @@ public class Client {
 
         public List<InvokeInfo> getInvokeHistory() {
             return this.hisInfoList;
+        }
+
+        @Override
+        public String toString() {
+            return "History{" +
+                    "historySize=" + hisInfoList.size() +
+                    '}';
         }
 
     }

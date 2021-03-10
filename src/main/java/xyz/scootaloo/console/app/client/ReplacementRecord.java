@@ -72,6 +72,23 @@ public class ReplacementRecord {
             return id.hashCode();
         }
 
+        @Override
+        public String toString() {
+            return "KVPair{" +
+                    "hasVar=" + hasVar +
+                    ", key='" + key + '\'' +
+                    ", value=" + value +
+                    ", id=" + id +
+                    '}';
+        }
+
+    }
+
+    @Override
+    public String toString() {
+        return "ReplacementRecord{" +
+                "records=" + records +
+                '}';
     }
 
 }

@@ -2,6 +2,7 @@ package xyz.scootaloo.console.app.parser;
 
 import xyz.scootaloo.console.app.error.ConsoleAppRuntimeException;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -48,6 +49,15 @@ public final class ParameterWrapper implements ResultWrapper {
     @Override
     public ConsoleAppRuntimeException getEx() {
         return ex;
+    }
+
+    @Override
+    public String toString() {
+        return "ParameterWrapper{" +
+                "success=" + success +
+                ", args=" + Arrays.toString(args) +
+                ", ex=" + ex +
+                '}';
     }
 
 }

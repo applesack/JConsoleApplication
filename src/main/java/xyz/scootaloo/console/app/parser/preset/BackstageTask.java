@@ -36,4 +36,9 @@ public final class BackstageTask implements OptionHandler {
                     Interpreter.getCurrentUser().getResources().getTaskList());
     }
 
+    @Override
+    public String toString() {
+        return getOptionString();
+    }
+
 }

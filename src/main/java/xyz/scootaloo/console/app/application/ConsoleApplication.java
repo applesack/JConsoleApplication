@@ -139,4 +139,11 @@ public final class ConsoleApplication extends AbstractConsoleApplication {
         return this;
     }
 
+    @Override
+    public String toString() {
+        return "ConsoleApplication{" +
+                "appName=" + config.getAppName() +
+                '}';
+    }
+
 }

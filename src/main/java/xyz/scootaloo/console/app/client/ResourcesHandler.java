@@ -22,4 +22,12 @@ public class ResourcesHandler {
         callback.accept(resourcesMark);
     }
 
+    @Override
+    public String toString() {
+        return "ResourcesHandler{" +
+                "resourcesMark='" + resourcesMark + '\'' +
+                ", callback=" + callback +
+                '}';
+    }
+
 }

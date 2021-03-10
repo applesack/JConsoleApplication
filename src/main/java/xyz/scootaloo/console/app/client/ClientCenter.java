@@ -77,4 +77,13 @@ public final class ClientCenter {
         }
     }
 
+    @Override
+    public String toString() {
+        return "ClientCenter{" +
+                "PUBLIC_SPACE=" + PUBLIC_SPACE +
+                ", users=" + users +
+                ", maxHistory=" + maxHistory +
+                '}';
+    }
+
 }
