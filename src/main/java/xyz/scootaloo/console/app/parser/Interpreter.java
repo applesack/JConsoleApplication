@@ -84,10 +84,12 @@ public final class Interpreter {
     }
 
     /**
-     * 返回可调用的系统命令集
+     * 返回所有可调用的系统命令集合
      * @return 命令名称集合
      */
     public static Set<String> getSysCommands() {
+        if (INSTANCE == null)
+            throw new RuntimeException("解释器未初始化");
         return strategyMap.values().stream()
                 .filter(methodActuator -> methodActuator.getCmd().tag().equals(SystemPresetCmd.SYS_TAG))
                 .flatMap(methodActuator -> Stream.of(methodActuator.getCmdName(),
@@ -116,27 +118,27 @@ public final class Interpreter {
 
     /**
      * 解释执行一段命令行
-     * @param cmd 命令行
+     * @param commandline 命令行
      * @return 方法调用信息
      */
-    public InvokeInfo interpret(String cmd) {
+    public InvokeInfo interpret(String commandline) {
         checkAndSet();
         // 空命令，不做处理
-        if (cmd.trim().isEmpty())
+        if (commandline.trim().isEmpty())
             return InvokeInfo.simpleSuccess();
         // 记录当前执行的命令行
-        getCurrentUser().getResources().setCallingCommand(cmd);
+        getCurrentUser().getResources().setCallingCommand(commandline);
         // 获取命令名 和 命令参数
-        List<String> allTheCmdItem = StringUtils.toList(cmd);
-        String cmdName = getCmdName(allTheCmdItem);
+        List<String> commandItems = StringUtils.toList(commandline);
+        String cmdName = getCmdName(commandItems);
         // 检查是否能使用其他方式处理，假如这里返回true，表示已经处理过，则这里可以直接退出
-        if (ExtraOptionHandler.handle(cmdName, allTheCmdItem))
+        if (ExtraOptionHandler.handle(cmdName, commandItems))
             return InvokeInfo.simpleSuccess();
         // 找到命令方法，执行，得到结果
         Optional<MethodActuator> actuatorWrapper = findActuatorByName(cmdName);
         if (actuatorWrapper.isPresent()) {
             // 执行命令方法之前，先执行过滤器
-            InvokeInfo filterChainInfo = doFilterChain(actuatorWrapper.get(), allTheCmdItem);
+            InvokeInfo filterChainInfo = doFilterChain(actuatorWrapper.get(), commandItems);
             if (!filterChainInfo.isSuccess())
                 // 过滤器未通过，返回出错原因
                 return filterChainInfo;
@@ -145,7 +147,7 @@ public final class Interpreter {
             return lackCommandException(cmdName);
         }
         // 最终执行
-        return actuatorWrapper.get().invoke(allTheCmdItem);
+        return actuatorWrapper.get().invoke(commandItems);
     }
 
     /**
@@ -203,7 +205,9 @@ public final class Interpreter {
      * @return 执行结果
      */
     protected InvokeInfo doFilterChain(MethodActuator actuator, List<String> cmdArgs) {
+        // 执行过滤链，得到执行结果
         FilterMessage filterMessage = FilterMethodWrapper.doFilterChain();
+        // 执行不成功
         if (!filterMessage.success) {
             CommandInvokeException commandInvokeException;
             if (filterMessage.hasException) {
@@ -214,9 +218,12 @@ public final class Interpreter {
                 commandInvokeException = new CommandInvokeException(filterMessage.errorMsg);
                 commandInvokeException.setErrorInfo(ErrorCode.FILTER_INTERCEPT);
             }
+            // 将过滤链中包含的错误信息打包传递出去
             return InvokeInfo.failed(actuator.rtnType, cmdArgs, commandInvokeException
                     .appendExData(actuator.methodMeta, actuator.obj, cmdArgs, actuator.parser.getClass()));
-        } else {
+        }
+        // 执行成功
+        else {
             return InvokeInfo.simpleSuccess();
         }
     }
@@ -442,9 +449,6 @@ public final class Interpreter {
         /** 全局过滤器 */
         private static final List<FilterMethodWrapper> filters = new ArrayList<>();
 
-        /** resources */
-        private static final FilterMessage filterMessage = new FilterMessage();
-
         /** instance properties */
         private final MethodMeta meta;  // 方法信息
         private final String errorMsg;  // 对应 Cmd 注解上的 error
@@ -475,9 +479,9 @@ public final class Interpreter {
          * @return 过滤器执行信息
          */
         public static FilterMessage doFilterChain() {
+            FilterMessage filterMessage = new FilterMessage();
             if (filters.isEmpty())
                 return filterMessage.ok();
-            filterMessage.clear();
             for (FilterMethodWrapper filter : filters) {
                 boolean pass = InvokeProxy.fun(filter::invoke)
                         .addHandle(filterMessage::onException).setDefault(false).call();
@@ -547,20 +551,14 @@ public final class Interpreter {
 
     }
 
-    // pojo
+    /**
+     * 过滤链执行信息
+     */
     private static class FilterMessage {
-
-        private boolean success;        // 是否成功
-        private String errorMsg;        // 错误信息
-        private boolean hasException;   // 是否有异常
-        private Exception exception;    // 异常
-
-        public void clear() {
-            this.success = false;
-            this.errorMsg = null;
-            this.exception = null;
-            this.hasException = false;
-        }
+        private boolean      success = false;   // 是否成功
+        private String      errorMsg = null;    // 错误信息
+        private boolean hasException = false;   // 是否有异常
+        private Exception  exception = null;    // 异常
 
         public void onException(Exception ex) {
             this.success = false;

@@ -30,6 +30,7 @@ public final class TransformFactory {
     static {
         // 设置各种基本类型的默认值 转换方式
         putDefVal(str -> str);
+        putDefVal(Object.class , null   , null, str -> str      );
         putDefVal(int.class    , Integer.class, 0, Integer::parseInt  );
         putDefVal(short.class  , Short.class  , 0, Short::parseShort  );
         putDefVal(float.class  , Float.class  , 0, Float::parseFloat  );
