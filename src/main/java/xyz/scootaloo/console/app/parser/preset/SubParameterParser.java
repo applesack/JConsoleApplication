@@ -5,6 +5,7 @@ import xyz.scootaloo.console.app.anno.mark.Stateless;
 import xyz.scootaloo.console.app.error.ErrorCode;
 import xyz.scootaloo.console.app.error.ParameterResolveException;
 import xyz.scootaloo.console.app.parser.*;
+import xyz.scootaloo.console.app.parser.MethodMeta.CurrentParamType;
 import xyz.scootaloo.console.app.support.InvokeProxy;
 
 import java.util.*;
@@ -53,32 +54,27 @@ public final class SubParameterParser implements NameableParameterParser {
         Map<String, String> kvPairs = new HashMap<>();     // 命令行中的参数键值对
         List<String> remainList = parseParameters(cmdArgsItems, paramOptAnnoList, kvPairs); // 命令行移除了键值对后剩余的内容
 
-        Class<?>[] methodArgTypes = meta.parameterTypes; // 方法参数类型
-        Optional<Opt>[] optionals = meta.optionals;      // 方法中的注解数组，每个方法参数对应一个注解元素
-        List<SimpleWildcardArgument> wildcardArguments = new ArrayList<>(); // 当一个方法参数是缺省的，则被加入道这个集合
         // 遍历方法的所有参数
-        int size = meta.size;
-        for (int i = 0; i<size; i++) {
-            Class<?> curParamType = methodArgTypes[i]; // 当前参数类型
-            Optional<Opt> optOptional = optionals[i];  // 当前参数对应的注解
-            if (optOptional.isPresent()) { // 含有 @Opt 注解时
-                Opt option = optOptional.get();
+        List<SimpleWildcardArgument> wildcardArguments = new ArrayList<>(); // 当一个方法参数是缺省的，则被加入道这个集合
+        for (CurrentParamType current : meta) {
+            if (current.optionalOpt.isPresent()) { // 含有 @Opt 注解时
+                Opt option = current.optionalOpt.get();
                 String paramName = getNameStrategy(option);
                 if (kvPairs.containsKey(paramName)) {
                     String value = kvPairs.get(paramName);
-                    Object obj = exTransform(value, curParamType);
+                    Object obj = exTransform(value, current.paramType);
                     if (obj instanceof Exception)
                         return ParameterWrapper.fail(
-                                new ParameterResolveException("参数解析时异常, 类型:" + curParamType.getName(),
+                                new ParameterResolveException("参数解析时异常, 类型:" + current.paramType.getName(),
                                         (Exception) obj).setErrorInfo(ErrorCode.NONSUPPORT_TYPE));
                     else
                         methodArgs.add(obj);
                 } else { // 当前参数不在参数键值对中时
                     if (!option.dftVal().equals("")) {
-                        Object obj = exTransform(option.dftVal(), curParamType);
+                        Object obj = exTransform(option.dftVal(), current.paramType);
                         if (obj instanceof Exception)
                             return ParameterWrapper.fail(
-                                    new ParameterResolveException("参数解析时异常, 类型:" + curParamType.getName(),
+                                    new ParameterResolveException("参数解析时异常, 类型:" + current.paramType.getName(),
                                             (Exception) obj).setErrorInfo(ErrorCode.NONSUPPORT_TYPE));
                         else
                             methodArgs.add(obj);
@@ -87,23 +83,11 @@ public final class SubParameterParser implements NameableParameterParser {
                             return ParameterWrapper.fail(
                                     new ParameterResolveException("缺少必选参数 `" + option.fullName() + "`")
                                             .setErrorInfo(ErrorCode.LACK_REQUIRED_PARAMETERS));
-                        Optional<Object> presetObjOptional = TransformFactory.getPresetVal(curParamType);
-                        if (presetObjOptional.isPresent()) {
-                            methodArgs.add(presetObjOptional.get());
-                        } else {
-                            methodArgs.add(TransformFactory.getDefVal(curParamType));
-                            wildcardArguments.add(new SimpleWildcardArgument(i, curParamType));
-                        }
+                        setProbableValue(methodArgs, wildcardArguments, current);
                     }
                 }
             } else { // 没有 @Opt 注解时，先放置一个默认值，然后在这个位置做一个标记
-                Optional<Object> presetObjOptional = TransformFactory.getPresetVal(curParamType);
-                if (presetObjOptional.isPresent()) {
-                    methodArgs.add(presetObjOptional.get());
-                } else {
-                    methodArgs.add(TransformFactory.getDefVal(curParamType));
-                    wildcardArguments.add(new SimpleWildcardArgument(i, curParamType));
-                }
+                setProbableValue(methodArgs, wildcardArguments, current);
             }
         }
 
@@ -122,6 +106,16 @@ public final class SubParameterParser implements NameableParameterParser {
         }
 
         return ParameterWrapper.success(methodArgs);
+    }
+
+    private void setProbableValue(List<Object> methodArgs, List<SimpleWildcardArgument> wildcardArguments, CurrentParamType current) {
+        Optional<Object> presetObjOptional = TransformFactory.getPresetVal(current.paramType);
+        if (presetObjOptional.isPresent()) {
+            methodArgs.add(presetObjOptional.get());
+        } else {
+            methodArgs.add(TransformFactory.getDefVal(current.paramType));
+            wildcardArguments.add(new SimpleWildcardArgument(current.index, current.paramType));
+        }
     }
 
     /**

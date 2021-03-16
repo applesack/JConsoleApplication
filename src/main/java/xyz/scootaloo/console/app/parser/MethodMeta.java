@@ -6,6 +6,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -18,8 +19,8 @@ import java.util.stream.Stream;
  * @author flutterdash@qq.com
  * @since 2021/2/7 21:42
  */
-public final class MethodMeta {
-    public final Object obj;                 // 此方法所属的类
+public final class MethodMeta implements Iterable<MethodMeta.CurrentParamType> {
+    public final Object owner;               // 此方法所属的类
     public final Method method;              // method 反射方法对象
     public final int size;                   // 方法参数个数
     public final Optional<Opt>[] optionals;  // 方法中的Opt注解数组，数组的下标代表第i个参数的注解
@@ -31,7 +32,7 @@ public final class MethodMeta {
 
     // constructor
     private MethodMeta(Method method, Object obj) {
-        this.obj = obj;
+        this.owner = obj;
         this.method = method;
         this.size = method.getParameterCount();
         this.optionals = findOption();
@@ -45,6 +46,11 @@ public final class MethodMeta {
     // 获取此方法的元数据
     public static MethodMeta getInstance(Method method, Object obj) {
         return new MethodMeta(method, obj);
+    }
+
+    @Override
+    public Iterator<CurrentParamType> iterator() {
+        return new CurrentTypeIterator(this);
     }
 
     @SuppressWarnings({ "unchecked", "hiding" })
@@ -96,7 +102,7 @@ public final class MethodMeta {
     @Override
     public String toString() {
         return "MethodMeta{" +
-                "obj=" + obj +
+                "obj=" + owner +
                 ", method=" + method +
                 ", size=" + size +
                 ", optionals=" + Arrays.toString(optionals) +
@@ -106,6 +112,41 @@ public final class MethodMeta {
                 ", fullNameSet=" + fullNameSet +
                 ", jointMarkSet=" + jointMarkSet +
                 '}';
+    }
+
+    public static class CurrentParamType {
+        public final Optional<Opt> optionalOpt;
+        public final Class<?> paramType;
+        public final Type genericType;
+        public final int index;
+        public CurrentParamType(MethodMeta meta, int idx) {
+            this.optionalOpt = meta.optionals[idx];
+            this.paramType = meta.parameterTypes[idx];
+            this.genericType = meta.genericTypes[idx];
+            this.index = idx;
+        }
+    }
+
+    private static class CurrentTypeIterator implements Iterator<CurrentParamType> {
+        private final MethodMeta meta;
+        private int currentIndex;
+        private CurrentTypeIterator(MethodMeta meta) {
+            this.meta = meta;
+            currentIndex = 0;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return currentIndex < meta.size;
+        }
+
+        @Override
+        public CurrentParamType next() {
+            CurrentParamType currentType = new CurrentParamType(meta, currentIndex);
+            currentIndex++;
+            return currentType;
+        }
+
     }
 
 }

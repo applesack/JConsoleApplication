@@ -529,7 +529,7 @@ public final class Interpreter {
             }
 
             this.meta.method.setAccessible(true);
-            return (boolean) meta.method.invoke(meta.obj, methodParamList.toArray());
+            return (boolean) meta.method.invoke(meta.owner, methodParamList.toArray());
         }
 
         // 获取过滤器的优先级信息
