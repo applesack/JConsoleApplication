@@ -1,4 +1,4 @@
-package xyz.scootaloo.test;
+package xyz.scootaloo.test.interrupt;
 
 import org.junit.jupiter.api.Test;
 import xyz.scootaloo.console.app.ApplicationRunner;

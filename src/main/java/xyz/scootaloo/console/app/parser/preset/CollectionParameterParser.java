@@ -1,7 +1,7 @@
 package xyz.scootaloo.console.app.parser.preset;
 
 import xyz.scootaloo.console.app.anno.Opt;
-import xyz.scootaloo.console.app.anno.mark.NoStatus;
+import xyz.scootaloo.console.app.anno.mark.Stateless;
 import xyz.scootaloo.console.app.parser.*;
 import xyz.scootaloo.console.app.util.ClassUtils;
 
@@ -19,10 +19,10 @@ import java.util.*;
  * @author flutterdash@qq.com
  * @since 2021/3/8 0:04
  */
-@NoStatus
+@Stateless
 public final class CollectionParameterParser implements NameableParameterParser {
     /** singleton */
-    public static final CollectionParameterParser INSTANCE = new CollectionParameterParser();
+    protected static final CollectionParameterParser INSTANCE = new CollectionParameterParser();
 
     @Override
     public String name() {
@@ -30,7 +30,7 @@ public final class CollectionParameterParser implements NameableParameterParser 
     }
 
     @Override
-    public ResultWrapper parse(MethodMeta meta, List<String> args) throws Exception {
+    public ResultWrapper parse(MethodMeta meta, String args) throws Exception {
         /*
          * Step 1.
          * 首先拿到命令行的参数，拿到的参数通常是这样的: a={'a b' : 12, 23:23, 90:k} [' x '] c=(1, 1, 2, 2)
@@ -47,11 +47,10 @@ public final class CollectionParameterParser implements NameableParameterParser 
          * get(2) ==> [0, 38, 49]
          */
         List<int[]> boundMarkList = new ArrayList<>();
-        String rawCommandArgs = String.join(" ", args); // 使用空格重新拼接回原始的命令行
         boolean isOpen = false;
         int[] markSegment = {0, 0, 0}; // 标记段大小为3， 分别代表： 数据结构的类型，数据结构开始标记，数据结构结束标记
-        for (int i = 0; i<rawCommandArgs.length(); i++) {
-            char point = rawCommandArgs.charAt(i);
+        for (int i = 0; i< args.length(); i++) {
+            char point = args.charAt(i);
             if (!isOpen) {
                 int type = isOpenSign(point);
                 if (type >= 0) {
@@ -104,10 +103,10 @@ public final class CollectionParameterParser implements NameableParameterParser 
             int[] segment = boundMarkList.get(pos);
             int rightBound = segment[1];
             int leftBound = pos == 0 ? 0 : boundMarkList.get(pos - 1)[2] + 1;
-            if (leftBound >= rightBound)
+            if (leftBound > rightBound)
                 continue;
-            Optional<String> nameOptional = searchName(rawCommandArgs.substring(leftBound, rightBound), keyNames);
-            CollectionParser parser = new CollectionParser(segment[0], rawCommandArgs.substring(segment[1], segment[2] + 1));
+            Optional<String> nameOptional = searchName(args.substring(leftBound, rightBound), keyNames);
+            CollectionParser parser = new CollectionParser(segment[0], args.substring(segment[1], segment[2] + 1));
             if (nameOptional.isPresent()) {
                 keyMap.put(nameOptional.get(), parser);
             } else {
@@ -135,23 +134,14 @@ public final class CollectionParameterParser implements NameableParameterParser 
                     addMethodParamByType(targetMethodArgs, collMarkOptional.get().getConverter(),
                             currentParamType, currentGenericType);
                 } else {
-                    // 放置默认集合
-                    putEmptyCollection(targetMethodArgs, currentParamType);
+                    putIfExist(collectionParsers, targetMethodArgs,
+                            currentParamType, currentGenericType);
                 }
             }
             // 当前参数位置没有注解
             else {
-                // 没有参数解析器列表是空的，也就是没有信息可用，这里只能放置一个空集合
-                if (collectionParsers.isEmpty()) {
-                    // 放置默认集合
-                    putEmptyCollection(targetMethodArgs, currentParamType);
-                }
-                // 不为空，按照顺序将第一个数据项的信息转换到这个位置来
-                else {
-                    CollectionParser collMark = collectionParsers.remove(0);
-                    addMethodParamByType(targetMethodArgs, collMark.getConverter(),
-                            currentParamType, currentGenericType);
-                }
+                putIfExist(collectionParsers, targetMethodArgs,
+                        currentParamType, currentGenericType);
             }
         }
 
@@ -159,9 +149,24 @@ public final class CollectionParameterParser implements NameableParameterParser 
         return ParameterWrapper.success(targetMethodArgs);
     }
 
+    private void putIfExist(List<CollectionParser> collectionParsers, List<Object> targetMethodArgs,
+                            Class<?> currentParamType, Type currentGenericType) throws ClassNotFoundException {
+        // 没有参数解析器列表是空的，也就是没有信息可用，这里只能放置一个空集合
+        if (collectionParsers.isEmpty()) {
+            // 放置默认集合
+            putEmptyCollection(targetMethodArgs, currentParamType);
+        }
+        // 不为空，按照顺序将第一个数据项的信息转换到这个位置来
+        else {
+            CollectionParser collMark = collectionParsers.remove(0);
+            addMethodParamByType(targetMethodArgs, collMark.getConverter(),
+                    currentParamType, currentGenericType);
+        }
+    }
+
     private void putEmptyCollection(List<Object> methodArgs, Class<?> type) {
         if (type.isArray()) {
-            methodArgs.add(ClassUtils.genArray(type, ""));
+            methodArgs.add(ClassUtils.genArray(type.getComponentType(), ""));
             return;
         }
         if (type == Set.class) {

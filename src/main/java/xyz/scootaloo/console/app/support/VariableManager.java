@@ -1,8 +1,9 @@
-package xyz.scootaloo.console.app.util;
+package xyz.scootaloo.console.app.support;
 
 import xyz.scootaloo.console.app.client.ReplacementRecord;
 import xyz.scootaloo.console.app.client.ReplacementRecord.KVPair;
 import xyz.scootaloo.console.app.common.ResourceManager;
+import xyz.scootaloo.console.app.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.util.Locale;

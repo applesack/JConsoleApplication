@@ -10,7 +10,7 @@ import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static xyz.scootaloo.console.app.util.InvokeProxy.fun;
+import static xyz.scootaloo.console.app.support.InvokeProxy.fun;
 
 /**
  * 执行反射操作时的一些便捷方法
@@ -22,16 +22,23 @@ public final class ClassUtils {
     // resource
     private static final Console console = ResourceManager.getConsole();
     private static final String DELIMITER = ",";
-    private static final Set<Class<?>> BOXING_SET = new LinkedHashSet<>();
+    private static final Map<Class<?>, Class<?>> BOXING_MAP = new HashMap<>();
 
     static {
-        // 基本类型
-        BOXING_SET.add(Integer.class);
-        BOXING_SET.add(Double.class);
-        BOXING_SET.add(Boolean.class);
-        BOXING_SET.add(Byte.class);
-        BOXING_SET.add(Float.class);
-        BOXING_SET.add(Long.class);
+        // 基本类型 和 其对于的包装类型的映射
+        BOXING_MAP.put(Integer.class, int.class    );
+        BOXING_MAP.put(Double.class , double.class );
+        BOXING_MAP.put(Boolean.class, boolean.class);
+        BOXING_MAP.put(Byte.class   , byte.class   );
+        BOXING_MAP.put(Float.class  , float.class  );
+        BOXING_MAP.put(Long.class   , long.class   );
+
+        BOXING_MAP.put(int.class    , Integer.class);
+        BOXING_MAP.put(double.class , Double.class );
+        BOXING_MAP.put(boolean.class, Boolean.class);
+        BOXING_MAP.put(byte.class   , Byte.class   );
+        BOXING_MAP.put(float.class  , Float.class  );
+        BOXING_MAP.put(long.class   , Long.class   );
     }
 
     /**
@@ -69,6 +76,16 @@ public final class ClassUtils {
             console.exit0("解析异常，无法实例化类: " + invoker);
             return null;
         }
+    }
+
+    public static boolean sameType(Object obj, Class<?> targetType) {
+        if (isExtendForm(obj, targetType))
+            return true;
+        Class<?> objClazz = obj.getClass();
+        if (objClazz == targetType)
+            return true;
+        Optional<Class<?>> optional = Optional.ofNullable(BOXING_MAP.get(objClazz));
+        return optional.filter(aClass -> aClass == targetType).isPresent();
     }
 
     /**
@@ -164,7 +181,7 @@ public final class ClassUtils {
                 continue;
             field.setAccessible(true);
             Class<?> propType = value.getClass();
-            if (propType == field.getType() || BOXING_SET.contains(propType)) {
+            if (propType == field.getType() || BOXING_MAP.containsKey(propType)) {
                 fun(field::set).call(instance, value);
             } else {
                 if (functionMap.containsKey(key)) {
@@ -261,6 +278,8 @@ public final class ClassUtils {
     // 生成泛型数组
     @SuppressWarnings({"hiding" })
     public static <T> T[] genArray(Class<T> type, String theArr) {
+        if (theArr == null || theArr.trim().equals(""))
+            return genArray(type, new ArrayList<>(0));
         String[] items = theArr.split(DELIMITER);
         List<String> collection = new ArrayList<>(Arrays.asList(items));
         return genArray(type, collection);

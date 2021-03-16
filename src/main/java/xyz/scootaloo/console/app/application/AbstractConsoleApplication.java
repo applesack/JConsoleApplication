@@ -3,9 +3,7 @@ package xyz.scootaloo.console.app.application;
 import xyz.scootaloo.console.app.application.processor.CallBack;
 import xyz.scootaloo.console.app.application.processor.PostProcessor;
 import xyz.scootaloo.console.app.error.ConsoleAppRuntimeException;
-import xyz.scootaloo.console.app.util.StringUtils;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -114,17 +112,5 @@ public abstract class AbstractConsoleApplication {
      * @throws ConsoleAppRuntimeException 可能抛出的异常
      */
     protected abstract boolean simpleRunCommand(String command) throws ConsoleAppRuntimeException;
-
-    /**
-     * 获取命令行中的命令名称
-     * @param items 使用空格分隔的参数段
-     * @return 命令名称(小写处理)
-     */
-    protected String getCmdName(List<String> items) {
-        if (items.isEmpty())
-            return "";
-        String cmdName = items.get(0).trim();
-        return StringUtils.customizeToLowerCase0(cmdName);
-    }
 
 }

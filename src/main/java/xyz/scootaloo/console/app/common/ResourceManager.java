@@ -1,6 +1,6 @@
 package xyz.scootaloo.console.app.common;
 
-import xyz.scootaloo.console.app.util.BackstageTaskManager;
+import xyz.scootaloo.console.app.support.BackstageTaskManager;
 
 import java.util.Random;
 import java.util.Scanner;

@@ -1,13 +1,12 @@
 package xyz.scootaloo.console.app.parser.preset;
 
-import xyz.scootaloo.console.app.anno.mark.NoStatus;
+import xyz.scootaloo.console.app.anno.mark.Stateless;
 import xyz.scootaloo.console.app.parser.MethodMeta;
 import xyz.scootaloo.console.app.parser.NameableParameterParser;
 import xyz.scootaloo.console.app.parser.ParameterWrapper;
 import xyz.scootaloo.console.app.parser.ResultWrapper;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 不做任何操作的转换器<br>
@@ -15,7 +14,7 @@ import java.util.List;
  * @author flutterdash@qq.com
  * @since 2021/1/16 23:03
  */
-@NoStatus
+@Stateless
 public final class SimpleParameterParser implements NameableParameterParser {
     /** singleton */
     protected static final SimpleParameterParser INSTANCE = new SimpleParameterParser();
@@ -26,9 +25,9 @@ public final class SimpleParameterParser implements NameableParameterParser {
     }
 
     @Override
-    public ResultWrapper parse(MethodMeta meta, List<String> args) {
+    public ResultWrapper parse(MethodMeta meta, String args) {
         ArrayList<Object> list = new ArrayList<>();
-        list.add(String.join(" ", args));
+        list.add(String.join(args));
         return ParameterWrapper.success(list);
     }
 

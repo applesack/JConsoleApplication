@@ -1,4 +1,6 @@
-package xyz.scootaloo.console.app.util;
+package xyz.scootaloo.console.app.support;
+
+import xyz.scootaloo.console.app.util.ClassUtils;
 
 import java.util.ArrayList;
 import java.util.List;

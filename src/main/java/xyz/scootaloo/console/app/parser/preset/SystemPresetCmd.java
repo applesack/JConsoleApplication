@@ -13,17 +13,17 @@ import xyz.scootaloo.console.app.event.AppListenerProperty;
 import xyz.scootaloo.console.app.event.EventPublisher;
 import xyz.scootaloo.console.app.parser.*;
 import xyz.scootaloo.console.app.parser.Interpreter.MethodActuator;
-import xyz.scootaloo.console.app.util.BackstageTaskManager;
-import xyz.scootaloo.console.app.util.BackstageTaskManager.BackstageTaskInfo;
+import xyz.scootaloo.console.app.support.BackstageTaskManager;
+import xyz.scootaloo.console.app.support.BackstageTaskManager.BackstageTaskInfo;
 import xyz.scootaloo.console.app.util.ClassUtils;
-import xyz.scootaloo.console.app.util.VariableManager;
+import xyz.scootaloo.console.app.support.VariableManager;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static xyz.scootaloo.console.app.util.VariableManager.msg;
-import static xyz.scootaloo.console.app.util.VariableManager.resolvePlaceholders;
+import static xyz.scootaloo.console.app.support.VariableManager.msg;
+import static xyz.scootaloo.console.app.support.VariableManager.resolvePlaceholders;
 
 /**
  * 系统预设的命令，可以使用 find -t sys 命令查看到
@@ -37,7 +37,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
     private static final Console console = ResourceManager.getConsole();
     private static ConsoleConfig config;
 
-    private static final String version = "v0.3.3";
+    private static final String version = "v0.3.4";
     public static final String SYS_TAG = "sys";
 
     // 使用方法返回值做为属性资源
@@ -49,7 +49,8 @@ public final class SystemPresetCmd implements AppListenerAdapter {
     private String application(@Opt('v') boolean ver) {
         if (ver)
             console.println("版本: " + version);
-        console.println("https://github.com/applesack/JConsoleApplication.git");
+        else
+            console.println("https://github.com/applesack/JConsoleApplication.git");
         return version;
     }
 
@@ -100,7 +101,8 @@ public final class SystemPresetCmd implements AppListenerAdapter {
                       @Opt(value = 't', fullName = "tag") String tag) {
         List<MethodActuator> actuatorList = AssemblyFactory.getAllCommands();
         if (name == null && tag == null) {
-            actuatorList.forEach(methodActuator -> console.println(methodActuator.getCmdName() + " " + methodActuator.getCmd().name()));
+            actuatorList.forEach(methodActuator -> console.println(methodActuator.getCmdName() +
+                    " " + methodActuator.getCmd().name()));
         } else {
             if (name != null) {
                 name = name.toLowerCase(Locale.ROOT);
@@ -305,22 +307,23 @@ public final class SystemPresetCmd implements AppListenerAdapter {
         public String _app() {
             return "应用信息\n" +
                     "app [-v|--version]\n" +
-                    " 示例: app -v\n" +
-                    " 查看应用的版本信息\n";
+                    "     示例: app -v\n" +
+                    "     查看应用的版本信息\n";
         }
 
         public String _help() {
             return "帮助信息\n" +
-                    "help [-s|--name] \n" +
+                    "help [-s|--name {cmdName}]\n" +
                     "查询某命令的用法\n" +
                     "示例，查询history这个命令的用法: \n" +
-                    "       help -s history\n" +
-                    "或者    help --name history\n";
+                    "     help -s history\n" +
+                    "或者   \n" +
+                    "     help --name history\n";
         }
 
         public String _find() {
             return "查找某命令的信息\n" +
-                    "find [<-s/--name {cmdName}> | <-t/--tag {tagName}>]\n" +
+                    "find [<-s|--name {cmdName}> | <-t|--tag {tagName}>]\n" +
                     "用法一: \n" +
                     "     查找所有可调用的命令: find\n" +
                     "用法二:\n" +
@@ -345,9 +348,9 @@ public final class SystemPresetCmd implements AppListenerAdapter {
                     "sleep [-m] <count>\n" +
                     "-m 单位毫秒\n" +
                     "示例，休眠当前程序100毫秒\n" +
-                    "       sleep -m 100\n" +
+                    "     sleep -m 100\n" +
                     "或者\n" +
-                    "       sleep 100\n";
+                    "     sleep 100\n";
         }
 
         public String _history() {
@@ -364,11 +367,11 @@ public final class SystemPresetCmd implements AppListenerAdapter {
                     "\n" +
                     "提示: -a 参数表示 u r g t i 这几个参数全部选中\n" +
                     "示例，查询最近调用history命令的所有信息\n" +
-                    "       his --name history --all\n" +
+                    "     his --name history --all\n" +
                     "示例，查询最近10次调用的命令\n" +
                     "       his -n 10\n" +
                     "示例，查询最近5次调用history命令的日期和执行用时\n" +
-                    "       his -s history -n 5 -ti\n";
+                    "     his -s history -n 5 -ti\n";
         }
 
         public String _set() {
@@ -377,11 +380,11 @@ public final class SystemPresetCmd implements AppListenerAdapter {
                     "向系统中放置一个键值对\n" +
                     "\n" +
                     "示例，放置一个键值对\n" +
-                    "       set name twilight\n" +
+                    "     set name twilight\n" +
                     "清除某个key\n" +
-                    "       set <key> .\n" +
+                    "     set <key> .\n" +
                     "清除所有key\n" +
-                    "      set .\n";
+                    "    set .\n";
         }
 
         public String _get() {
@@ -397,11 +400,11 @@ public final class SystemPresetCmd implements AppListenerAdapter {
             return "echo <${val}>\n" +
                     "接收一个参数，显示变量的实际值，也可以用于查看变量对象的属性\n" +
                     "示例，这里假设这些变量是存在的\n" +
-                    "   echo ${name}\n" +
+                    "     echo ${name}\n" +
                     "也可以同时查看多个变量的状态\n" +
-                    "   echo ${name} ${age} ${height}\n" +
+                    "     echo ${name} ${age} ${height}\n" +
                     "查看变量的某属性，假定stu变量是一个Student类的实例，它具有age这个域，则可以这样做\n" +
-                    "   echo ${stu.age}\n" +
+                    "     echo ${stu.age}\n" +
                     "注意: echo 命令有返回值，可以做为变量\n";
         }
 

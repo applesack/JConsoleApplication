@@ -9,7 +9,7 @@ package xyz.scootaloo.console.app.common;
  */
 public final class Colorful {
     /** singleton */
-    protected static final Colorful INSTANCE = new Colorful();
+    public static final Colorful INSTANCE = new Colorful();
 
     public String green(Object line) {
         return ConsoleColor.GREEN + line;

@@ -14,9 +14,8 @@ import xyz.scootaloo.console.app.error.ErrorCode;
 import xyz.scootaloo.console.app.error.ParameterResolveException;
 import xyz.scootaloo.console.app.event.EventPublisher;
 import xyz.scootaloo.console.app.parser.preset.SystemPresetCmd;
+import xyz.scootaloo.console.app.support.InvokeProxy;
 import xyz.scootaloo.console.app.util.ClassUtils;
-import xyz.scootaloo.console.app.util.InvokeProxy;
-import xyz.scootaloo.console.app.util.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -129,17 +128,16 @@ public final class Interpreter {
             return InvokeInfo.simpleSuccess();
         // 记录当前执行的命令行
         getCurrentUser().getResources().setCallingCommand(commandline);
-        // 获取命令名 和 命令参数
-        List<String> commandItems = StringUtils.toList(commandline);
-        String cmdName = getCmdName(commandItems);
+        String cmdName = Actuator.getCommandName(commandline); // 当前执行的命令行的命令名
+        String cmdArgs = Actuator.getCommandArgs(commandline); // 当前执行的命令行的命令参数
         // 检查是否能使用其他方式处理，假如这里返回true，表示已经处理过，则这里可以直接退出
-        if (ExtraOptionHandler.handle(cmdName, commandItems))
+        if (ExtraOptionHandler.handle(cmdName, cmdArgs))
             return InvokeInfo.simpleSuccess();
         // 找到命令方法，执行，得到结果
         Optional<MethodActuator> actuatorWrapper = findActuatorByName(cmdName);
         if (actuatorWrapper.isPresent()) {
             // 执行命令方法之前，先执行过滤器
-            InvokeInfo filterChainInfo = doFilterChain(actuatorWrapper.get(), commandItems);
+            InvokeInfo filterChainInfo = doFilterChain(actuatorWrapper.get(), cmdArgs);
             if (!filterChainInfo.isSuccess())
                 // 过滤器未通过，返回出错原因
                 return filterChainInfo;
@@ -148,7 +146,7 @@ public final class Interpreter {
             return lackCommandException(cmdName);
         }
         // 最终执行
-        return actuatorWrapper.get().invoke(commandItems);
+        return actuatorWrapper.get().invoke(cmdArgs);
     }
 
     /**
@@ -205,7 +203,7 @@ public final class Interpreter {
      * @param cmdArgs 方法参数
      * @return 执行结果
      */
-    protected InvokeInfo doFilterChain(MethodActuator actuator, List<String> cmdArgs) {
+    protected InvokeInfo doFilterChain(MethodActuator actuator, String cmdArgs) {
         // 执行过滤链，得到执行结果
         FilterChainMessage filterChainMessage = FilterMethodWrapper.doFilterChain();
         // 执行不成功
@@ -243,19 +241,6 @@ public final class Interpreter {
         Client user = this.localUser.get();
         if (user == null)
             this.localUser.set(clientCenter.getPublicUser());
-    }
-
-    /**
-     * 获取命令行中的命令名称
-     * @param items 已按照空格分割的命令行
-     * @return 命令名称
-     */
-    private String getCmdName(List<String> items) {
-        if (items.isEmpty()) {
-            return "";
-        } else {
-            return items.remove(0).trim();
-        }
     }
 
     /**
@@ -323,8 +308,8 @@ public final class Interpreter {
         }
 
         @Override
-        public InvokeInfo invoke(List<String> cmdArgs) {
-            return invokeCore(cmdArgs);
+        public InvokeInfo invoke(String commandArgs) {
+            return invokeCore(commandArgs);
         }
 
         /**
@@ -332,11 +317,13 @@ public final class Interpreter {
          * @param cmdArgs 执行命令时使用的参数，以按照空格分割成列表
          * @return 执行结果信息
          */
-        protected InvokeInfo invokeCore(List<String> cmdArgs) {
+        protected InvokeInfo invokeCore(String cmdArgs) {
             // 在方法执行之前先获取此方法的一些信息
             InvokeInfo info = InvokeInfo.beforeInvoke(cmdName, rtnType, cmdArgs);
             // 发布命令解析前事件
-            EventPublisher.onResolveInput(cmdName, cmdArgs);
+            List<String> tmpArgs = Actuator.splitCommandArgsBySpace(cmdArgs);
+            EventPublisher.onResolveInput(cmdName, tmpArgs);
+            cmdArgs = String.join(" ", tmpArgs);
             // 由解析工厂将字符串命令解析成Object数组供method对象调用，结果由wrapper包装
             ResultWrapper wrapper;
             try {

@@ -6,7 +6,6 @@ import xyz.scootaloo.console.app.parser.ParameterParser;
 import xyz.scootaloo.console.app.util.ClassUtils;
 
 import java.io.PrintStream;
-import java.util.List;
 
 /**
  * 控制台应用运行期间产生的异常
@@ -42,9 +41,11 @@ public abstract class ConsoleAppRuntimeException extends RuntimeException {
 
     public ConsoleAppRuntimeException appendExData(MethodMeta meta,
                                                    Object obj,
-                                                   List<String> input,
+                                                   String args,
                                                    Class<? extends ParameterParser> parserClass) {
         this.methodDescribe = ClassUtils.getMethodDescribe(meta.method);
+        this.obj = obj;
+        this.input = args;
         if (input != null)
             this.input = String.join(" ", input);
         this.parser = parserClass;

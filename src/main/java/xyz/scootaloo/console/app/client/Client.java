@@ -5,7 +5,7 @@ import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.parser.Interpreter.FilterChainMessage;
 import xyz.scootaloo.console.app.parser.InvokeInfo;
-import xyz.scootaloo.console.app.util.BackstageTaskManager.BackstageTaskInfo;
+import xyz.scootaloo.console.app.support.BackstageTaskManager.BackstageTaskInfo;
 import xyz.scootaloo.console.app.util.StringUtils;
 
 import java.text.SimpleDateFormat;

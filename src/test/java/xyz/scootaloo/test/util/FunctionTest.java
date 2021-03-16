@@ -1,4 +1,4 @@
-package xyz.scootaloo.test;
+package xyz.scootaloo.test.util;
 
 import org.junit.jupiter.api.Test;
 import xyz.scootaloo.console.app.error.CommandInvokeException;
@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static xyz.scootaloo.console.app.util.InvokeProxy.fun;
+import static xyz.scootaloo.console.app.support.InvokeProxy.fun;
 
 /**
  * @author flutterdash@qq.com

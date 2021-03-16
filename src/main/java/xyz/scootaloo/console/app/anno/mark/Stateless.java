@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.TYPE})
-public @interface NoStatus {
+public @interface Stateless {
 
     String value() default "";
 

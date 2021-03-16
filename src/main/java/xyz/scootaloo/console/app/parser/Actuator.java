@@ -1,6 +1,9 @@
 package xyz.scootaloo.console.app.parser;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 命令行执行器 <br>
@@ -22,9 +25,38 @@ public interface Actuator {
 
     /**
      * 接收字符串列表做为参数，进行执行
-     * @param cmdArgs 命令行参数，已经使用空格分隔成了列表
+     * @param commandArgs 命令行参数，已经使用空格分隔成了列表
      * @return 命令执行过程中收集到的信息，具体请查看 {@link InvokeInfo}
      */
-    InvokeInfo invoke(List<String> cmdArgs);
+    InvokeInfo invoke(String commandArgs);
+
+    /**
+     * 工具方法，将命令行分割成列表
+     * @param commandArgs 命令行
+     * @return 按照空格分隔后形成的列表
+     */
+    static List<String> splitCommandArgsBySpace(String commandArgs) {
+        if (commandArgs == null)
+            return new ArrayList<>(0);
+        return Arrays.stream(commandArgs.split(" "))
+                .collect(Collectors.toList());
+    }
+
+    static String getCommandName(String command) {
+        command = command.trim();
+        int spaceIdx = command.indexOf(' ');
+        if (spaceIdx == -1)
+            return command;
+        return command.substring(0, spaceIdx);
+    }
+
+    static String getCommandArgs(String command) {
+        command = command.trim();
+        int spaceIdx = command.indexOf(' ');
+        if (spaceIdx == -1)
+            return "";
+        int len = command.length();
+        return command.substring(spaceIdx + 1, len);
+    }
 
 }

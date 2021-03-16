@@ -57,6 +57,15 @@ public class SingleThreadTest {
         ClientCenter.show();
     }
 
+
+    @Test
+    public void testClosable() {
+        Interpreter interpreter = ApplicationRunner.getInterpreter();
+        try (ResourcesHandler handler = interpreter.setUser("A")) {
+            interpreter.interpret("12");
+        }
+    }
+
     @Cmd
     public void a() {
 

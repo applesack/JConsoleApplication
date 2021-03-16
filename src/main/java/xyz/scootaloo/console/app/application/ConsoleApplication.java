@@ -6,9 +6,9 @@ import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.event.EventPublisher;
+import xyz.scootaloo.console.app.parser.Actuator;
 import xyz.scootaloo.console.app.parser.Interpreter;
 import xyz.scootaloo.console.app.parser.InvokeInfo;
-import xyz.scootaloo.console.app.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -111,9 +111,8 @@ public final class ConsoleApplication extends AbstractConsoleApplication {
      */
     @Override
     protected boolean simpleRunCommand(String command) {
-        List<String> cmdItems = StringUtils.toList(command);
         // 获取命令名称，查看是否是退出命令
-        String cmdName = getCmdName(cmdItems);
+        String cmdName = Actuator.getCommandName(command);
         if (isExitCmd(cmdName))
             return true;
         // 执行命令行，得到结果，并交给后处理器处理

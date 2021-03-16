@@ -1,6 +1,6 @@
-package xyz.scootaloo.console.app.util;
+package xyz.scootaloo.console.app.support;
 
-import xyz.scootaloo.console.app.util.FunctionDesc.*;
+import xyz.scootaloo.console.app.support.FunctionDesc.*;
 
 import java.util.function.Consumer;
 

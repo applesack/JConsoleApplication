@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static xyz.scootaloo.console.app.config.ConsoleConfigProvider.DefaultValueConfigBuilder;
-import static xyz.scootaloo.console.app.util.InvokeProxy.fun;
+import static xyz.scootaloo.console.app.support.InvokeProxy.fun;
 
 /**
  * 增加命令工厂时使用的构建者类

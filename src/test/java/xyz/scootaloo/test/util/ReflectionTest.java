@@ -1,4 +1,4 @@
-package xyz.scootaloo.test;
+package xyz.scootaloo.test.util;
 
 import org.junit.jupiter.api.Test;
 
@@ -8,7 +8,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static xyz.scootaloo.console.app.util.InvokeProxy.fun;
+import static xyz.scootaloo.console.app.support.InvokeProxy.fun;
 
 /**
  * @author flutterdash@qq.com

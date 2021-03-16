@@ -1,7 +1,7 @@
 package xyz.scootaloo.console.app.parser;
 
 import xyz.scootaloo.console.app.anno.Opt;
-import xyz.scootaloo.console.app.anno.mark.NoStatus;
+import xyz.scootaloo.console.app.anno.mark.Stateless;
 import xyz.scootaloo.console.app.error.ErrorCode;
 import xyz.scootaloo.console.app.error.ParameterResolveException;
 import xyz.scootaloo.console.app.util.StringUtils;
@@ -20,7 +20,7 @@ import java.util.*;
  * @author flutterdash@qq.com
  * @since 2020/12/29 11:21
  */
-@NoStatus
+@Stateless
 public final class DftParameterParser implements NameableParameterParser {
     // 临时占位符
     private static final String PLACEHOLDER = "*";
@@ -31,9 +31,10 @@ public final class DftParameterParser implements NameableParameterParser {
      * @param cmdline 调用此方法使用的命令参数
      * @return 包装的结果
      */
-    public static ResultWrapper transform(MethodMeta meta, List<String> cmdline) throws Exception {
+    public static ResultWrapper transform(MethodMeta meta, String cmdline) throws Exception {
         if (meta.size == 0)
             return ParameterWrapper.success(null);
+        List<String> cmdArgsItems = Actuator.splitCommandArgsBySpace(cmdline);
         Class<?>[] argTypes = meta.parameterTypes;       // 参数类型数组
         Type[] genericTypes = meta.genericTypes;         // 参数泛型类型数组
         Optional<Opt>[] optionals = meta.optionals;      // 参数注解数组
@@ -44,7 +45,7 @@ public final class DftParameterParser implements NameableParameterParser {
         List<WildcardArgument> wildcardArguments = new ArrayList<>(); // 未提供参数的位置
         // key=命令参数名 value=命令参数值
         Map<String, Object> optMap = new HashMap<>(); // 参数map       // 命令参数中由'-'做前缀的参数以及值
-        List<String> remainList = loadArgumentFromCmdline(cmdline, optMap, shortParamsSet, jointMarkSet);
+        List<String> remainList = loadArgumentFromCmdline(cmdArgsItems, optMap, shortParamsSet, jointMarkSet);
 
         for (int i = 0; i<argTypes.length; i++) {
             Optional<Opt> curAnno = optionals[i];
@@ -208,7 +209,7 @@ public final class DftParameterParser implements NameableParameterParser {
     }
 
     @Override
-    public ResultWrapper parse(MethodMeta meta, List<String> args) throws Exception {
+    public ResultWrapper parse(MethodMeta meta, String args) throws Exception {
         return transform(meta, args);
     }
 

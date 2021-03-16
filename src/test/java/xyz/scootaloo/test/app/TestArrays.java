@@ -21,4 +21,20 @@ public class TestArrays {
         System.out.println(strings);
     }
 
+    @Cmd
+    public int getNumber(Integer number) {
+        return number;
+    }
+
+    @Cmd
+    public Integer showNumber(int number) {
+        System.out.println("show: " + number);
+        return number;
+    }
+
+    @Cmd
+    public String xx() {
+        return "12x";
+    }
+
 }

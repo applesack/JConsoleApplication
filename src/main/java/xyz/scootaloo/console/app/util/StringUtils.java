@@ -2,11 +2,9 @@ package xyz.scootaloo.console.app.util;
 
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * 字符串工具
@@ -112,10 +110,27 @@ public final class StringUtils {
      * @param line 一个字符串
      * @return 列表结果
      */
-    public static List<String> toList(String line) {
-        return Stream.of(line)
-                .flatMap(ine -> Arrays.stream(ine.split(" ")))
-                .collect(Collectors.toList());
+    public static List<String> split(String line) {
+        return split(line, ' ');
+    }
+
+    public static List<String> split(String line, char delimiter) {
+        List<String> res = new ArrayList<>();
+        StringBuilder tmp = new StringBuilder();
+        for (int i = 0; i<line.length(); i++) {
+            char c = line.charAt(i);
+            if (c == delimiter) {
+                if (tmp.length() > 0) {
+                    res.add(tmp.toString());
+                    tmp.setLength(0);
+                }
+            } else {
+                tmp.append(c);
+            }
+        }
+        if (tmp.length() > 0)
+            res.add(tmp.toString());
+        return res;
     }
 
     /**

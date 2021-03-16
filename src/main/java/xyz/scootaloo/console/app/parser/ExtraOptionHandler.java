@@ -4,7 +4,6 @@ import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -44,7 +43,7 @@ public final class ExtraOptionHandler {
      * @param args 参数
      * @return 是否被处理过
      */
-    protected static boolean handle(String cmdName, List<String> args) {
+    protected static boolean handle(String cmdName, String args) {
         if (!cmdName.contains(DELIMITER))
             return false;
         String[] segments = cmdName.split(DELIMITER);

@@ -3,7 +3,6 @@ package xyz.scootaloo.console.app.parser;
 import xyz.scootaloo.console.app.error.ConsoleAppRuntimeException;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * 包含 java方法 执行结果的信息, 由 {@link Interpreter} 产生
@@ -13,23 +12,23 @@ import java.util.List;
  */
 public final class InvokeInfo {
 
-    private String name;           // 被执行的方法名，或者命令名
-    private Object rtnVal;         // 方法返回值
-    private Class<?> rtnType;      // 返回值类型
-    private List<String> cmdArgs;  // 执行此方法所使用的字符串命令
-    private Object[] methodArgs;   // 经过解析后得到的方法参数数组
-    private long interval;         // 方法执行所用的时间
-    private long invokeAt;         // 从何时开始执行此方法
+    private String name;             // 被执行的方法名，或者命令名
+    private Object rtnVal;           // 方法返回值
+    private Class<?> rtnType;        // 返回值类型
+    private String cmdArgs;          // 执行此方法所使用的字符串命令
+    private Object[] methodRealArgs; // 经过解析后得到的方法参数数组
+    private long interval;           // 方法执行所用的时间
+    private long invokeAt;           // 从何时开始执行此方法
 
-    private boolean success;       // 是否执行成功
-    private String exMsg;          // 异常信息
+    private boolean success;  // 是否执行成功
+    private String exMsg;     // 异常信息
     private ConsoleAppRuntimeException exception;   // 执行方法时遇到的异常
 
     private InvokeInfo() {
     }
 
     // 因为某种原因，方法没有被执行
-    public static InvokeInfo failed(Class<?> rtnType, List<String> cmdArgs, ConsoleAppRuntimeException ex) {
+    public static InvokeInfo failed(Class<?> rtnType, String cmdArgs, ConsoleAppRuntimeException ex) {
         InvokeInfo info = new InvokeInfo();
         info.success = false;
         info.exception = ex;
@@ -49,7 +48,7 @@ public final class InvokeInfo {
     }
 
     // 填充属性
-    public static InvokeInfo beforeInvoke(String name, Class<?> rtnType, List<String> cmdItems) {
+    public static InvokeInfo beforeInvoke(String name, Class<?> rtnType, String cmdItems) {
         InvokeInfo info = new InvokeInfo();
         info.name = name;
         info.rtnType = rtnType;
@@ -61,7 +60,7 @@ public final class InvokeInfo {
     // 异常时
     protected InvokeInfo onException(ConsoleAppRuntimeException e, Object[] methodArgs) {
         this.success = false;
-        this.methodArgs = methodArgs;
+        this.methodRealArgs = methodArgs;
         this.rtnVal = null;
         this.exception = e;
         this.exMsg = e.getMessage();
@@ -73,7 +72,7 @@ public final class InvokeInfo {
     protected void finishInvoke(Object rtnVal, Object[] methodArgs) {
         this.success = true;
         this.rtnVal = rtnVal;
-        this.methodArgs = methodArgs;
+        this.methodRealArgs = methodArgs;
         this.exception = null;
         this.exMsg = null;
         this.interval = System.currentTimeMillis() - this.invokeAt;
@@ -109,12 +108,12 @@ public final class InvokeInfo {
         return this.rtnType;
     }
 
-    public List<String> getCmdArgs() {
+    public String getCmdArgs() {
         return this.cmdArgs;
     }
 
-    public Object[] getMethodArgs() {
-        return this.methodArgs;
+    public Object[] getMethodRealArgs() {
+        return this.methodRealArgs;
     }
 
     public ConsoleAppRuntimeException getException() {
@@ -140,7 +139,7 @@ public final class InvokeInfo {
                 ", rtnVal=" + rtnVal +
                 ", rtnType=" + rtnType +
                 ", cmdArgs=" + cmdArgs +
-                ", methodArgs=" + Arrays.toString(methodArgs) +
+                ", methodArgs=" + Arrays.toString(methodRealArgs) +
                 ", interval=" + interval +
                 ", invokeAt=" + invokeAt +
                 ", success=" + success +

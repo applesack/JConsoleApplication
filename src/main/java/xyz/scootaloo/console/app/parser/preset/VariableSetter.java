@@ -1,21 +1,19 @@
 package xyz.scootaloo.console.app.parser.preset;
 
-import xyz.scootaloo.console.app.anno.mark.NoStatus;
+import xyz.scootaloo.console.app.anno.mark.Stateless;
 import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.parser.Interpreter;
 import xyz.scootaloo.console.app.parser.InvokeInfo;
 import xyz.scootaloo.console.app.parser.OptionHandler;
-import xyz.scootaloo.console.app.util.VariableManager;
-
-import java.util.List;
+import xyz.scootaloo.console.app.support.VariableManager;
 
 /**
  * 变量设置器
  * @author flutterdash@qq.com
  * @since 2021/2/7 9:40
  */
-@NoStatus
+@Stateless
 public final class VariableSetter implements OptionHandler {
     /** singleton */
     protected static final VariableSetter INSTANCE = new VariableSetter();
@@ -27,7 +25,7 @@ public final class VariableSetter implements OptionHandler {
     }
 
     @Override
-    public void runWithParameter(String cmd, String optionParameter, List<String> argItems, Interpreter interpreter) {
+    public void runWithParameter(String cmd, String optionParameter, String argItems, Interpreter interpreter) {
         String completeCmd = getCompleteCommand(cmd, argItems);
         InvokeInfo info = interpreter.interpret(completeCmd);
         if (info.isSuccess()) {

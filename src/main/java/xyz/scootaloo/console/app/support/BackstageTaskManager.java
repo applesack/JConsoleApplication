@@ -1,9 +1,11 @@
-package xyz.scootaloo.console.app.util;
+package xyz.scootaloo.console.app.support;
 
+import xyz.scootaloo.console.app.anno.mark.Public;
 import xyz.scootaloo.console.app.common.CPrinter;
 import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.parser.InvokeInfo;
+import xyz.scootaloo.console.app.util.StringUtils;
 
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -16,6 +18,7 @@ import java.util.function.Consumer;
  * @author flutterdash@qq.com
  * @since 2021/2/5 21:09
  */
+@Public("多用户环境下会产生并发问题，不推荐在多线程/多用户环境下使用")
 public final class BackstageTaskManager {
     /** 线程池 Size : 3 */
     private static final ExecutorService threadPool = Executors.newFixedThreadPool(3);

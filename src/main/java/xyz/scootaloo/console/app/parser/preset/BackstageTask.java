@@ -1,11 +1,9 @@
 package xyz.scootaloo.console.app.parser.preset;
 
-import xyz.scootaloo.console.app.anno.mark.NoStatus;
+import xyz.scootaloo.console.app.anno.mark.Stateless;
 import xyz.scootaloo.console.app.parser.Interpreter;
 import xyz.scootaloo.console.app.parser.OptionHandler;
-import xyz.scootaloo.console.app.util.BackstageTaskManager;
-
-import java.util.List;
+import xyz.scootaloo.console.app.support.BackstageTaskManager;
 
 /**
  * 后台任务 操作方式处理器</br>
@@ -17,7 +15,7 @@ import java.util.List;
  * @author flutterdash@qq.com
  * @since 2021/2/5 21:13
  */
-@NoStatus
+@Stateless
 public final class BackstageTask implements OptionHandler {
     /** singleton */
     protected static final BackstageTask INSTANCE = new BackstageTask();
@@ -29,7 +27,7 @@ public final class BackstageTask implements OptionHandler {
 
     @Override
     public void runWithParameter(String cmd, String optionParameter,
-                                 List<String> argItems, Interpreter interpreter) {
+                                 String argItems, Interpreter interpreter) {
         String completeCmd = getCompleteCommand(cmd, argItems);
         BackstageTaskManager.submit(optionParameter,
                 () -> interpreter.interpret(completeCmd),

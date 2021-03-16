@@ -1,11 +1,11 @@
 package xyz.scootaloo.console.app.parser.preset;
 
 import xyz.scootaloo.console.app.anno.Opt;
-import xyz.scootaloo.console.app.anno.mark.NoStatus;
+import xyz.scootaloo.console.app.anno.mark.Stateless;
 import xyz.scootaloo.console.app.error.ErrorCode;
 import xyz.scootaloo.console.app.error.ParameterResolveException;
 import xyz.scootaloo.console.app.parser.*;
-import xyz.scootaloo.console.app.util.InvokeProxy;
+import xyz.scootaloo.console.app.support.InvokeProxy;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  * @author flutterdash@qq.com
  * @since 2021/2/6 14:47
  */
-@NoStatus
+@Stateless
 public final class SubParameterParser implements NameableParameterParser {
     /** singleton */
     protected static final SubParameterParser INSTANCE = new SubParameterParser();
@@ -45,12 +45,13 @@ public final class SubParameterParser implements NameableParameterParser {
     }
 
     @Override
-    public ResultWrapper parse(MethodMeta meta, List<String> args) {
+    public ResultWrapper parse(MethodMeta meta, String args) {
         // 提取基本信息
+        List<String> cmdArgsItems = Actuator.splitCommandArgsBySpace(args);
         Optional<Opt>[] paramOptAnnoList = meta.optionals; // 参数全称集合
         List<Object> methodArgs = new ArrayList<>();       // 待返回的参数列表
         Map<String, String> kvPairs = new HashMap<>();     // 命令行中的参数键值对
-        List<String> remainList = parseParameters(args, paramOptAnnoList, kvPairs); // 命令行移除了键值对后剩余的内容
+        List<String> remainList = parseParameters(cmdArgsItems, paramOptAnnoList, kvPairs); // 命令行移除了键值对后剩余的内容
 
         Class<?>[] methodArgTypes = meta.parameterTypes; // 方法参数类型
         Optional<Opt>[] optionals = meta.optionals;      // 方法中的注解数组，每个方法参数对应一个注解元素

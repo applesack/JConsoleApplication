@@ -1,8 +1,11 @@
 package xyz.scootaloo.console.app.parser.preset;
 
 import xyz.scootaloo.console.app.config.ConsoleConfig;
+import xyz.scootaloo.console.app.parser.NameableParameterParser;
 
 import java.util.LinkedHashSet;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -20,8 +23,32 @@ public final class PresetFactoryManager {
      * @return 具有先后顺序的工厂集合，先预设工厂，后用户工厂
      */
     public static Set<Supplier<Object>> getFactories(ConsoleConfig config) {
-        Set<Supplier<Object>> factories = new LinkedHashSet<>();
+        Set<Supplier<Object>> factories = getPresetFactories();
+        factories.addAll(config.getFactories());
+        return factories;
+    }
 
+    public static Optional<NameableParameterParser> getParserByName(String name) {
+        return getPresetFactories().stream()
+                .map(Supplier::get)
+                .map(fac -> {
+                    if (fac == null)
+                        return null;
+                    if (fac instanceof NameableParameterParser) {
+                        NameableParameterParser parser = (NameableParameterParser) fac;
+                        if (parser.name().equals(name))
+                            return parser;
+                        else
+                            return null;
+                    } else {
+                        return null;
+                    }
+                }).filter(Objects::nonNull)
+                .findAny();
+    }
+
+    private static Set<Supplier<Object>> getPresetFactories() {
+        Set<Supplier<Object>> factories = new LinkedHashSet<>();
         factories.add(() -> SimpleParameterParser.INSTANCE);     // 1
         factories.add(() -> SystemPresetCmd.INSTANCE);           // 2
         factories.add(() -> SystemPresetCmd.SystemCommandHelp.INSTANCE);      // 3
@@ -29,8 +56,6 @@ public final class PresetFactoryManager {
         factories.add(() -> SubParameterParser.INSTANCE);        // 5
         factories.add(() -> VariableSetter.INSTANCE);            // 6
         factories.add(() -> CollectionParameterParser.INSTANCE); // 7
-
-        factories.addAll(config.getFactories());
         return factories;
     }
 

@@ -10,8 +10,8 @@ import xyz.scootaloo.console.app.event.EventPublisher;
 import xyz.scootaloo.console.app.parser.Interpreter.MethodActuator;
 import xyz.scootaloo.console.app.parser.preset.PresetFactoryManager;
 import xyz.scootaloo.console.app.parser.preset.SystemPresetCmd;
-import xyz.scootaloo.console.app.util.FunctionDesc;
-import xyz.scootaloo.console.app.util.InvokeProxy;
+import xyz.scootaloo.console.app.support.FunctionDesc;
+import xyz.scootaloo.console.app.support.InvokeProxy;
 import xyz.scootaloo.console.app.util.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;

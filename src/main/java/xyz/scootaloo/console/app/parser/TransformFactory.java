@@ -1,12 +1,12 @@
 package xyz.scootaloo.console.app.parser;
 
-import xyz.scootaloo.console.app.anno.mark.NoStatus;
+import xyz.scootaloo.console.app.anno.mark.Stateless;
 import xyz.scootaloo.console.app.client.ReplacementRecord;
 import xyz.scootaloo.console.app.common.CPrinter;
 import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.util.ClassUtils;
-import xyz.scootaloo.console.app.util.VariableManager;
+import xyz.scootaloo.console.app.support.VariableManager;
 
 import java.lang.reflect.Type;
 import java.util.*;
@@ -19,7 +19,7 @@ import java.util.function.Supplier;
  * @author flutterdash@qq.com
  * @since 2020/12/29 21:47
  */
-@NoStatus("如果保证在执行命令之前完成所有的装配，就不会有并发问题")
+@Stateless("如果保证在执行命令之前完成所有的装配，就不会有并发问题")
 public final class TransformFactory {
     /** resource */
     private static final Map<Class<?>, Object> DEFAULT_VALUE_MAP = new HashMap<>(16);
@@ -174,7 +174,7 @@ public final class TransformFactory {
         int keyId = Integer.parseInt(key.substring(VariableManager.placeholder.length()));
         ReplacementRecord replacementRecord = Interpreter.getCurrentUser().getResources().getReplacementRecord();
         Optional<Object> placeholderObj = VariableManager.get(replacementRecord, keyId);
-        if (placeholderObj.isPresent() && placeholderObj.get().getClass() == type) {
+        if (placeholderObj.isPresent() && ClassUtils.sameType(placeholderObj.get(), type)) {
             return placeholderObj;
         }
         return Optional.empty();

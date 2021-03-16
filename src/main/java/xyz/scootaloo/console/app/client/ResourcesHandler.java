@@ -8,7 +8,7 @@ import java.util.function.Consumer;
  * @author flutterdash@qq.com
  * @since 2021/3/4 9:34
  */
-public class ResourcesHandler {
+public class ResourcesHandler implements AutoCloseable {
 
     private final String resourcesMark;      // 资源的标记
     private final Consumer<String> callback; // 处理此资源的回调
@@ -20,6 +20,12 @@ public class ResourcesHandler {
 
     public void shutdown() {
         callback.accept(resourcesMark);
+    }
+
+    @Override
+    public void close() {
+        System.out.println("shutdown");
+        shutdown();
     }
 
     @Override

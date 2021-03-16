@@ -1,4 +1,4 @@
-package xyz.scootaloo.test;
+package xyz.scootaloo.test.util;
 
 import org.junit.jupiter.api.Test;
 

@@ -1,6 +1,6 @@
 package xyz.scootaloo.console.app;
 
-import xyz.scootaloo.console.app.anno.mark.NoStatus;
+import xyz.scootaloo.console.app.anno.mark.Stateless;
 import xyz.scootaloo.console.app.application.AbstractConsoleApplication;
 import xyz.scootaloo.console.app.application.ConsoleApplication;
 import xyz.scootaloo.console.app.common.Console;
@@ -21,7 +21,7 @@ import static xyz.scootaloo.console.app.config.ConsoleConfigProvider.DefaultValu
  * @author flutterdash@qq.com
  * @since 2020/12/27 15:04
  */
-@NoStatus
+@Stateless
 public final class ApplicationRunner {
 
     /**

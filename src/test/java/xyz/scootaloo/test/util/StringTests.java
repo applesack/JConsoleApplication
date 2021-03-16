@@ -1,4 +1,4 @@
-package xyz.scootaloo.test;
+package xyz.scootaloo.test.util;
 
 /**
  * @author flutterdash@qq.com
