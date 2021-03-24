@@ -9,7 +9,6 @@ import xyz.scootaloo.console.app.event.AppListener;
 import xyz.scootaloo.console.app.event.EventPublisher;
 import xyz.scootaloo.console.app.parser.Interpreter.MethodActuator;
 import xyz.scootaloo.console.app.parser.preset.PresetFactoryManager;
-import xyz.scootaloo.console.app.parser.preset.SystemPresetCmd;
 import xyz.scootaloo.console.app.support.FunctionDesc;
 import xyz.scootaloo.console.app.support.InvokeProxy;
 import xyz.scootaloo.console.app.util.StringUtils;
@@ -30,6 +29,7 @@ import java.util.function.Supplier;
  *      参数解析器集合;
  *      命令帮助信息集合;
  * </pre>
+ *
  * @author flutterdash@qq.com
  * @since 2020/12/28 10:05
  */
@@ -53,7 +53,7 @@ public final class AssemblyFactory {
     protected static volatile boolean hasInit = false;
 
     /**
-     * 根据配置进行初始化
+     * 根据配置进行初始化，入口
      * @param conf 控制台配置
      * @param interpreter_ 解释器
      */
@@ -180,13 +180,6 @@ public final class AssemblyFactory {
                 initActuators.forEach(CallBack::call)));
     }
 
-    /**
-     * 解析带有 @Cmd 注解的方法
-     * <p>在这里会按照 @Cmd 注解的类型type进行装配</p>
-     * @param method 一个标记有 @Cmd 注解的实例方法
-     * @param cmdAnno 注解对象
-     * @param o method对象所属的实例
-     */
     private static void doResolveCmd(Method method, Cmd cmdAnno, Object o) {
         // 生成一个包装执行器类对象，这个类提供了一些便捷的方法
         MethodActuator actuator = new MethodActuator(method, cmdAnno, o);
@@ -225,35 +218,24 @@ public final class AssemblyFactory {
         interpreter.sortFilter();
     }
 
-    /**
-     * 装配事件监听器
-     * @param listenerObj 假如 enable() 返回true，则装配至事件发布器
-     */
     private static void loadListener(AppListener listenerObj) {
         if (listenerObj.enable())
             EventPublisher.regListener(listenerObj);
     }
 
-    /**
-     * <pre>假如 @Cmd 注解的 type 属性为 Parser 则装配至转换工厂
-     * 检查 parser 方法的方法参数和返回值是否符合要求
-     * 即
-     *      方法参数只有一个，String 类型
-     *      范围值不为空
-     *      返回值和 @Cmd 注解的target()属性可以进行相互转换(不强制要求，如果不能则有可能在运行时抛出异常) </pre>
-     * @param method -
-     * @param cmdAnno -
-     * @param o -
-     */
     private static void loadParser(Method method, Cmd cmdAnno, Object o) {
+        // 没有指定 Cmd 注解的 targets 信息，不处理，直接返回
         if (cmdAnno.targets().length == 0)
             return;
         Class<?>[] types = cmdAnno.targets();
         Class<?>[] params = method.getParameterTypes();
+        // 方法参数必须是String且只有一个，否则不处理，直接返回
         if (params.length != 1 || params[0] != String.class)
             return;
+        // Void 或者 void ， 不处理，直接返回
         if (method.getReturnType() == void.class || method.getReturnType() == Void.class)
             return;
+        // 将这个方法的实现注册到 TransformFactory
         TransformFactory.addParser((str) -> {
             try {
                 method.setAccessible(true);
@@ -266,25 +248,14 @@ public final class AssemblyFactory {
     }
 
     /**
-     * 指定其他的输出方式，默认输出方法是 System.out.print
-     * @see xyz.scootaloo.console.app.common.DefaultConsole 默认实现
-     * @param printerFactory 自定义实现工厂方法实现
+     * 设置全局打印方式
+     * @param printerFactory 自定义实现
      */
     private static void loadPrinterFactory(CPrinterSupplier printerFactory) {
         ResourceManager.setPrinterFactory(printerFactory);
         DefaultConsole.setPrinter(printerFactory.get());
     }
 
-    /**
-     * 加载Help工厂
-     * <p>这个方法将会遍历实现了 HelpDoc 接口的类的所有方法，找出它的所有实例方法，
-     * 将其中无参且返回值是字符串类型的方法依次调用，获取返回值做为帮助文档信息，按照该实例方法的名称装配到指定的命令行处理器上。<br>
-     * 你可以使用 {@code help xx} 命令来查看被注册进来的帮助文档信息。</p>
-     *
-     * <p>为了将帮助文档方法和 Cmd 方法区分开来，可以在方法名中插入下划线，这个用法在以下示例</p>
-     * @see SystemPresetCmd.SystemCommandHelp 框架中使用 HelpDoc 的示例
-     * @param factory 包含帮助信息的类
-     */
     private static void loadHelpFactory(HelpDoc factory) {
         Class<?> helpObjClass = factory.getClass();
         Method[] methods = helpObjClass.getDeclaredMethods();

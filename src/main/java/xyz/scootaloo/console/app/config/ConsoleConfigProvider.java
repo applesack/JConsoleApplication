@@ -35,6 +35,7 @@ public final class ConsoleConfigProvider {
         private Author author = new Author(this);
 
         public DefaultValueConfigBuilder() {
+            YmlConfReader.loadConf(this);
         }
 
         public DefaultValueConfigBuilder appName(String name) {
@@ -118,6 +119,8 @@ public final class ConsoleConfigProvider {
 
         public DefaultValueConfigBuilder setConfFile(String filename) {
             this.configFileName = filename;
+            if (configFileName != null)
+                YmlConfReader.loadConf(this);
             return this;
         }
 
@@ -142,7 +145,7 @@ public final class ConsoleConfigProvider {
         }
 
         public ConsoleConfig build() {
-            YmlConfReader.loadConf(this);
+
             return new ConsoleConfig(this);
         }
 

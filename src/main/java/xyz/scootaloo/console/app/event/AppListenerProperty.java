@@ -72,7 +72,7 @@ public final class AppListenerProperty {
     public static class EventProperty {
         protected final Property    onAppStarted = new Property(EventType.OnAppStarted);
         protected final Property         onInput = new Property(EventType.OnInput);
-        protected final Property  onResolveInput = new Property(EventType.OnResolveInput);
+        protected final Property  onResolveInput = new Property(EventType.BeforeResolveInput);
         protected final Property onInputResolved = new Property(EventType.OnInputResolved);
         protected final Property       onMessage = new Property(EventType.OnMessage);
 
@@ -85,17 +85,17 @@ public final class AppListenerProperty {
                 case OnInputResolved: return onInputResolved;
                 case OnAppStarted: return onAppStarted;
                 case OnInput: return onInput;
-                case OnResolveInput: return onResolveInput;
+                case BeforeResolveInput: return onResolveInput;
             }
             return Property.DFT;
         }
     }
 
     public static class Property {
-        private static final Property DFT = new Property(EventType.OnResolveInput);
+        private static final Property DFT = new Property(EventType.BeforeResolveInput);
         private boolean interestedIn = false; // 是否对此事件感兴趣
         private int priority = DFT_PRIORITY;  // 监听此事件时执行的优先级
-        private final EventType event;          // 此事件对应的枚举类型
+        private final EventType event;        // 此事件对应的枚举类型
 
         public Property(EventType event) {
             this.event = event;

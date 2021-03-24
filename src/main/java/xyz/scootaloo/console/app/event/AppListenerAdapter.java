@@ -30,7 +30,7 @@ public interface AppListenerAdapter extends AppListener {
     }
 
     @Override
-    default void onResolveInput(String cmdName, List<String> cmdItems) {
+    default void beforeResolveInput(String cmdName, List<String> cmdItems) {
     }
 
     @Override

@@ -28,7 +28,7 @@ public interface Actuator {
      * @param commandArgs 命令行参数，已经使用空格分隔成了列表
      * @return 命令执行过程中收集到的信息，具体请查看 {@link InvokeInfo}
      */
-    InvokeInfo invoke(String commandArgs);
+    InvokeInfo execute(String commandArgs);
 
     /**
      * 工具方法，将命令行分割成列表

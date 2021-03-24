@@ -40,7 +40,7 @@ public final class EventPublisher {
         if (eventProperty.onInput.isInterestedIn())
             putToCollection(EventType.OnInput, wrapper);
         if (eventProperty.onResolveInput.isInterestedIn())
-            putToCollection(EventType.OnResolveInput, wrapper);
+            putToCollection(EventType.BeforeResolveInput, wrapper);
         if (eventProperty.onInputResolved.isInterestedIn())
             putToCollection(EventType.OnInputResolved, wrapper);
         if (eventProperty.onMessage.isInterestedIn())
@@ -106,11 +106,11 @@ public final class EventPublisher {
     }
 
     // 解析输入前
-    public static void onResolveInput(String cmdName, List<String> cmdItems) {
-        Optional.ofNullable(LISTENERS.get(EventType.OnResolveInput))
+    public static void beforeResolveInput(String cmdName, List<String> cmdItems) {
+        Optional.ofNullable(LISTENERS.get(EventType.BeforeResolveInput))
                 .ifPresent(listenerWrappers ->
                         listenerWrappers.forEach(wrapper ->
-                                wrapper.onResolveInput(cmdName, cmdItems)));
+                                wrapper.beforeResolveInput(cmdName, cmdItems)));
     }
 
     // 解析输入后
@@ -171,8 +171,8 @@ public final class EventPublisher {
         }
 
         @Override
-        public void onResolveInput(String cmdName, List<String> cmdItems) {
-            impl.onResolveInput(cmdName, cmdItems);
+        public void beforeResolveInput(String cmdName, List<String> cmdItems) {
+            impl.beforeResolveInput(cmdName, cmdItems);
         }
 
         @Override

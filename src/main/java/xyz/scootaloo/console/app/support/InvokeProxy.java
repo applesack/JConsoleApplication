@@ -2,22 +2,9 @@ package xyz.scootaloo.console.app.support;
 
 import xyz.scootaloo.console.app.support.FunctionDesc.*;
 
-import java.util.function.Consumer;
-
 /**
  * 传递或者调用会抛出异常的方法
- * <p>对 try-catch 的异常处理方式进行了包装，当需要调用会抛出异常的方式时，例如:
- * <pre>{@code public File getFile(String filename) throws NoSuchFileException {
- *     // some code ...
- * }}</pre></p>
- * <p>调用时 {@code InvokeProxy.fun(fileUtils::getFile).call("filename")} , 这样完成调用。
- * 这里 {@code fun()} 的参数是要调用方法，{@code call()} 的参数是要调用的方法的实际参数。<br>
- * 当方法抛出异常时，{@code call()} 调用返回 {@code null}，这里提供一些便捷的操作: <br></p>
- *<pre>
- *  - 添加异常处理器: {@link } <br>
- *  - 调用方法时抛出异常时指定默认值: {@link NonRtnMethod#xAddHandle(Class, Consumer)} <br>
- *  - 使方法返回的结果用Optional包装返回: {@link Rtn0pWrapper#addHandle(Consumer)}
- *</pre>
+ *
  * @author flutterdash@qq.com
  * @since 2021/2/12 0:21
  */

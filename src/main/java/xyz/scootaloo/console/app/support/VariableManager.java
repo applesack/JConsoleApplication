@@ -86,7 +86,7 @@ public final class VariableManager {
 
     /**
      * 将字符串中的占位符替换成Properties中的value
-     * @see xyz.scootaloo.console.app.parser.preset.SystemPresetCmd#onResolveInput 使用点
+     * @see xyz.scootaloo.console.app.parser.preset.SystemPresetCmd#beforeResolveInput 使用点
      * 这里当命令行参数按照空格分段以后，每个部分假如有占位符，都会被替换成变量的“@#@”加上id，同时每次替换都会在 {@link KVPair} 做记录。
      * @param text 文本
      * @return 替换占位符后的文本

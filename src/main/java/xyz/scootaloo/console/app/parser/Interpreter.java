@@ -101,7 +101,7 @@ public final class Interpreter {
 
     /**
      * 为当前线程创建一个新的用户
-     * <p>假如是多用户环境，为了区别不同的用户，需要为使用解释器功能的用户分配一些独立的资源</p>
+     *
      * @param userKey 用户标识，此标识必须是唯一的
      * @return 一个资源处理器回调，这个回调将销毁为此用户分配的资源
      */
@@ -146,7 +146,7 @@ public final class Interpreter {
             return lackCommandException(cmdName);
         }
         // 最终执行
-        return actuatorWrapper.get().invoke(cmdArgs);
+        return actuatorWrapper.get().execute(cmdArgs);
     }
 
     /**
@@ -267,7 +267,7 @@ public final class Interpreter {
         }
     }
 
-    // 执行过滤链
+    // 增加过滤器
     protected void loadFilter(MethodActuator actuator) {
         FilterMethodWrapper.addFilter(actuator);
     }
@@ -278,8 +278,8 @@ public final class Interpreter {
     }
 
     /**
-     * 对 Actuator 进行包装 <br>
-     * 对于同包下的类提供一些便捷方法
+     * 对 Actuator 进行包装
+     *
      * @author flutterdash@qq.com
      * @since 2020/12/29 11:00
      */
@@ -308,13 +308,13 @@ public final class Interpreter {
         }
 
         @Override
-        public InvokeInfo invoke(String commandArgs) {
+        public InvokeInfo execute(String commandArgs) {
             return invokeCore(commandArgs);
         }
 
         /**
          * *字符串命令调用的核心实现入口*
-         * @param cmdArgs 执行命令时使用的参数，以按照空格分割成列表
+         * @param cmdArgs 命令行参数
          * @return 执行结果信息
          */
         protected InvokeInfo invokeCore(String cmdArgs) {
@@ -322,7 +322,7 @@ public final class Interpreter {
             InvokeInfo info = InvokeInfo.beforeInvoke(cmdName, rtnType, cmdArgs);
             // 发布命令解析前事件
             List<String> tmpArgs = Actuator.splitCommandArgsBySpace(cmdArgs);
-            EventPublisher.onResolveInput(cmdName, tmpArgs);
+            EventPublisher.beforeResolveInput(cmdName, tmpArgs);
             cmdArgs = String.join(" ", tmpArgs);
             // 由解析工厂将字符串命令解析成Object数组供method对象调用，结果由wrapper包装
             ResultWrapper wrapper;

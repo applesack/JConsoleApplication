@@ -15,7 +15,7 @@ public enum EventType {
     OnInput,
 
     // 获取输入之后，解析之前
-    OnResolveInput,
+    BeforeResolveInput,
 
     // 解析之后
     OnInputResolved,

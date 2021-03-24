@@ -4,6 +4,8 @@ import xyz.scootaloo.console.app.common.ResourceManager;
 
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Id 生成器,
@@ -20,6 +22,7 @@ public final class IdGenerator {
     private static final Random random = ResourceManager.getRandom();
 
     private final AtomicLong id = new AtomicLong();
+    private final Lock lock = new ReentrantLock(false);
     private final StringBuilder sb;
 
     // 长度为3的16进制Id
@@ -50,8 +53,13 @@ public final class IdGenerator {
         return id.get();
     }
 
-    private synchronized Long increase() {
-        return id.getAndAdd(random.nextInt(13) + 5);
+    private Long increase() {
+        lock.lock();
+        try {
+            return id.getAndAdd(random.nextInt(13) + 5);
+        } finally {
+            lock.unlock();
+        }
     }
 
     public void reset() {

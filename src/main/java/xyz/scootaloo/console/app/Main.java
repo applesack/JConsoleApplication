@@ -1,7 +1,7 @@
 package xyz.scootaloo.console.app;
 
 import xyz.scootaloo.console.app.anno.Cmd;
-import xyz.scootaloo.console.app.anno.mark.Boot;
+import xyz.scootaloo.console.app.anno.Boot;
 import xyz.scootaloo.console.app.common.Console;
 
 /**

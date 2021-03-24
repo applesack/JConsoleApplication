@@ -102,7 +102,7 @@ public final class MethodMeta implements Iterable<MethodMeta.CurrentParamType> {
     @Override
     public String toString() {
         return "MethodMeta{" +
-                "obj=" + owner +
+                "owner=" + owner +
                 ", method=" + method +
                 ", size=" + size +
                 ", optionals=" + Arrays.toString(optionals) +

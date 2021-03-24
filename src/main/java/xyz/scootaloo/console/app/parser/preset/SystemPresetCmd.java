@@ -271,7 +271,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
     }
 
     @Override
-    public void onResolveInput(String cmdName, List<String> cmdItems) {
+    public void beforeResolveInput(String cmdName, List<String> cmdItems) {
         Client.Resources resources = Interpreter.getCurrentUser().getResources();
         resources.getReplacementRecord().refresh();
         if (cmdItems != null) {

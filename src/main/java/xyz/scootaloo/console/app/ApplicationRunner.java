@@ -1,5 +1,6 @@
 package xyz.scootaloo.console.app;
 
+import xyz.scootaloo.console.app.anno.Boot;
 import xyz.scootaloo.console.app.anno.mark.Stateless;
 import xyz.scootaloo.console.app.application.AbstractConsoleApplication;
 import xyz.scootaloo.console.app.application.ConsoleApplication;
@@ -44,10 +45,20 @@ public final class ApplicationRunner {
      * @return 基于默认配置生成的控制台应用
      */
     public static AbstractConsoleApplication consoleApplication() {
-        Object instance = ClassUtils.instance(false);
-        return consoleApplication(Console.factories()
-                .add(instance, true)
-                .ok());
+        Object boot = ClassUtils.instance(false);
+        DefaultValueConfigBuilder configBuilder = Console.factories()
+                .add(boot, true).then();
+        supplementConfig(configBuilder, boot);
+        return consoleApplication(configBuilder.build());
+    }
+
+    private static void supplementConfig(DefaultValueConfigBuilder builder, Object bootObj) {
+        if (bootObj == null)
+            return;
+        Class<?> bootClazz = bootObj.getClass();
+        Boot boot = bootClazz.getAnnotation(Boot.class);
+        if (boot != null && !boot.name().isEmpty())
+            builder.prompt(boot.name() + ">");
     }
 
     /**
