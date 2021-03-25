@@ -115,16 +115,50 @@ public final class MethodMeta implements Iterable<MethodMeta.CurrentParamType> {
     }
 
     public static class CurrentParamType {
-        public final Optional<Opt> optionalOpt;
-        public final Class<?> paramType;
-        public final Type genericType;
-        public final int index;
+        private static final String ON_ERROR = "错误的用法";
+        private final Optional<Opt> optionalOpt;
+        private final Class<?> paramType;
+        private final Type genericType;
+        private final int index;
         public CurrentParamType(MethodMeta meta, int idx) {
             this.optionalOpt = meta.optionals[idx];
             this.paramType = meta.parameterTypes[idx];
             this.genericType = meta.genericTypes[idx];
             this.index = idx;
         }
+
+        public int index() {
+            return index;
+        }
+
+        public boolean isRequired() {
+            return getAnno().required();
+        }
+
+        public Class<?> getParamType() {
+            return paramType;
+        }
+
+        public boolean hasOptAnno() {
+            return optionalOpt.isPresent();
+        }
+
+        public Opt getAnno() {
+            if (hasOptAnno())
+                return optionalOpt.get();
+            throw new RuntimeException(ON_ERROR);
+        }
+
+        public boolean hasDefaultValue() {
+            if (!hasOptAnno())
+                throw new RuntimeException(ON_ERROR);
+            return !getAnno().dftVal().isEmpty();
+        }
+
+        public String getDefaultValue() {
+            return getAnno().dftVal();
+        }
+
     }
 
     private static class CurrentTypeIterator implements Iterator<CurrentParamType> {

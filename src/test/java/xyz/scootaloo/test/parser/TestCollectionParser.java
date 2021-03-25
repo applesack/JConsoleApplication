@@ -18,12 +18,12 @@ import java.util.Set;
 public class TestCollectionParser {
 
     public static void main(String[] args) {
-        PresetFactoryManager.getParserByName("collection").ifPresent(parser -> {
-            ParserTester.createTest(parser, "test")
-                    .addTestCommand("map{a:12, ' x b':'13 '} list:[1, 2, 4, 5] set:(1,2,1,4,5) arr=>[12, 34, 5]")
-                    .addTestCommand("{a:12, ' x b':'13 '}")
-                    .test();
-        });
+        PresetFactoryManager.getParserByName("collection")
+                .ifPresent(parser ->
+                        ParserTester.createTest(parser, "test")
+                .addTestCommand("map{a:12, ' x b':'13 '} list:[1, 2, 4, 5] set:(1,2,1,4,5) arr=>[12, 34, 5]")
+                .addTestCommand("{a:12, ' x b':'13 '}")
+                .test());
     }
 
     @Test
