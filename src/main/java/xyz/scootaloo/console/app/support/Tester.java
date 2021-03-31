@@ -18,6 +18,7 @@ public class Tester<In, Out> {
     private final Function<In, Out> function;
     private final boolean exitOnException;
     private final List<Sample<In, Out>> samples = new ArrayList<>();
+    private final List<Sample<In, Out>> selectSamples = new ArrayList<>();
 
     private Function<In, String> inputConvertor;
     private Function<Out, String> outputConvertor;
@@ -51,9 +52,19 @@ public class Tester<In, Out> {
      * @return 构建者
      */
     public Tester<In, Out> addCase(In input, Out output) {
+        return addCase(input, output, false);
+    }
+
+    public Tester<In, Out> addCase(In input, Out output, boolean select) {
+        if (outputConvertor == null) {
+            outputConvertor = getStringConverter(output);
+            inputConvertor = getStringConverter(input);
+        }
+        if (select) {
+            selectSamples.add(new Sample<>(input, output, this));
+            return this;
+        }
         samples.add(new Sample<>(input, output, this));
-        outputConvertor = getStringConverter(output);
-        inputConvertor = getStringConverter(input);
         return this;
     }
 
@@ -72,11 +83,18 @@ public class Tester<In, Out> {
      * 测试结果，如果通过则绿色显示
      *         如果失败则红色显示
      */
-    public void test() {
-        samples.forEach(sample ->
+    public Result test() {
+        List<Sample<In, Out>> realSamples = selectSamples.isEmpty() ? samples : selectSamples;
+        realSamples.forEach(sample ->
                 sample.matcher = DEFAULT_MATCHER);
-        samples.forEach(sample ->
-                sample.matchAndShow(function, exitOnException));
+        Result result = new Result(samples.size());
+        realSamples.forEach(sample ->
+                sample.matchAndShow(function, exitOnException, result));
+        return result;
+    }
+
+    public void testAndShow() {
+        test().show();
     }
 
     private static <T> Function<T, String> getStringConverter(T type) {
@@ -111,28 +129,65 @@ public class Tester<In, Out> {
         final Tester<In, Out> tester;
         Matcher<Out> matcher;
 
-
-
         private Sample(In input, Out output, Tester<In, Out> tester) {
             this.input = input;
             this.output = output;
             this.tester = tester;
         }
 
-        private void matchAndShow(Function<In, Out> function, boolean exitOnException) {
+        private void matchAndShow(Function<In, Out> function, boolean exitOnException, Result result) {
             try {
               Out actualOut = function.apply(input);
               if (matcher.match(output, actualOut)) {
+                  result.passCount++;
                   System.out.println(color.green("PASS Input : " + tester.inputConvertor.apply(input) + "\n     Output: " + tester.outputConvertor.apply(output)));
               } else {
+                  result.failCount++;
                   System.out.println(color.red("FAIL Input : " + tester.inputConvertor.apply(input) + "\n     Output: " +tester.outputConvertor.apply(output)
                           + "\n     Actual: " + tester.outputConvertor.apply(actualOut)));
               }
             } catch (Exception e) {
+                result.failCount++;
+                result.errorCount++;
                 e.printStackTrace();
                 if (exitOnException)
                     System.exit(0);
             }
+        }
+
+    }
+
+    public static class Result {
+        private final int total;
+        private int passCount;
+        private int failCount;
+        private int errorCount;
+
+        public Result(int total) {
+            this.total = total;
+        }
+
+        public int getPassCount() {
+            return passCount;
+        }
+
+        public int getFailCount() {
+            return failCount;
+        }
+
+        public int getTotal() {
+            return total;
+        }
+
+        public int getErrorCount() {
+            return errorCount;
+        }
+
+        public void show() {
+            System.out.println(color.purple("total: " + total));
+            System.out.println(color.purple("pass : " + color.green(passCount)));
+            System.out.println(color.purple("fail : " + color.yellow(failCount)));
+            System.out.println(color.purple("error: " + color.red(errorCount)));
         }
 
     }

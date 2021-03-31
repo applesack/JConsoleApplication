@@ -1,7 +1,7 @@
 package xyz.scootaloo.console.app.application;
 
-import xyz.scootaloo.console.app.application.processor.CallBack;
-import xyz.scootaloo.console.app.application.processor.PostProcessor;
+import xyz.scootaloo.console.app.application.callback.CallBack;
+import xyz.scootaloo.console.app.application.callback.PostProcessor;
 import xyz.scootaloo.console.app.error.ConsoleAppRuntimeException;
 
 import java.util.function.Consumer;
@@ -19,6 +19,8 @@ public abstract class AbstractConsoleApplication {
     // 默认退出动作，调用 System.exit(0) 退出程序
     protected CallBack callBack = () -> System.exit(0);
 
+    protected Consumer<String[]> argHandle;
+
     // 获取字符串输入
     protected abstract String getInput();
 
@@ -28,6 +30,10 @@ public abstract class AbstractConsoleApplication {
     // 判断一个命令是否是退出命令
     protected abstract boolean isExitCmd(String cmdName);
 
+    public void run() {
+        run(new String[] { });
+    }
+
     /**
      * 1. 打印欢迎信息
      * 2. 等待键盘输入
@@ -36,8 +42,10 @@ public abstract class AbstractConsoleApplication {
      *      3.2 解释命令时抛出异常，将由 exceptionHandle(e) 进行处理
      * 4. 解释结束，回到步骤2.
      */
-    public void run() {
+    public void run(String[] args) {
         welcome();
+        if (argHandle != null)
+            argHandle.accept(args);
         while (true) {
             try {
                 printPrompt();
@@ -50,6 +58,11 @@ public abstract class AbstractConsoleApplication {
             }
         }
         shutdown();
+    }
+
+    public AbstractConsoleApplication setArgHandler(Consumer<String[]> argHandle) {
+        this.argHandle = argHandle;
+        return this;
     }
 
     // 欢迎信息

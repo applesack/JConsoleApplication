@@ -55,4 +55,9 @@ public @interface Cmd {
      */
     String tag() default "usr";
 
+    /**
+     * @return 备注
+     */
+    String comment() default "";
+
 }

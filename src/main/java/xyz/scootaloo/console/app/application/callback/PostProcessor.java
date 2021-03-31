@@ -1,4 +1,4 @@
-package xyz.scootaloo.console.app.application.processor;
+package xyz.scootaloo.console.app.application.callback;
 
 import xyz.scootaloo.console.app.parser.InvokeInfo;
 

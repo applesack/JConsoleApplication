@@ -45,7 +45,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
     private SystemPresetCmd() {
     }
 
-    @Cmd(name = "app", tag = SYS_TAG)
+    @Cmd(name = "app", tag = SYS_TAG, comment = "查看应用信息")
     private String application(@Opt('v') boolean ver) {
         if (ver)
             console.println("版本: " + version);
@@ -54,7 +54,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
         return version;
     }
 
-    @Cmd(name = "man", tag = SYS_TAG)
+    @Cmd(name = "man", tag = SYS_TAG, comment = "查看帮助信息")
     private String help(@Opt(value = 's', fullName = "name") String cmdName) {
         Actuator actuator;
         if (cmdName == null)
@@ -66,7 +66,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
         return helpDoc;
     }
 
-    @Cmd(name = "tks", tag = SYS_TAG)
+    @Cmd(name = "tks", tag = SYS_TAG, comment = "查看已提交的后台任务")
     public Set<BackstageTaskInfo> tasks() {
         try {
             StringBuilder stringBuilder = new StringBuilder();
@@ -79,7 +79,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
         }
     }
 
-    @Cmd(tag = SYS_TAG, parser = "sub")
+    @Cmd(tag = SYS_TAG, parser = "sub", comment = "查看某个后台任务的详细信息")
     public void task(@Opt(value = 's', fullName = "name", dftVal = "*") String taskName,
                      @Opt(value = 'n', fullName = "size", dftVal = "-1") int size,
                      @Opt(value = 'c', fullName = "clear", dftVal = "*") String clear) {
@@ -96,7 +96,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
         }
     }
 
-    @Cmd(name = "fd", tag = SYS_TAG)
+    @Cmd(name = "fd", tag = SYS_TAG, comment = "查看某个注册到系统的可调用的java方法")
     private void find(@Opt(value = 's', fullName = "name") String name,
                       @Opt(value = 't', fullName = "tag") String tag) {
         List<MethodActuator> actuatorList = AssemblyFactory.getAllCommands();
@@ -137,12 +137,12 @@ public final class SystemPresetCmd implements AppListenerAdapter {
         console.println(sb);
     }
 
-    @Cmd(name = "lis", tag = SYS_TAG)
+    @Cmd(name = "lis", tag = SYS_TAG, comment = "查看系统中的监听器")
     private void listeners() {
         EventPublisher.showAllListeners();
     }
 
-    @Cmd(name = "his", tag = SYS_TAG)
+    @Cmd(name = "his", tag = SYS_TAG, comment = "查看历史记录")
     private List<InvokeInfo> history(@Opt(value = 'n', fullName = "size", dftVal = "-1") int size,
                                      @Opt(value = 's', fullName = "name") String name,
                                      @Opt(value = 'a', fullName = "all" ) boolean isAll,
@@ -155,14 +155,14 @@ public final class SystemPresetCmd implements AppListenerAdapter {
                 .select(name, size, isAll, success, rtnVal, args, invokeAt, interval);
     }
 
-    @Cmd(tag = SYS_TAG)
+    @Cmd(tag = SYS_TAG, comment = "休眠当前线程一段时间")
     private int sleep(@Opt('m') int millis) throws InterruptedException {
         if (millis >= 0)
         Thread.sleep(millis);
         return millis;
     }
 
-    @Cmd(name = "cls", tag = SYS_TAG)
+    @Cmd(name = "cls", tag = SYS_TAG, comment = "清空控制台")
     private void clear() throws IOException, InterruptedException {
         // 新建一个 ProcessBuilder，其要执行的命令是 cmd.exe，参数是 /c 和 cls
         new ProcessBuilder("cmd", "/c", "cls")
@@ -195,7 +195,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
         }
     }
 
-    @Cmd(tag = SYS_TAG, parser = "sub")
+    @Cmd(tag = SYS_TAG, parser = "sub", comment = "设置变量")
     private boolean set(@Opt(value = 'k', fullName = "key") String key,
                      @Opt(value = 'v', fullName = "value") String value) {
         if (!config.isEnableVariableFunction()) {
@@ -214,7 +214,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
         return VariableManager.set(key, value, variablePool);
     }
 
-    @Cmd(tag = SYS_TAG)
+    @Cmd(tag = SYS_TAG, comment = "查看变量")
     private Object get(@Opt(value = 'k', fullName = "key") String key) {
         Map<String, Object> variablePool = Interpreter.getCurrentUser().getResources().getVariablePool();
         Optional<Object> val = VariableManager.get(key, variablePool);
@@ -227,7 +227,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
         }
     }
 
-    @Cmd(tag = SYS_TAG)
+    @Cmd(tag = SYS_TAG, comment = "查看所有变量")
     private Map<String, Object> keys() {
         Map<String, Object> kvMap = Interpreter.getCurrentUser()
                 .getResources()
@@ -236,7 +236,7 @@ public final class SystemPresetCmd implements AppListenerAdapter {
         return kvMap;
     }
 
-    @Cmd(tag = SYS_TAG)
+    @Cmd(tag = SYS_TAG, comment = "查看变量的实际类型和值")
     private void echo(@Opt(value = 'v', fullName = "value") String val) {
         Interpreter.getCurrentUser().getResources()
                 .getReplacementRecord().getRecords()

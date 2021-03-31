@@ -103,7 +103,7 @@ public final class FormHelper {
             if (input.isEmpty())
                 return 0;
             try {
-                field.set(instance, TransformFactory.resolveArgument(input, field.getType(), field.getGenericType()));
+                field.set(instance, TransformFactory.parsingParam(input, field.getType(), field.getGenericType()));
                 return 1;
             } catch (Exception e) {
                 printer.println("属性值无效, 信息: " + e.getMessage());

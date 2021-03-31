@@ -3,7 +3,9 @@ package xyz.scootaloo.console.app.parser;
 import xyz.scootaloo.console.app.anno.Opt;
 import xyz.scootaloo.console.app.anno.mark.Stateless;
 import xyz.scootaloo.console.app.error.ErrorCode;
-import xyz.scootaloo.console.app.error.ParameterResolveException;
+import xyz.scootaloo.console.app.parser.MethodMeta.Context;
+import xyz.scootaloo.console.app.parser.MethodMeta.CurrentParamInfo;
+import xyz.scootaloo.console.app.parser.MethodMeta.LackMark;
 import xyz.scootaloo.console.app.util.StringUtils;
 
 import java.lang.reflect.Type;
@@ -28,99 +30,103 @@ public final class DftParameterParser implements NameableParameterParser {
     /**
      * *解析逻辑实现的入口*
      * @param meta method包装
-     * @param cmdline 调用此方法使用的命令参数
+     * @param cmdArgs 调用此方法使用的命令参数
      * @return 包装的结果
      */
-    public static ResultWrapper transform(MethodMeta meta, String cmdline) throws Exception {
+    public static ResultWrapper transform(MethodMeta meta, String cmdArgs) {
         if (meta.size == 0)
             return ParameterWrapper.success(null);
-        List<String> cmdArgsItems = Actuator.splitCommandArgsBySpace(cmdline);
-        Class<?>[] argTypes = meta.parameterTypes;       // 参数类型数组
-        Type[] genericTypes = meta.genericTypes;         // 参数泛型类型数组
-        Optional<Opt>[] optionals = meta.optionals;      // 参数注解数组
-        List<Object> args = new ArrayList<>();           // 最终可供Method对象invoke的参数
-        Set<String> jointMarkSet = meta.jointMarkSet;    // 连接标记
-        Set<Character> shortParamsSet = meta.optCharSet; // 由注解中的简写命令参数名构成的集
-
-        List<WildcardArgument> wildcardArguments = new ArrayList<>(); // 未提供参数的位置
-        // key=命令参数名 value=命令参数值
-        Map<String, Object> optMap = new HashMap<>(); // 参数map       // 命令参数中由'-'做前缀的参数以及值
-        List<String> remainList = loadArgumentFromCmdline(cmdArgsItems, optMap, shortParamsSet, jointMarkSet);
-
-        for (int i = 0; i<argTypes.length; i++) {
-            Optional<Opt> curAnno = optionals[i];
-            Class<?> curArgType = argTypes[i];
-            // 当前这个参数没有注解，尝试将一个无名参数解析到这里
-            if (!curAnno.isPresent()) {
-                Optional<Object> presetObjOptional = TransformFactory.getPresetVal(curArgType);
-                if (presetObjOptional.isPresent()) {
-                    args.add(presetObjOptional.get());
-                    continue;
-                }
-                if (remainList.isEmpty())
-                    return ParameterWrapper.fail(
-                            new ParameterResolveException("命令不完整，在第" + (i + 1) + "个参数，" + "参数类型: ")
-                                .setErrorInfo(ErrorCode.LACK_PARAMETER));
-                args.add(resolveArgument(remainList.remove(0), argTypes[i], genericTypes[i]));
-                continue;
-            }
-
-            // 只处理 @Opt 注解
-            Opt option = curAnno.get();
-            Set<String> paramsSet = new LinkedHashSet<>();
-            paramsSet.add(String.valueOf(option.value()));
-            if (!option.fullName().isEmpty())
-                paramsSet.add(option.fullName());
-
-            // 没有此参数
-            if (getAndRemove(args, paramsSet, curArgType, genericTypes[i], optMap)) {
-                if (option.required())
-                    return ParameterWrapper.fail(
-                            new ParameterResolveException("缺少必要的参数: -" + option.value())
-                                .setErrorInfo(ErrorCode.LACK_REQUIRED_PARAMETERS));
-
-                // 给这个位置的参数做一个标记，假如处理完还有多余的参数就填补到这个位置来
-                wildcardArguments.add(new WildcardArgument(i, curArgType, genericTypes[i], option.joint()));
-                // 在getAndRemove()方法中已经处理了类型默认值的情况，这里处理用户给定的自定义默认值
-                if (!option.dftVal().equals("")) {
-                    args.set(args.size() - 1, TransformFactory
-                            .simpleTrans(option.dftVal(), curArgType));
-                }
+        Context<Object> state = Context
+                .getInstance(meta, cmdArgs, DftParameterParser::loadArgumentFromCmdline);
+        for (CurrentParamInfo current : meta) {
+            if (current.hasOptAnno()) {
+                doResolveIfAnnoExist(state, current);
+                if (state.hasException())
+                    return ParameterWrapper.fail(state.getException());
+            } else {
+                doResolveIfAnnoMissing(state, current);
+                if (state.hasLackMark())
+                    return ParameterWrapper.fail(state.getException());
             }
         }
 
-        // 处理多余的命令参数
-        if (!wildcardArguments.isEmpty()) {
-            for (WildcardArgument wildcardArgument : wildcardArguments) {
-                // 从剩余的命令参数列表中，依次填充到这些未选中的方法参数上
-                String res;
-                if (!remainList.isEmpty()) {
-                    if (wildcardArgument.joint) {
-                        List<String> jointList = new ArrayList<>();
-                        while (!remainList.isEmpty()) {
-                            jointList.add(remainList.remove(0));
-                        }
-                        res = String.join(" ", jointList);
-                    } else {
-                        res = remainList.remove(0);
+        if (state.hasLackMark()) {
+            remainItemsMapToArgument(state);
+        }
+
+        return ParameterWrapper.success(state.getMethodArgs());
+    }
+
+    private static void remainItemsMapToArgument(Context<Object> state) {
+        List<String> remainList = state.getRemainList();
+        for (LackMark mark : state.getLackMarks()) {
+            // 从剩余的命令参数列表中，依次填充到这些未选中的方法参数上
+            String value;
+            if (!remainList.isEmpty()) {
+                if (mark.isJoint()) {
+                    List<String> jointList = new ArrayList<>();
+                    while (!remainList.isEmpty()) {
+                        jointList.add(remainList.remove(0));
                     }
-                    args.set(wildcardArgument.idx,
-                            resolveArgument(res, wildcardArgument.type, wildcardArgument.generic));
+                    value = String.join(" ", jointList);
+                } else {
+                    value = remainList.remove(0);
                 }
+                Object parsingResult = parsingParam(value, mark.type(), mark.generic());
+                if (parsingResult instanceof Exception)
+                    continue;
+                state.getMethodArgs().set(mark.index(), parsingResult);
             }
         }
+    }
 
-        return ParameterWrapper.success(args);
+    private static void doResolveIfAnnoExist(Context<Object> state, CurrentParamInfo current) {
+        Opt opt = current.getAnno();
+        String shortKeyName = String.valueOf(opt.value());
+        String fullKeyName = opt.fullName();
+        if (state.containParam(shortKeyName) || state.containParam(fullKeyName)) {
+            if (!fullKeyName.isEmpty() && state.containParam(fullKeyName)) {
+                mapToArgument(state, current, fullKeyName);
+            } else {
+                mapToArgument(state, current, shortKeyName);
+            }
+        } else {
+            if (current.isRequired())
+                state.setException(
+                        ParameterParser.createException("缺少必要参数: " + shortKeyName + " | " + fullKeyName));
+            else
+                addLackMark(state, current);
+        }
+    }
+
+    private static void doResolveIfAnnoMissing(Context<Object> state, CurrentParamInfo current) {
+        Optional<Object> presetObjOptional = TransformFactory.getPresetVal(current.getParamType());
+        if (presetObjOptional.isPresent()) {
+            state.addMethodArgument(presetObjOptional.get());
+            return;
+        }
+
+        if (state.getRemainList().isEmpty()) {
+            state.setException(ParameterParser
+                    .createException("命令不完整，在第" + (current.index() + 1) + "个参数，" + "参数类型: "));
+            return;
+        }
+
+        try {
+            state.addMethodArgument(parsingParam(state.getRemainList().remove(0),
+                    current.getParamType(), current.getGenericType()));
+        } catch (Exception e) {
+            state.setException(ParameterParser.createException("参数解析异常", e, ErrorCode.RESOLVE_ERROR));
+        }
     }
 
     // 从命令行中取出命令参数和值
-    private static List<String> loadArgumentFromCmdline(List<String> cmdline,
-                                                        Map<String, Object> optMap,
-                                                        Set<Character> shortParamsSet,
-                                                        Set<String> jointMarkSet) {
+    private static List<String> loadArgumentFromCmdline(Context<Object> state, String args) {
+        List<String> argItems = Actuator.splitCommandArgsBySpace(args);
+        MethodMeta meta = state.meta();
         LinkedList<String> retainList = new LinkedList<>();
-        for (int i = 0; i<cmdline.size(); i++) {
-            String curSegment = cmdline.get(i);
+        for (int i = 0; i<argItems.size(); i++) {
+            String curSegment = argItems.get(i);
             if (StringUtils.isNumber(curSegment) || !curSegment.startsWith("-")) {
                 retainList.addLast(curSegment);
                 continue;
@@ -130,29 +136,83 @@ public final class DftParameterParser implements NameableParameterParser {
             curSegment = curSegment.substring(prefixCount);
             if (curSegment.isEmpty())
                 continue;
-            if (jointMarkSet.contains(curSegment)) {
+            if (meta.jointMarkSet.contains(curSegment)) {
                 List<String> jointList = new ArrayList<>();
-                for (i += 1; i<cmdline.size(); i++) {
-                    jointList.add(cmdline.get(i));
+                for (i += 1; i<argItems.size(); i++) {
+                    jointList.add(argItems.get(i));
                 }
                 if (!jointList.isEmpty())
-                    optMap.put(curSegment, String.join(" ", jointList));
+                    state.getKVPairs().put(curSegment, String.join(" ", jointList));
                 continue;
             }
+
             String nextSeg = PLACEHOLDER;
-            if (curSegment.length() > 1 && isContainsAll(curSegment, shortParamsSet)) {
+            if (curSegment.length() > 1 && isContainsAll(curSegment, meta.optCharSet)) {
                 for (char shortParam : curSegment.toCharArray()) {
-                    optMap.put(String.valueOf(shortParam), true);
+                    state.getKVPairs().put(String.valueOf(shortParam), "true");
                 }
                 continue;
             }
-            if (i < cmdline.size() - 1 && !cmdline.get(i + 1).startsWith("-")) {
-                nextSeg = cmdline.get(i + 1);
+            if (i < argItems.size() - 1 && !argItems.get(i + 1).startsWith("-")) {
+                nextSeg = argItems.get(i + 1);
                 i++;
             }
-            optMap.put(curSegment, nextSeg);
+            state.getKVPairs().put(curSegment, nextSeg);
         }
         return retainList;
+    }
+
+    // 将一个对象根据类型解析成另外一个对象
+    private static Object parsingParam(Object value, Class<?> classType, Type genericType) {
+        if ((classType == boolean.class || classType == Boolean.class) && value.equals(PLACEHOLDER))
+            return true;
+        else {
+            try {
+                return TransformFactory.parsingParam(value, classType, genericType);
+            } catch (Exception e) {
+                return e;
+            }
+        }
+    }
+
+    private static void mapToArgument(Context<Object> state, CurrentParamInfo current, String key) {
+        if (key == null) {
+            addLackMark(state, current);
+            return;
+        }
+        Map<String, String> map = state.getKVPairs();
+        Object parsingResult = parsingParam(map.get(key), current.getParamType(), current.getGenericType());
+        if (parsingResult instanceof Exception)
+            state.setException(ParameterParser
+                    .createException("参数解析错误", (Throwable) parsingResult, ErrorCode.RESOLVE_ERROR));
+        else
+            state.addMethodArgument(parsingResult);
+    }
+
+    // 放置默认值, 并增加标记
+    private static void addLackMark(Context<Object> state, CurrentParamInfo current) {
+        // 预设值
+        Optional<Object> presetObjOptional = TransformFactory.getPresetVal(current.getParamType());
+        if (presetObjOptional.isPresent()) {
+            state.addMethodArgument(presetObjOptional.get());
+        } else {
+            // 默认值
+            if (current.hasOptAnno() && !current.getAnno().dftVal().isEmpty()) {
+                Object parsingResult = parsingParam(
+                        current.getAnno().dftVal(), current.getParamType(), current.getGenericType());
+                if (parsingResult instanceof Exception) {
+                    state.setException(
+                            ParameterParser.createException("参数解析异常",
+                                    (Throwable) parsingResult, ErrorCode.RESOLVE_ERROR));
+                } else {
+                    state.addMethodArgument(parsingResult);
+                }
+            } else {
+                state.addMethodArgument(TransformFactory.getDefVal(current.getParamType()));
+            }
+        }
+        state.addLackMark(new LackMark(
+                current.index(), current.getParamType(), current.getGenericType(), current.isJoint()));
     }
 
     // 检查一个命令参数是否由多个可选项参数构成
@@ -164,77 +224,19 @@ public final class DftParameterParser implements NameableParameterParser {
         return true;
     }
 
-    // 将一个对象根据类型解析成另外一个对象
-    private static Object resolveArgument(Object value, Class<?> classType, Type genericType) throws Exception {
-        if ((classType == boolean.class || classType == Boolean.class) && value.equals(PLACEHOLDER))
-            return true;
-        else
-            return TransformFactory.resolveArgument(value, classType, genericType);
-    }
-
-    // map 中包含了所需的参数，则从map中移除此key
-    // return -> true: 没找到这个参数； false: 已找到，并进行了设置
-    private static boolean getAndRemove(List<Object> args, Set<String> keySet,
-                                        Class<?> classType, Type genericType,
-                                        Map<?, Object> map) throws Exception {
-        boolean found = false;
-        for (String key : keySet) {
-            if (map.containsKey(String.valueOf(key))) {
-                args.add(resolveArgument(map.get(key), classType, genericType));
-                found = true;
-                break;
-            }
-        }
-
-        if (!found) {
-            Optional<Object> presetObjOptional = TransformFactory.getPresetVal(classType);
-            if (presetObjOptional.isPresent()) {
-                args.add(presetObjOptional.get());
-                return false;
-            } else {
-                args.add(TransformFactory.getDefVal(classType));
-            }
-        } else {
-            for (String key : keySet) {
-                map.remove(key);
-            }
-        }
-
-        return !found;
-    }
-
     @Override
     public String name() {
         return "*";
     }
 
     @Override
-    public ResultWrapper parse(MethodMeta meta, String args) throws Exception {
+    public ResultWrapper parse(MethodMeta meta, String args) {
         return transform(meta, args);
     }
 
     @Override
     public String toString() {
         return getParserString();
-    }
-
-    // ------------------------------------POJO--------------------------------------------
-
-    // 用于处理可选参数缺省的情况
-    private static class WildcardArgument {
-
-        final int idx;       // 缺省参数位于参数数组的下标
-        final Class<?> type; // 对应方法参数的类型
-        final Type generic;  // 对应方法参数的泛型类型
-        final boolean joint; // 是否需要拼接参数
-
-        public WildcardArgument(int idx, Class<?> type, Type generic, boolean joint) {
-            this.idx = idx;
-            this.type = type;
-            this.generic = generic;
-            this.joint = joint;
-        }
-
     }
 
 }

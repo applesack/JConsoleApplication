@@ -18,7 +18,7 @@ public class TestStringUtils {
     public void testSplit() {
         Tester.createTest((Function<String, List<String>>) StringUtils::split)
                 .addCase("12 23 34", getList("12", "23", "34"))
-                .addCase(" 12  23  34", getList("12", "23", "34"))
+                .addCase(" 12  23  34", getList("12", "23", "34"), true)
                 .setMatcher((list1, list2) -> {
                     if (list1.size() != list2.size())
                         return false;
@@ -28,7 +28,7 @@ public class TestStringUtils {
                             return false;
                     }
                     return true;
-                }).test();
+                }).testAndShow();
     }
 
     public static List<String> getList(String ... strings) {

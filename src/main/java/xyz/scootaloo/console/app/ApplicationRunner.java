@@ -12,12 +12,7 @@ import xyz.scootaloo.console.app.util.ClassUtils;
 import static xyz.scootaloo.console.app.config.ConsoleConfigProvider.DefaultValueConfigBuilder;
 
 /**
- * 应用运行器<br>
- * <pre>
- * 目前支持两种开始方式
- * 1. 启动一个控制台应用
- *      1.1 如果无参运行，默认将调用者实例化
- * 2. 获得一个解释器对象 </pre>
+ * 功能入口
  *
  * @author flutterdash@qq.com
  * @since 2020/12/27 15:04
@@ -28,7 +23,6 @@ public final class ApplicationRunner {
     /**
      * 使用一个配置对象启动并获取控制台应用对象<br>
      * 框架中获取配置通常是使用java代码设置工厂，结合配置文件(classpath:/console.yml)<br>
-     * @see Console#factories() 请参考示例代码中的配置方式
      * @param config 一个配置对象
      * @return 控制台应用对象
      */
@@ -38,10 +32,7 @@ public final class ApplicationRunner {
 
     /**
      * 无参运行<br>
-     * 当调用{@code ApplicationRunner.consoleApplication()}时，框架会实例化调用者，将调用者做为工厂注册到框架。
-     * @see Main 请参考默认的启动实例，这里使用了无参运行，这里{@code Main}这个类被实例化，其中{@link Main#hello(Console)}这个方法被扫描到。
-     * 默认配置文件，请参考 classpath:/console.yml
-     * 假如 classpath下不包含这个文件，则使用构建者的默认配置 {@link DefaultValueConfigBuilder}
+     * 当调用此方法时，框架会实例化调用者，将调用者做为工厂注册到框架。
      * @return 基于默认配置生成的控制台应用
      */
     public static AbstractConsoleApplication consoleApplication() {
@@ -57,8 +48,12 @@ public final class ApplicationRunner {
             return;
         Class<?> bootClazz = bootObj.getClass();
         Boot boot = bootClazz.getAnnotation(Boot.class);
-        if (boot != null && !boot.name().isEmpty())
-            builder.prompt(boot.name() + ">");
+        if (boot != null && !boot.name().isEmpty()) {
+            String prompt = boot.name();
+            if (Character.isLetter(prompt.charAt(prompt.length() - 1)))
+                prompt += ">";
+            builder.prompt(prompt);
+        }
     }
 
     /**

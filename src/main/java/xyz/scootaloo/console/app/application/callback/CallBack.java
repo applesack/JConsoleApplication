@@ -1,4 +1,4 @@
-package xyz.scootaloo.console.app.application.processor;
+package xyz.scootaloo.console.app.application.callback;
 
 /**
  * 框架中通用的无参无返回值的简单回调接口

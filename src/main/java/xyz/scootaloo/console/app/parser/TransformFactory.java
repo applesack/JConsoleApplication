@@ -93,7 +93,7 @@ public final class TransformFactory {
      * @return 生成好的对象，假如不能生成，返回null。可能抛出运行时异常
      * @throws Exception 解析数组时 {@link #resolveArray(Object, Class, Type)}
      */
-    public static Object resolveArgument(Object value, Class<?> classType, Type genericType) throws Exception {
+    public static Object parsingParam(Object value, Class<?> classType, Type genericType) throws Exception {
         if (classType.isArray() || ClassUtils.isExtendForm(classType, Collection.class)) {
             return resolveArray(value, classType, genericType);
         } else {

@@ -1,34 +1,32 @@
 package xyz.scootaloo.console.app.parser;
 
 import xyz.scootaloo.console.app.anno.Opt;
+import xyz.scootaloo.console.app.error.ConsoleAppRuntimeException;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
  * 将method中的有效信息收集起来，避免重复计算<br>
- * 注意，这些集合会被反复使用，所以，不要修改这些集合的内容
+ * 这些集合会被反复使用，所以，不要修改这些集合的内容
  *
  * @author flutterdash@qq.com
  * @since 2021/2/7 21:42
  */
-public final class MethodMeta implements Iterable<MethodMeta.CurrentParamType> {
-    public final Object owner;               // 此方法所属的类
-    public final Method method;              // method 反射方法对象
-    public final int size;                   // 方法参数个数
-    public final Optional<Opt>[] optionals;  // 方法中的Opt注解数组，数组的下标代表第i个参数的注解
-    public final Class<?>[] parameterTypes;  // 参数的类型
-    public final Type[] genericTypes;        // 可以使用Type查看该参数的泛型类型
-    public final Set<Character> optCharSet;  // 短参数集
-    public final Set<String> fullNameSet;    // 完整参数集
-    public final Set<String> jointMarkSet;   // 连接标记集
+public final class MethodMeta implements Iterable<MethodMeta.CurrentParamInfo> {
+    public final          Object owner;            // 此方法所属的类
+    public final          Method method;           // method 反射方法对象
+    public final             int size;             // 方法参数个数
+    public final Optional<Opt>[] optionals;        // 方法中的Opt注解数组，数组的下标代表第i个参数的注解
+    public final      Class<?>[] parameterTypes;   // 参数的类型
+    public final          Type[] genericTypes;     // 可以使用Type查看该参数的泛型类型
+    public final  Set<Character> optCharSet;       // 短参数集
+    public final     Set<String> fullNameSet;      // 完整参数集
+    public final     Set<String> jointMarkSet;     // 连接标记集
 
     // constructor
     private MethodMeta(Method method, Object obj) {
@@ -49,7 +47,7 @@ public final class MethodMeta implements Iterable<MethodMeta.CurrentParamType> {
     }
 
     @Override
-    public Iterator<CurrentParamType> iterator() {
+    public Iterator<CurrentParamInfo> iterator() {
         return new CurrentTypeIterator(this);
     }
 
@@ -114,17 +112,33 @@ public final class MethodMeta implements Iterable<MethodMeta.CurrentParamType> {
                 '}';
     }
 
-    public static class CurrentParamType {
+    public static class CurrentParamInfo {
         private static final String ON_ERROR = "错误的用法";
         private final Optional<Opt> optionalOpt;
         private final Class<?> paramType;
         private final Type genericType;
+        private final boolean joint;
         private final int index;
-        public CurrentParamType(MethodMeta meta, int idx) {
+        public CurrentParamInfo(MethodMeta meta, int idx) {
             this.optionalOpt = meta.optionals[idx];
             this.paramType = meta.parameterTypes[idx];
             this.genericType = meta.genericTypes[idx];
+            this.joint = hasJointMark(meta, this.optionalOpt);
             this.index = idx;
+        }
+
+        private boolean hasJointMark(MethodMeta meta, Optional<Opt> optionalOpt) {
+            if (optionalOpt.isPresent()) {
+                Opt opt = optionalOpt.get();
+                return meta.jointMarkSet.contains(opt.fullName()) ||
+                        meta.jointMarkSet.contains(String.valueOf(opt.value()));
+            } else {
+                return false;
+            }
+        }
+
+        public boolean isJoint() {
+            return joint;
         }
 
         public int index() {
@@ -159,9 +173,12 @@ public final class MethodMeta implements Iterable<MethodMeta.CurrentParamType> {
             return getAnno().dftVal();
         }
 
+        public Type getGenericType() {
+            return genericType;
+        }
     }
 
-    private static class CurrentTypeIterator implements Iterator<CurrentParamType> {
+    private static class CurrentTypeIterator implements Iterator<CurrentParamInfo> {
         private final MethodMeta meta;
         private int currentIndex;
         private CurrentTypeIterator(MethodMeta meta) {
@@ -175,11 +192,158 @@ public final class MethodMeta implements Iterable<MethodMeta.CurrentParamType> {
         }
 
         @Override
-        public CurrentParamType next() {
-            CurrentParamType currentType = new CurrentParamType(meta, currentIndex);
+        public CurrentParamInfo next() {
+            CurrentParamInfo currentType = new CurrentParamInfo(meta, currentIndex);
             currentIndex++;
             return currentType;
         }
+
+    }
+
+    // 缺省参数标记
+    public static class LackMark {
+        private final int idx;        // 缺省参数位于参数数组的下标
+        private final Class<?> type;  // 对应方法参数的类型
+        private final Type generic;   // 对应方法参数的泛型类型
+        private final boolean joint;  // 是否需要拼接参数
+
+        public LackMark(int index, Class<?> type) {
+            this(index, type, null, false);
+        }
+
+        public LackMark(int index, Class<?> type, Type generic, boolean joint) {
+            this.idx = index;
+            this.type = type;
+            this.generic = generic;
+            this.joint = joint;
+        }
+
+        public int index() {
+            return idx;
+        }
+
+        public Class<?> type() {
+            return type;
+        }
+
+        public Type generic() {
+            return generic;
+        }
+
+        public boolean isJoint() {
+            return joint;
+        }
+
+    }
+
+    /**
+     * 中间状态
+     * 在整个参数解析过程中，通过这个对象传递解析过程信息
+     */
+    public static class Context<T> {
+        private final           MethodMeta meta;
+        private final      Optional<Opt>[] optionals;       // 方法参数注解数组
+        private final         List<Object> methodArgs;      // 待返回的参数列表
+        private final  Map<String, String> kvPairs;         // 命令行中的参数键值对
+        private final         List<String> remainList;      // 命令行移除了键值对后剩余的内容
+        private final       List<LackMark> lackMarks;       // 当一个方法参数是缺省的，则被加入到这个集合
+        private                          T infoObj;         // 使用另外的信息表示状态
+        private ConsoleAppRuntimeException exception = null;
+
+        private static final Object PLACEHOLDER = new Object();
+        public static Context<Object> getInstance(MethodMeta meta,
+                                                  String args,
+                                                  Extractor<Object> extractor) {
+            return getInstance(meta, args, extractor, PLACEHOLDER);
+        }
+
+        public static <T> Context<T> getInstance(MethodMeta meta,
+                                                 String args,
+                                                 Extractor<T> extractor,
+                                                 T dft) {
+            return new Context<T>(meta, args, extractor, dft);
+        }
+
+        public Context(MethodMeta meta, String args, Extractor<T> extractor, T defaultValue) {
+            this.meta = meta;
+            optionals = meta.optionals;  // 方法参数的 Opt 注解数组
+            methodArgs = new ArrayList<>();
+            kvPairs = new HashMap<>();
+            remainList = extractor.extract(this, args);
+            lackMarks = new ArrayList<>();
+            infoObj = defaultValue;
+        }
+
+        public MethodMeta meta() {
+            return meta;
+        }
+
+        public Map<String, String> getKVPairs() {
+            return kvPairs;
+        }
+
+        public Optional<Opt>[] getOptionals() {
+            return optionals;
+        }
+
+        public void addMethodArgument(Object arg) {
+            methodArgs.add(arg);
+        }
+
+        public List<Object> getMethodArgs() {
+            return methodArgs;
+        }
+
+        public boolean containParam(String paramName) {
+            return kvPairs.containsKey(paramName);
+        }
+
+        public String getParamValue(String paramName) {
+            return kvPairs.get(paramName);
+        }
+
+        public boolean hasException() {
+            return exception != null;
+        }
+
+        public void setException(ConsoleAppRuntimeException exception) {
+            this.exception = exception;
+        }
+
+        public ConsoleAppRuntimeException getException() {
+            return exception;
+        }
+
+        public void addLackMark(LackMark lackMark) {
+            this.lackMarks.add(lackMark);
+        }
+
+        public List<LackMark> getLackMarks() {
+            return lackMarks;
+        }
+
+        public boolean hasLackMark() {
+            return !lackMarks.isEmpty();
+        }
+
+        public List<String> getRemainList() {
+            return remainList;
+        }
+
+        public void setInfo(T info) {
+            this.infoObj = info;
+        }
+
+        public T getInfo() {
+            return this.infoObj;
+        }
+
+    }
+
+    @FunctionalInterface
+    public interface Extractor<T> {
+
+        List<String> extract(Context<T> state, String args);
 
     }
 

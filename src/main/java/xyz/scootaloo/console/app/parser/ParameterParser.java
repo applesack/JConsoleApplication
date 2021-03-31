@@ -1,5 +1,9 @@
 package xyz.scootaloo.console.app.parser;
 
+import xyz.scootaloo.console.app.error.ConsoleAppRuntimeException;
+import xyz.scootaloo.console.app.error.ErrorCode;
+import xyz.scootaloo.console.app.error.ParameterResolveException;
+
 /**
  * 参数解析器<br>
  * <p>这个接口的主要任务是根据命令行参数，得到java方法参数，每当有命令行输入，框架会先调用 {@code parser()} 方法，
@@ -26,6 +30,14 @@ public interface ParameterParser {
      */
     default boolean check(MethodMeta meta) {
         return true;
+    }
+
+    static ConsoleAppRuntimeException createException(String info) {
+        return createException(info, null, ErrorCode.LACK_REQUIRED_PARAMETERS);
+    }
+
+    static ConsoleAppRuntimeException createException(String info, Throwable cause, ErrorCode code) {
+        return new ParameterResolveException(info, cause).setErrorInfo(code);
     }
 
 }

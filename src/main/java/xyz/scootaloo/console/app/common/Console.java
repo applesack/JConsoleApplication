@@ -23,16 +23,7 @@ public abstract class Console extends CPrinter {
     }
 
     /**
-     * 使用此工厂方法获取配置工厂的构建者。<br>
-     * <p>一个简单的启动示例，这里演示如何将工厂注册进框架并启动一个控制台应用。<br>
-     * 假设 {@code Test} 类是一个工厂，它实现了框架的某个接口。</p>
-     * <pre> {@code
-     * public static void main(String[] args) {
-     *     ApplicationRunner.consoleApplication(
-     *                  Console.factories()
-     *                      .add(new Test(), true)
-     *                  .ok()).run();
-     * }} </pre>
+     * 获取配置工厂的构建者。
      * @return 返回一个收集工厂的构建者对象，完成构建后得到一个ConsoleConfig配置类对象，此配置对象可用于启动控制台应用
      */
     public static FactoryCollector factories() {

@@ -1,7 +1,7 @@
 package xyz.scootaloo.console.app.parser;
 
 import xyz.scootaloo.console.app.anno.Cmd;
-import xyz.scootaloo.console.app.application.processor.CallBack;
+import xyz.scootaloo.console.app.application.callback.CallBack;
 import xyz.scootaloo.console.app.common.*;
 import xyz.scootaloo.console.app.config.Author;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
@@ -20,7 +20,6 @@ import java.util.function.Supplier;
 
 /**
  * 框架核心装配工厂
- * <p>框架中所有工厂的处理入口 {@link  #init(ConsoleConfig, Interpreter)}</p>
  * <pre>
  * 负责对所有工厂进行装配，并管理一些工厂资源
  * 管理的资源有:
