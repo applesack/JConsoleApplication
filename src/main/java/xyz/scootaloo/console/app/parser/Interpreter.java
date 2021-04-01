@@ -300,7 +300,7 @@ public final class Interpreter {
             this.cmd = c;
             this.method = m;
             this.obj = o;
-            this.parser = DftParameterParser::transform;
+            this.parser = DftParameterParser.INSTANCE;
 
             this.cmdName = method.getName().toLowerCase(Locale.ROOT);
             this.rtnType = method.getReturnType();

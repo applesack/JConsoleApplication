@@ -158,7 +158,7 @@ public final class MethodMeta implements Iterable<MethodMeta.CurrentParamInfo> {
         }
 
         public Opt getAnno() {
-            if (hasOptAnno())
+            if (optionalOpt.isPresent())
                 return optionalOpt.get();
             throw new RuntimeException(ON_ERROR);
         }
@@ -261,13 +261,13 @@ public final class MethodMeta implements Iterable<MethodMeta.CurrentParamInfo> {
                                                  String args,
                                                  Extractor<T> extractor,
                                                  T dft) {
-            return new Context<T>(meta, args, extractor, dft);
+            return new Context<>(meta, args, extractor, dft);
         }
 
         public Context(MethodMeta meta, String args, Extractor<T> extractor, T defaultValue) {
             this.meta = meta;
             optionals = meta.optionals;  // 方法参数的 Opt 注解数组
-            methodArgs = new ArrayList<>();
+            methodArgs = new ArrayList<>(meta.size);
             kvPairs = new HashMap<>();
             remainList = extractor.extract(this, args);
             lackMarks = new ArrayList<>();

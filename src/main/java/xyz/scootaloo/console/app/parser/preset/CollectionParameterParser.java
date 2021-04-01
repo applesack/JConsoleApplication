@@ -9,6 +9,8 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 /**
+ * 实验性功能
+ *
  * 专用于解析数据结构的解析器，标记 collection
  *
  * 支持几种基本的数据结构，python风格，数据结构之间不支持嵌套

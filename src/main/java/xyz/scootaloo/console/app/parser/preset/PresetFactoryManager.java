@@ -56,6 +56,7 @@ public final class PresetFactoryManager {
         factories.add(() -> SubParameterParser.INSTANCE);        // 5
         factories.add(() -> VariableSetter.INSTANCE);            // 6
         factories.add(() -> CollectionParameterParser.INSTANCE); // 7
+        factories.add(() -> LeetcodeParameterParser.INSATNCE);   // 8
         return factories;
     }
 

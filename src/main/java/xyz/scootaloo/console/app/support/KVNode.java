@@ -1,4 +1,4 @@
-package xyz.scootaloo.console.app.util;
+package xyz.scootaloo.console.app.support;
 
 /**
  * 键值对
@@ -8,11 +8,19 @@ package xyz.scootaloo.console.app.util;
  */
 @Deprecated
 public class KVNode<K, V> {
-
     private K key;
     private V value;
 
+    public static <K, V> KVNode<K, V> of(K key, V value) {
+        return new KVNode<>(key, value);
+    }
+
     public KVNode() {
+    }
+
+    public KVNode(K key, V value) {
+        this.key = key;
+        this.value = value;
     }
 
     public void setKey(K key) {

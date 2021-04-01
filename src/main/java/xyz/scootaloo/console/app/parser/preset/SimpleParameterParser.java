@@ -9,8 +9,11 @@ import xyz.scootaloo.console.app.parser.ResultWrapper;
 import java.util.ArrayList;
 
 /**
+ * raw
+ *
  * 不做任何操作的转换器<br>
  * 只是将参数还原成原始的格式，交给方法调用
+ *
  * @author flutterdash@qq.com
  * @since 2021/1/16 23:03
  */
@@ -47,4 +50,5 @@ public final class SimpleParameterParser implements NameableParameterParser {
     public String toString() {
         return getParserString();
     }
+
 }

@@ -19,7 +19,7 @@ import java.util.function.Supplier;
  * @author flutterdash@qq.com
  * @since 2020/12/29 21:47
  */
-@Stateless("如果保证在执行命令之前完成所有的装配，就不会有并发问题")
+@Stateless
 public final class TransformFactory {
     /** resource */
     private static final Map<Class<?>, Object> DEFAULT_VALUE_MAP = new HashMap<>(16);
