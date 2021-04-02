@@ -1,4 +1,6 @@
-package xyz.scootaloo.console.app.common;
+package xyz.scootaloo.console.app.client.out;
+
+import xyz.scootaloo.console.app.client.Console;
 
 /**
  * 一些通用的便捷方法，实现此接口可以快捷的调用
@@ -6,30 +8,51 @@ package xyz.scootaloo.console.app.common;
  * @author flutterdash@qq.com
  * @since 2020/12/28 15:17
  */
-public class DefaultConsole extends Console {
+public class DelegatingConsole extends Console {
     /** singleton */
-    protected static final DefaultConsole INSTANCE = new DefaultConsole() {};
-    private CPrinter default_printer = CPrinterImpl.INSTANCE;
+    private static volatile DelegatingConsole INSTANCE;
+    private static final Object LOCK = new Object();
+
+    private volatile CPrinter impl;
+
+    public static DelegatingConsole getInstance() {
+        if (INSTANCE == null) {
+            synchronized (LOCK) {
+                if (INSTANCE == null) {
+                    INSTANCE = new DelegatingConsole();
+                }
+            }
+        }
+        return INSTANCE;
+    }
+
+    private DelegatingConsole() {
+        this.impl = CPrinterImpl.INSTANCE;
+    }
+
+    public void changeOutput(CPrinter printer) {
+        this.impl = printer;
+    }
 
     @Override
     public void print(Object o) {
-        default_printer.print(o);
+        impl.print(o);
     }
 
     @Override
     public void println(Object o) {
-        default_printer.println(o);
+        impl.println(o);
     }
 
     @Override
     public void err(Object o) {
-        default_printer.err(o);
+        impl.err(o);
     }
 
     // 默认实现，使用标准系统标准输出
     public static void setPrinter(CPrinter cPrinter) {
         if (cPrinter != null)
-            INSTANCE.default_printer = cPrinter;
+            INSTANCE.impl = cPrinter;
     }
 
     private static class CPrinterImpl extends CPrinter {

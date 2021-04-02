@@ -1,7 +1,6 @@
 package xyz.scootaloo.console.app.client;
 
 import xyz.scootaloo.console.app.anno.mark.Private;
-import xyz.scootaloo.console.app.common.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.parser.Interpreter.FilterChainMessage;
 import xyz.scootaloo.console.app.parser.InvokeInfo;

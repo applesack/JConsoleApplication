@@ -1,8 +1,8 @@
 package xyz.scootaloo.console.app.support;
 
 import xyz.scootaloo.console.app.anno.mark.Public;
-import xyz.scootaloo.console.app.common.CPrinter;
-import xyz.scootaloo.console.app.common.Console;
+import xyz.scootaloo.console.app.client.out.CPrinter;
+import xyz.scootaloo.console.app.client.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.parser.InvokeInfo;
 import xyz.scootaloo.console.app.util.StringUtils;

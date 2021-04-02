@@ -2,6 +2,9 @@ package xyz.scootaloo.console.app.parser;
 
 import xyz.scootaloo.console.app.anno.Cmd;
 import xyz.scootaloo.console.app.application.callback.CallBack;
+import xyz.scootaloo.console.app.client.Console;
+import xyz.scootaloo.console.app.client.out.CPrinterSupplier;
+import xyz.scootaloo.console.app.client.out.DelegatingConsole;
 import xyz.scootaloo.console.app.common.*;
 import xyz.scootaloo.console.app.config.Author;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
@@ -252,7 +255,7 @@ public final class AssemblyFactory {
      */
     private static void loadPrinterFactory(CPrinterSupplier printerFactory) {
         ResourceManager.setPrinterFactory(printerFactory);
-        DefaultConsole.setPrinter(printerFactory.get());
+        DelegatingConsole.setPrinter(printerFactory.get());
     }
 
     private static void loadHelpFactory(HelpDoc factory) {

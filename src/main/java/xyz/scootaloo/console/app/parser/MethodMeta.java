@@ -268,7 +268,7 @@ public final class MethodMeta implements Iterable<MethodMeta.CurrentParamInfo> {
             this.meta = meta;
             optionals = meta.optionals;  // 方法参数的 Opt 注解数组
             methodArgs = new ArrayList<>(meta.size);
-            kvPairs = new HashMap<>();
+            kvPairs = new HashMap<>(8);
             remainList = extractor.extract(this, args);
             lackMarks = new ArrayList<>();
             infoObj = defaultValue;
@@ -298,7 +298,7 @@ public final class MethodMeta implements Iterable<MethodMeta.CurrentParamInfo> {
             return kvPairs.containsKey(paramName);
         }
 
-        public String getParamValue(String paramName) {
+        public String getParam(String paramName) {
             return kvPairs.get(paramName);
         }
 

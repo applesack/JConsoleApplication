@@ -2,8 +2,8 @@ package xyz.scootaloo.console.app.parser;
 
 import xyz.scootaloo.console.app.anno.mark.Stateless;
 import xyz.scootaloo.console.app.client.ReplacementRecord;
-import xyz.scootaloo.console.app.common.CPrinter;
-import xyz.scootaloo.console.app.common.Console;
+import xyz.scootaloo.console.app.client.out.CPrinter;
+import xyz.scootaloo.console.app.client.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.util.ClassUtils;
 import xyz.scootaloo.console.app.support.VariableManager;

@@ -33,7 +33,7 @@ public final class SubParameterParser extends FillParamInOrder<Object> implement
         String paramName = getNameStrategy(opt);
         // 命令行参数中有当前方法参数的信息
         if (state.containParam(paramName)) {
-            String value = state.getParamValue(paramName);
+            String value = state.getParam(paramName);
             Object parserResult = parsingParam(value, current.getParamType());
             if (parserResult instanceof Exception) {
                 state.setException(

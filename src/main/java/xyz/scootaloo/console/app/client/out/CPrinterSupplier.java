@@ -1,7 +1,10 @@
-package xyz.scootaloo.console.app.common;
+package xyz.scootaloo.console.app.client.out;
+
+import xyz.scootaloo.console.app.common.Factory;
 
 /**
- * 提供生成输出器的工厂
+ * 提供生成输出实现的工厂
+ *
  * @author flutterdash@qq.com
  * @since 2021/2/25 0:04
  */

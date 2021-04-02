@@ -1,6 +1,7 @@
 package xyz.scootaloo.console.app.support;
 
 import xyz.scootaloo.console.app.common.Colorful;
+import xyz.scootaloo.console.app.common.ResourceManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,7 +15,7 @@ import java.util.function.Function;
  * @since 2021/3/15 22:36
  */
 public class Tester<In, Out> {
-    private static final Colorful color = Colorful.INSTANCE;
+    private static final Colorful color = ResourceManager.getColorful();
     private final Function<In, Out> function;
     private final boolean exitOnException;
     private final List<Sample<In, Out>> samples = new ArrayList<>();

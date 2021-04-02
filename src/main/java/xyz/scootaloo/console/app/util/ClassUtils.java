@@ -1,6 +1,6 @@
 package xyz.scootaloo.console.app.util;
 
-import xyz.scootaloo.console.app.common.Console;
+import xyz.scootaloo.console.app.client.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.parser.TransformFactory;
 

@@ -1,6 +1,6 @@
 package xyz.scootaloo.console.app.anno;
 
-import xyz.scootaloo.console.app.common.Console;
+import xyz.scootaloo.console.app.client.Console;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

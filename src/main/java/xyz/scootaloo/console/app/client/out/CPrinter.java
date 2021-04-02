@@ -1,10 +1,10 @@
-package xyz.scootaloo.console.app.common;
+package xyz.scootaloo.console.app.client.out;
 
 import java.io.OutputStream;
 
 /**
- * 输出接口 <br>
- * 将此接口放在方法参数上，运行命令方法时，系统将自动注入
+ * 输出行为的接口
+ *
  * @author flutterdash@qq.com
  * @since 2021/2/5 20:46
  */
@@ -35,14 +35,12 @@ public abstract class CPrinter extends OutputStream {
      * @param immediate 是否立刻输出信息。
      */
     public void setMode(boolean immediate) {
-
     }
 
     /**
      * 刷新缓存的内容，同时将缓存的内容一次性输出
      */
     public void refresh() {
-
     }
 
     @Override

@@ -4,7 +4,7 @@ import xyz.scootaloo.console.app.anno.Boot;
 import xyz.scootaloo.console.app.anno.mark.Stateless;
 import xyz.scootaloo.console.app.application.AbstractConsoleApplication;
 import xyz.scootaloo.console.app.application.ConsoleApplication;
-import xyz.scootaloo.console.app.common.Console;
+import xyz.scootaloo.console.app.client.Console;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.parser.Interpreter;
 import xyz.scootaloo.console.app.util.ClassUtils;

@@ -2,7 +2,7 @@ package xyz.scootaloo.console.app.application;
 
 import xyz.scootaloo.console.app.application.callback.PostProcessor;
 import xyz.scootaloo.console.app.common.Colorful;
-import xyz.scootaloo.console.app.common.Console;
+import xyz.scootaloo.console.app.client.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.event.EventPublisher;

@@ -3,13 +3,11 @@ package xyz.scootaloo.console.app.common;
 /**
  * 可以在控制台输出彩色的文本，
  * 但一些平台可能不支持个功能
- * @see ResourceManager#getColorful() 获取实例
+ *
  * @author flutterdash@qq.com
  * @since 2020/12/27 16:25
  */
 public final class Colorful {
-    /** singleton */
-    public static final Colorful INSTANCE = new Colorful();
 
     public String green(Object line) {
         return ConsoleColor.GREEN + line;

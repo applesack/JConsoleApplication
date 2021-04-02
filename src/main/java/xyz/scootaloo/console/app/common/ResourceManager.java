@@ -1,5 +1,9 @@
 package xyz.scootaloo.console.app.common;
 
+import xyz.scootaloo.console.app.client.Console;
+import xyz.scootaloo.console.app.client.out.CPrinter;
+import xyz.scootaloo.console.app.client.out.CPrinterSupplier;
+import xyz.scootaloo.console.app.client.out.DelegatingConsole;
 import xyz.scootaloo.console.app.support.BackstageTaskManager;
 
 import java.util.Random;
@@ -16,32 +20,75 @@ public enum ResourceManager {
 
     ;
 
-    static Scanner SCANNER = new Scanner(System.in);
-    static ClassLoader LOADER = ResourceManager.class.getClassLoader();
-    static Console CONSOLE = DefaultConsole.INSTANCE;
-    static Random random = ThreadLocalRandom.current();
-    static CPrinterSupplier cPrinterFactory = BackstageTaskManager::getPrinter;
+    /** Singletons */
+    static volatile           Scanner SCANNER;
+    static volatile       ClassLoader LOADER;
+    static volatile DelegatingConsole CONSOLE;
+    static volatile          Colorful COLORFUL;
+    static volatile            Random RANDOM;
+    static volatile CPrinterSupplier cPrinterFactory = BackstageTaskManager::getPrinter;
+
+    static final Object LOCK = new Object();
 
     // getter
 
     public static Console getConsole() {
+        return delegatingConsole();
+    }
+
+    private static DelegatingConsole delegatingConsole() {
+        if (CONSOLE == null) {
+            synchronized (LOCK) {
+                if (CONSOLE == null) {
+                    CONSOLE = DelegatingConsole.getInstance();
+                }
+            }
+        }
         return CONSOLE;
     }
 
     public static ClassLoader getLoader() {
+        if (LOADER == null) {
+            synchronized (LOCK) {
+                if (LOADER == null) {
+                    LOADER = ResourceManager.class.getClassLoader();
+                }
+            }
+        }
         return LOADER;
     }
 
     public static Scanner getScanner() {
+        if (SCANNER == null) {
+            synchronized (LOCK) {
+                if (SCANNER == null) {
+                    SCANNER = new Scanner(System.in);
+                }
+            }
+        }
         return SCANNER;
     }
 
     public static Colorful getColorful() {
-        return Colorful.INSTANCE;
+        if (COLORFUL == null) {
+            synchronized (LOCK) {
+                if (COLORFUL == null) {
+                    COLORFUL = new Colorful();
+                }
+            }
+        }
+        return COLORFUL;
     }
 
     public static Random getRandom() {
-        return random;
+        if (RANDOM == null) {
+            synchronized (LOCK) {
+                if (RANDOM == null) {
+                    RANDOM = ThreadLocalRandom.current();
+                }
+            }
+        }
+        return RANDOM;
     }
 
     public static CPrinter getPrinter() {
@@ -50,9 +97,9 @@ public enum ResourceManager {
 
     // setter
 
-    public static void setConsole(Console console) {
-        if (console != null)
-            CONSOLE = console;
+    public static void setConsole(CPrinter printer) {
+        if (printer != null)
+            delegatingConsole().changeOutput(printer);
     }
 
     public static void setPrinterFactory(CPrinterSupplier supplier) {

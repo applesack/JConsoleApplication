@@ -22,7 +22,7 @@ import java.util.*;
  * @since 2020/12/29 11:21
  */
 @Stateless
-public final class DftParameterParser extends FillParamInOrder<Object> implements NameableParameterParser {
+public final class DftParameterParser extends FillParamInOrder<Object>{
     // 临时占位符
     private static final String PLACEHOLDER = "*";
     protected static final DftParameterParser INSTANCE = new DftParameterParser();
@@ -133,13 +133,8 @@ public final class DftParameterParser extends FillParamInOrder<Object> implement
     }
 
     @Override
-    public String name() {
-        return "*";
-    }
-
-    @Override
     public String toString() {
-        return getParserString();
+        return "##default##";
     }
 
 }

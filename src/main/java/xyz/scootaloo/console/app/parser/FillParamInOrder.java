@@ -145,9 +145,9 @@ public abstract class FillParamInOrder<T> implements ParameterParser {
             state.addMethodArgument(presetObjOptional.get());
         } else {
             // 注解提供的默认值
-            if (current.hasOptAnno() && !current.getAnno().dftVal().isEmpty()) {
+            if (current.hasOptAnno() && current.hasDefaultValue()) {
                 Object parsingResult = parsingParam(
-                        current.getAnno().dftVal(), current.getParamType(), current.getGenericType());
+                        current.getDefaultValue(), current.getParamType(), current.getGenericType());
                 if (parsingResult instanceof Exception) {
                     state.setException(
                             createException("参数解析异常", (Throwable) parsingResult, ErrorCode.RESOLVE_ERROR));
@@ -180,6 +180,8 @@ public abstract class FillParamInOrder<T> implements ParameterParser {
             return;
         }
         Map<String, String> map = state.getKVPairs();
+        // map.get(key) 可能返回null, 所以这里的parsingParam调用可能因此返回异常
+        // 建议调用此方法前先检查上下文中是否存在与此键对应的值
         Object parsingResult = parsingParam(map.get(key), current.getParamType(), current.getGenericType());
         if (parsingResult instanceof Exception)
             state.setException(

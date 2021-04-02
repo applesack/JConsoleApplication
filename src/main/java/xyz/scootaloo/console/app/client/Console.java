@@ -1,12 +1,17 @@
-package xyz.scootaloo.console.app.common;
+package xyz.scootaloo.console.app.client;
 
+import xyz.scootaloo.console.app.client.out.CPrinter;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.config.ConsoleConfigProvider;
 import xyz.scootaloo.console.app.config.FactoryCollector;
 
 /**
- * 抽象的控制台操作
- * @see DefaultConsole 默认实现
+ * 定义控制台的行为
+ *
+ * 基本的输入输出功能: 默认调用 print println err 将转交给 System.out.*
+ * 基本的处理异常方式
+ * 退出应用的接口
+ *
  * @author flutterdash@qq.com
  * @since 2021/1/18 23:08
  */

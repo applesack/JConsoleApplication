@@ -6,7 +6,7 @@ import xyz.scootaloo.console.app.client.Client;
 import xyz.scootaloo.console.app.client.ClientCenter;
 import xyz.scootaloo.console.app.client.ResourcesHandler;
 import xyz.scootaloo.console.app.common.Colorful;
-import xyz.scootaloo.console.app.common.Console;
+import xyz.scootaloo.console.app.client.Console;
 import xyz.scootaloo.console.app.common.ResourceManager;
 import xyz.scootaloo.console.app.config.ConsoleConfig;
 import xyz.scootaloo.console.app.error.CommandInvokeException;
@@ -35,8 +35,9 @@ import java.util.stream.Stream;
 public final class Interpreter {
     // 单例资源
     private static volatile Interpreter INSTANCE;
-    private static final        Console console = ResourceManager.getConsole();
-    private static final       Colorful color   = ResourceManager.getColorful();
+    private static final         Console console = ResourceManager.getConsole();
+    private static final        Colorful   color = ResourceManager.getColorful();
+    private static final          Object    lock = new Object();
 
     // 解释器中维护了一个Map用于管理注册到框架中的方法执行器，也就是标记有 @Cmd 注解的方法
     private static final Map<String, MethodActuator> strategyMap = new HashMap<>();
@@ -63,7 +64,7 @@ public final class Interpreter {
     // 双重检查的单例
     public static Interpreter getInstance(ConsoleConfig config) {
         if (INSTANCE == null) {
-            synchronized (Interpreter.class) {
+            synchronized (lock) {
                 if (INSTANCE == null) {
                     INSTANCE = new Interpreter(config);
                 }

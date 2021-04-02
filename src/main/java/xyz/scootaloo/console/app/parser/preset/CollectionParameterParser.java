@@ -172,7 +172,7 @@ public final class CollectionParameterParser implements NameableParameterParser 
             return;
         }
         if (type == Set.class) {
-            methodArgs.add(new LinkedHashSet<>());
+            methodArgs.add(new LinkedHashSet<>(0));
             return;
         }
         if (type == List.class) {
@@ -180,7 +180,7 @@ public final class CollectionParameterParser implements NameableParameterParser 
             return;
         }
         if (type == Map.class) {
-            methodArgs.add(new HashMap<>());
+            methodArgs.add(new HashMap<>(0));
         } else {
             throw new RuntimeException("不支持的集合类型");
         }
